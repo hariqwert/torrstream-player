@@ -9,6 +9,7 @@ let currentTorrentData = null;
 let statsPollInterval = null;
 let serverPollInterval = null;
 let metadataPollTimer = null;
+let waitingTimer = null;
 
 // DOM Elements
 const serverStatusPill = document.getElementById('serverStatusPill');
@@ -120,69 +121,85 @@ async function checkUrlAutoPlay() {
 
 // Event Listeners
 function setupEventListeners() {
-  refreshServerBtn.addEventListener('click', checkServerConnection);
+  if (refreshServerBtn) refreshServerBtn.addEventListener('click', checkServerConnection);
   
-  clearInputBtn.addEventListener('click', () => {
-    magnetInput.value = '';
-    magnetInput.focus();
-  });
+  if (clearInputBtn) {
+    clearInputBtn.addEventListener('click', () => {
+      magnetInput.value = '';
+      magnetInput.focus();
+    });
+  }
 
-  pasteBtn.addEventListener('click', async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        magnetInput.value = text.trim();
-        magnetInput.focus();
+  if (pasteBtn) {
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          magnetInput.value = text.trim();
+          magnetInput.focus();
+        }
+      } catch (err) {
+        console.warn('Clipboard access denied:', err);
       }
-    } catch (err) {
-      console.warn('Clipboard access denied:', err);
-    }
-  });
+    });
+  }
 
-  magnetForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const inputVal = magnetInput.value.trim();
-    if (inputVal) {
-      playMagnetOrUrl(inputVal);
-    }
-  });
+  if (magnetForm) {
+    magnetForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inputVal = magnetInput.value.trim();
+      if (inputVal) {
+        playMagnetOrUrl(inputVal);
+      }
+    });
+  }
 
   // Search Type Radio Toggle (Movie vs TV Series)
   document.querySelectorAll('input[name="mediaType"]').forEach(radio => {
     radio.addEventListener('change', () => {
-      if (radio.value === 'series') {
-        episodeSelectRow.classList.remove('hidden');
-      } else {
-        episodeSelectRow.classList.add('hidden');
+      if (episodeSelectRow) {
+        if (radio.value === 'series') {
+          episodeSelectRow.classList.remove('hidden');
+        } else {
+          episodeSelectRow.classList.add('hidden');
+        }
       }
     });
   });
 
   // Search Modal Handlers
-  openSearchBtn.addEventListener('click', () => {
-    searchModal.classList.remove('hidden');
-    modalSearchInput.focus();
-  });
+  if (openSearchBtn && searchModal) {
+    openSearchBtn.addEventListener('click', () => {
+      searchModal.classList.remove('hidden');
+      if (modalSearchInput) modalSearchInput.focus();
+    });
+  }
 
-  closeSearchBtn.addEventListener('click', () => {
-    searchModal.classList.add('hidden');
-  });
-
-  searchModal.addEventListener('click', (e) => {
-    if (e.target === searchModal) {
+  if (closeSearchBtn && searchModal) {
+    closeSearchBtn.addEventListener('click', () => {
       searchModal.classList.add('hidden');
-    }
-  });
+    });
+  }
 
-  modalSearchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const q = modalSearchInput.value.trim();
-    const selectedType = document.querySelector('input[name="mediaType"]:checked').value;
-    const season = seasonInput.value || '1';
-    const episode = episodeInput.value || '1';
+  if (searchModal) {
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) {
+        searchModal.classList.add('hidden');
+      }
+    });
+  }
 
-    if (q) performMovieSearch(q, selectedType, season, episode);
-  });
+  if (modalSearchForm) {
+    modalSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = modalSearchInput ? modalSearchInput.value.trim() : '';
+      const selectedType = document.querySelector('input[name="mediaType"]:checked')?.value || 'movie';
+      const season = seasonInput ? seasonInput.value : '1';
+      const episode = episodeInput ? episodeInput.value : '1';
+
+      if (q) performMovieSearch(q, selectedType, season, episode);
+    });
+  }
 
   // Buffer Mode Buttons
   document.querySelectorAll('.buffer-mode-btn').forEach(btn => {
@@ -210,39 +227,61 @@ function setupEventListeners() {
     });
   });
 
-  // Video Events
-  videoPlayer.addEventListener('playing', () => {
-    hideLoading();
-    playerPlaceholder.classList.add('hidden');
-  });
+  // Video Events - Smooth Glitch-Free Overlay Logic
+  if (videoPlayer) {
+    videoPlayer.addEventListener('playing', () => {
+      if (waitingTimer) clearTimeout(waitingTimer);
+      hideLoading();
+      if (playerPlaceholder) playerPlaceholder.classList.add('hidden');
+    });
 
-  videoPlayer.addEventListener('waiting', () => {
-    showLoading('Buffering Stream...', 'Fetching data from TorrServer cache...');
-  });
+    videoPlayer.addEventListener('timeupdate', () => {
+      if (videoPlayer.currentTime > 0.1 && !videoPlayer.paused) {
+        hideLoading();
+      }
+    });
 
-  videoPlayer.addEventListener('error', (e) => {
-    console.error('Video player error:', videoPlayer.error);
-    hideLoading();
-  });
+    videoPlayer.addEventListener('canplay', () => {
+      hideLoading();
+    });
 
-  copyStreamUrlBtn.addEventListener('click', () => {
-    if (videoPlayer.src) {
-      navigator.clipboard.writeText(videoPlayer.src);
-      const originalText = copyStreamUrlBtn.innerHTML;
-      copyStreamUrlBtn.innerHTML = '<i data-lucide="check"></i> Copied!';
-      if (window.lucide) lucide.createIcons();
-      setTimeout(() => {
-        copyStreamUrlBtn.innerHTML = originalText;
+    videoPlayer.addEventListener('waiting', () => {
+      if (waitingTimer) clearTimeout(waitingTimer);
+      waitingTimer = setTimeout(() => {
+        if (videoPlayer.paused || videoPlayer.seeking) {
+          showLoading('Buffering Stream...', 'Fetching data from TorrServer cache...');
+        }
+      }, 500);
+    });
+
+    videoPlayer.addEventListener('error', (e) => {
+      console.error('Video player error:', videoPlayer.error);
+      if (waitingTimer) clearTimeout(waitingTimer);
+      hideLoading();
+    });
+  }
+
+  if (copyStreamUrlBtn) {
+    copyStreamUrlBtn.addEventListener('click', () => {
+      if (videoPlayer && videoPlayer.src) {
+        navigator.clipboard.writeText(videoPlayer.src);
+        const originalText = copyStreamUrlBtn.innerHTML;
+        copyStreamUrlBtn.innerHTML = '<i data-lucide="check"></i> Copied!';
         if (window.lucide) lucide.createIcons();
-      }, 2000);
-    }
-  });
+        setTimeout(() => {
+          copyStreamUrlBtn.innerHTML = originalText;
+          if (window.lucide) lucide.createIcons();
+        }, 2000);
+      }
+    });
+  }
 
-  refreshTorrentsBtn.addEventListener('click', loadActiveTorrentsList);
+  if (refreshTorrentsBtn) refreshTorrentsBtn.addEventListener('click', loadActiveTorrentsList);
 }
 
 // Perform Movie & Series Search Query via Standalone REST API V1
 async function performMovieSearch(query, mediaType = 'movie', season = '1', episode = '1') {
+  if (!searchResultsArea) return;
   const isTmdbId = /^\d+$/.test(query);
   const isImdbId = /^tt\d+$/.test(query);
   let searchUrl = `/api/v1/search?type=${mediaType}&s=${season}&e=${episode}`;
@@ -276,6 +315,7 @@ async function performMovieSearch(query, mediaType = 'movie', season = '1', epis
 
 // Render Movie & Series Search Cards
 function renderSearchResults(results) {
+  if (!searchResultsArea) return;
   if (results.length === 0) {
     searchResultsArea.innerHTML = `
       <div class="search-initial-state">
@@ -307,8 +347,8 @@ function renderSearchResults(results) {
     `;
 
     card.querySelector('.play-result-btn').addEventListener('click', () => {
-      searchModal.classList.add('hidden');
-      magnetInput.value = m.magnet;
+      if (searchModal) searchModal.classList.add('hidden');
+      if (magnetInput) magnetInput.value = m.magnet;
       playMagnetOrUrl(m.magnet);
     });
 
@@ -342,20 +382,25 @@ async function applyBufferSettings(cacheSizeBytes, maxPeers, preloadPercent = 10
     if (res.ok) {
       if (bufferPresetText) bufferPresetText.textContent = badgeText;
       if (presetTag) presetTag.textContent = tagText;
-      console.log(`[TorrServer Engine] Instant Stream + Auto Cache Removal Applied: Cache=${cacheSizeBytes}, Preload=${preloadPercent}%, RemoveCacheOnDrop=true`);
+      console.log(`[TorrServer Engine] Settings Applied`);
     }
   } catch (err) {
     console.warn('Could not update engine settings:', err);
   }
 }
 
-// Check TorrServer API Connectivity
+// Check TorrServer API Connectivity & Parse Engine Version
 async function checkServerConnection() {
   try {
     const res = await fetch(`${TORRSERVER_BASE}/echo`, { method: 'GET', signal: AbortSignal.timeout(3000) });
     if (res.ok) {
       const text = await res.text();
-      setServerStatus(true, `Online (${text.trim() || 'TorrServer'})`);
+      let ver = text.trim();
+      if (ver.startsWith('<') || ver.includes('<!doctype') || ver.includes('<html')) {
+        const titleMatch = ver.match(/<title>(.*?)<\/title>/i);
+        ver = titleMatch ? titleMatch[1] : 'TorrServer Engine';
+      }
+      setServerStatus(true, `Online (${ver || 'TorrServer'})`);
       return true;
     }
   } catch (err) {
@@ -367,7 +412,7 @@ async function checkServerConnection() {
         signal: AbortSignal.timeout(3000)
       });
       if (res.ok) {
-        setServerStatus(true, 'Online (TorrServer)');
+        setServerStatus(true, 'Online (TorrServer Engine)');
         return true;
       }
     } catch (e) {}
@@ -377,8 +422,8 @@ async function checkServerConnection() {
 }
 
 function setServerStatus(isOnline, text) {
-  serverStatusPill.className = `status-pill ${isOnline ? 'online' : 'offline'}`;
-  serverStatusText.textContent = text;
+  if (serverStatusPill) serverStatusPill.className = `status-pill ${isOnline ? 'online' : 'offline'}`;
+  if (serverStatusText) serverStatusText.textContent = text;
 }
 
 // Main Function: Play Magnet Link or Stream URL
@@ -387,9 +432,11 @@ async function playMagnetOrUrl(input) {
   if (statsPollInterval) clearInterval(statsPollInterval);
 
   if (!input.startsWith('magnet:?') && !input.startsWith('http://') && !input.startsWith('https://')) {
-    searchModal.classList.remove('hidden');
-    modalSearchInput.value = input;
-    performMovieSearch(input);
+    if (searchModal && modalSearchInput) {
+      searchModal.classList.remove('hidden');
+      modalSearchInput.value = input;
+      performMovieSearch(input);
+    }
     return;
   }
 
@@ -454,7 +501,6 @@ async function pollTorrentMetadata(hash, attempts = 0) {
       const videoFiles = fileStats.filter(f => isVideoFile(f.path));
       let targetFile = null;
 
-      // Prefer MKV/MP4 files over legacy AVI files for native browser playback
       const mkvMp4Files = videoFiles.filter(f => !f.path.toLowerCase().endsWith('.avi'));
       if (mkvMp4Files.length > 0) {
         targetFile = mkvMp4Files.reduce((prev, current) => (prev.length > current.length) ? prev : current);
@@ -505,36 +551,40 @@ function playTorrentFile(hash, fileId, filePath, title, fileLength) {
   const isAvi = filePath.toLowerCase().endsWith('.avi');
   const streamUrl = `${TORRSERVER_BASE}/stream?link=${encodeURIComponent(hash)}&index=${fileId}&play=1`;
 
-  currentTitle.textContent = getFileName(title || filePath || 'Torrent Video Stream');
-  currentHash.textContent = isAvi ? '⚠️ Legacy AVI Format (Use Copy Stream URL for VLC)' : `Hash: ${hash.substring(0, 10)}...`;
-  currentSize.textContent = fileLength ? `Size: ${formatBytes(fileLength)}` : 'Size: Dynamic';
+  if (currentTitle) currentTitle.textContent = getFileName(title || filePath || 'Torrent Video Stream');
+  if (currentHash) currentHash.textContent = isAvi ? '⚠️ Legacy AVI Format (Use Copy Stream URL for VLC)' : `Hash: ${hash.substring(0, 10)}...`;
+  if (currentSize) currentSize.textContent = fileLength ? `Size: ${formatBytes(fileLength)}` : 'Size: Dynamic';
 
   highlightActiveFile(fileId);
 
-  playerPlaceholder.classList.add('hidden');
+  if (playerPlaceholder) playerPlaceholder.classList.add('hidden');
 
   if (isAvi) {
     hideLoading();
     alert(`⚠️ AVI Format Detected:\n\nBrowsers do not support .avi video playback natively.\n\nClick "Copy Stream URL" and paste into VLC Media Player (Ctrl+N) to play instantly!`);
   } else {
     showLoading('Instant Stream Starting...', 'Prioritizing video header...');
-    videoPlayer.src = streamUrl;
-    videoPlayer.play().catch(e => {
-      console.log('Autoplay deferred, waiting for user click:', e);
-    });
+    if (videoPlayer) {
+      videoPlayer.src = streamUrl;
+      videoPlayer.play().catch(e => {
+        console.log('Autoplay deferred, waiting for user click:', e);
+      });
+    }
   }
 
   startStatsPolling(hash);
 }
 
 function startDirectVideo(url, title) {
-  currentTitle.textContent = title;
-  currentHash.textContent = 'Hash: Direct URL';
-  currentSize.textContent = 'Size: Dynamic';
+  if (currentTitle) currentTitle.textContent = title;
+  if (currentHash) currentHash.textContent = 'Hash: Direct URL';
+  if (currentSize) currentSize.textContent = 'Size: Dynamic';
   
-  playerPlaceholder.classList.add('hidden');
-  videoPlayer.src = url;
-  videoPlayer.play();
+  if (playerPlaceholder) playerPlaceholder.classList.add('hidden');
+  if (videoPlayer) {
+    videoPlayer.src = url;
+    videoPlayer.play();
+  }
 }
 
 // Live TorrServer Statistics Poller
@@ -558,9 +608,9 @@ function startStatsPolling(hash) {
           ? Math.min(100, Math.round((data.prebuffer_bytes / data.preload_size) * 100))
           : (data.stat_string || 'Ready');
 
-        statSpeed.textContent = speed;
-        statPeers.textContent = `${peers} Peers`;
-        statBuffer.textContent = typeof buffer === 'number' ? `Buffer ${buffer}%` : buffer;
+        if (statSpeed) statSpeed.textContent = speed;
+        if (statPeers) statPeers.textContent = `${peers} Peers`;
+        if (statBuffer) statBuffer.textContent = typeof buffer === 'number' ? `Buffer ${buffer}%` : buffer;
 
         if (typeof buffer === 'number' && bufferProgressFill) {
           bufferProgressFill.style.width = `${buffer}%`;
@@ -574,7 +624,8 @@ function startStatsPolling(hash) {
 
 // File List & Tree Renderer
 function renderFileList(fileStats) {
-  filesCountBadge.textContent = `${fileStats.length} files`;
+  if (filesCountBadge) filesCountBadge.textContent = `${fileStats.length} files`;
+  if (!filesListContainer) return;
   
   if (fileStats.length === 0) {
     filesListContainer.innerHTML = `
@@ -627,6 +678,7 @@ function highlightActiveFile(fileId) {
 
 // Active Torrents List in Sidebar
 async function loadActiveTorrentsList() {
+  if (!activeTorrentsList) return;
   try {
     const res = await fetch(`${TORRSERVER_BASE}/torrents`, {
       method: 'POST',
@@ -666,15 +718,25 @@ async function loadActiveTorrentsList() {
   }
 }
 
-// Loading Helpers
+// Loading Helpers - Smooth Glitch-Free Overlay
 function showLoading(title, subtitle) {
-  loadingTitle.textContent = title;
-  loadingSubtitle.textContent = subtitle;
-  loadingOverlay.classList.remove('hidden');
+  // Do not overlay loading screen if video is actively playing!
+  if (videoPlayer && !videoPlayer.paused && videoPlayer.currentTime > 0.5) {
+    return;
+  }
+  if (loadingTitle) loadingTitle.textContent = title;
+  if (loadingSubtitle) loadingSubtitle.textContent = subtitle;
+  if (loadingOverlay) {
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.classList.remove('hidden');
+  }
 }
 
 function hideLoading() {
-  loadingOverlay.classList.add('hidden');
+  if (loadingOverlay) {
+    loadingOverlay.classList.add('hidden');
+    loadingOverlay.style.display = 'none';
+  }
 }
 
 // Utilities

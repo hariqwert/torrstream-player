@@ -1,0 +1,15 @@
+--- consumet.html
++++ consumet.html
+@@ -2603,8 +2603,12 @@
+             }
+ 
+             if (selectedMedia.type === 'tv') {
+                 if (epNavigator) epNavigator.classList.remove('hidden');
++                const controls = document.getElementById('tvEpisodeControls');
++                if (controls) controls.classList.remove('hidden');
+                 renderPlayerEpisodesList();
+             } else {
+                 if (epNavigator) epNavigator.classList.add('hidden');
++                const controls = document.getElementById('tvEpisodeControls');
++                if (controls) controls.classList.add('hidden');
+             }

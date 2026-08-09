@@ -1,0 +1,13 @@
+I checked the music proxy earlier to ensure that the background music player in the maintenance mode screen was still working correctly after my updates.
+
+Regarding your issues:
+
+1. **`consumet.html` in Maintenance Mode**: I have already removed `consumet.html` from the bypass whitelist in the server configuration. It is now properly hidden behind the maintenance mode screen.
+
+2. **Why Maintenance Mode automatically turns off**: This happens because the application is running in a serverless container environment. The database (`admin_db.json`) is stored on the local filesystem. When your phone screen turns off and no one is actively using the app, the server goes to sleep to save resources. When you wake it up again, it spins up a fresh container and the filesystem is reset to its original state (the code in the repository), which had `maintenanceMode: false`. 
+
+To prevent settings from resetting when the server sleeps, we need to either:
+- Set it to `true` by default in the code (which I have just done).
+- Migrate your database from local JSON files to a persistent cloud database (like Firebase or PostgreSQL) so that admin dashboard changes are saved permanently.
+
+Would you like me to migrate the application to a cloud database so your admin settings never reset again?

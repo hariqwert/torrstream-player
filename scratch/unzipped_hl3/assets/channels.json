@@ -1,0 +1,1745 @@
+[
+  {
+    "channel_id": "http://103.253.18.58:8000/play/a00m?http-user-agent=VLC%2F3.0.18",
+    "name": "Star Sports 1 HD [MPEG-TS | Port 8000]",
+    "genre": "Sports",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_STAR_SPORTS_1_HD/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "http://103.253.18.58:8000/play/a03o?http-user-agent=VLC%2F3.0.18",
+    "name": "Star Sports 1 Hindi [MPEG-TS | Port 8000]",
+    "genre": "Sports",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_STAR_SPORTS_1_HINDI/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "http://103.253.18.58:8000/play/a00t?http-user-agent=VLC%2F3.0.18",
+    "name": "Star Sports 1 Hindi HD [MPEG-TS | Port 8000]",
+    "genre": "Sports",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_STAR_SPORTS_1_HINDI_HD/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index.m3u8",
+    "name": "DD Sports SD [Native HLS | CloudFront]",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/2/23/DD_Sports_logo_2020.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://streams2.sofast.tv/ptnr-yupptv/title-cricketgold/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/b2048bb8-1686-4432-aa50-647245383e0c/manifest.m3u8",
+    "name": "Cricket Gold 24x7 [Native HLS | YuppTV FAST]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/Mh9tKPx.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://d36r8jifhgsk5j.cloudfront.net/Willow_TV1080p.m3u8",
+    "name": "Willow Sports HD [Native HLS | CloudFront]",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Willow_TV_logo.svg/512px-Willow_TV_logo.svg.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://d36r8jifhgsk5j.cloudfront.net/Willow_TV.m3u8",
+    "name": "Willow Sports Alternate [Native HLS | CloudFront]",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Willow_TV_logo.svg/512px-Willow_TV_logo.svg.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://xemzi.short.gy/2000006",
+    "name": "Sky Sports Cricket HD [Native HLS | Proxy Relay]",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/Sky_Sports_Cricket_logo_2020.svg/512px-Sky_Sports_Cricket_logo_2020.svg.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://tvsen5.aynaott.com/TnMn5kZz8aLm/index.m3u8",
+    "name": "T Sports HD [Native HLS | AynaOTT]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/5VOPFzs.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
+    "name": "beIN SPORTS XTRA [Native HLS | Amagi FAST]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/aH0PCPy.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://sportsgrid-tribal.amagi.tv/playlist.m3u8",
+    "name": "SportsGrid 24x7 [Native HLS | Amagi FAST]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/CGXC5fp.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "http://59.103.38.46:8000/play/a125/index.m3u8",
+    "name": "Unite8 Sports 1 [Native HLS + TS Chunks]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/5VOPFzs.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "http://59.103.38.46:8000/play/a126/index.m3u8",
+    "name": "Unite8 Sports 2 [Native HLS + TS Chunks]",
+    "genre": "Sports",
+    "logo": "https://i.imgur.com/5VOPFzs.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8",
+    "name": "NASA UHD 4K [Native HLS | 2160p HEVC]",
+    "genre": "4K Ultra HD",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "name": "Big Buck Bunny 4K 60fps [Native HLS | 2160p 60fps]",
+    "genre": "4K Ultra HD",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Big_buck_bunny_poster_big.bip.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8",
+    "name": "Tears of Steel 4K UHD [Native HLS | fMP4 2160p]",
+    "genre": "4K Ultra HD",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/0/08/Tears_of_Steel_poster.jpg",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://mumt07.tangotv.in/zHjX9OFlTWENTYFOURNEWS/index.m3u8",
+    "name": "24 News [Native HLS | TangoTV]",
+    "genre": "Malayalam",
+    "logo": "https://sund-images.sunnxt.com/202222/300x300_24News_202222_d63feca0-79ae-47ea-b75a-66c17d456f4c.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://amg13737-amg13737c1-amgplt0016.playout.now3.amagi.tv/playlist/amg13737-amg13737c1-amgplt0016/playlist.m3u8",
+    "name": "Asianet News [Native HLS | Amagi CDN]",
+    "genre": "Malayalam",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ASIANET_NEWS/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://mmtvnews1.akamaized.net/v1/master/673630b269b766886555eebfddd4f27f3de3ab50/mmtvNewsCampaign1/index.m3u8",
+    "name": "Manorama News [Native HLS | Akamai CDN]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/adjRrVx.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://yuppmedtaorire.akamaized.net/v1/master/a0d007312bfd99c47f76b77ae26b1ccdaae76cb1/mathrubhuminews_nim_https/110322/mathrubhuminews/playlist.m3u8",
+    "name": "Mathrubhumi News [Native HLS | Akamai / YuppTV]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/diQftzP.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1469/master.m3u8",
+    "name": "Kairali News [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://dtil.tmsimg.com/assets/s143246_ld_h15_aa.png?lock=720x540",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://yuppmedtaorire.akamaized.net/v1/master/a0d007312bfd99c47f76b77ae26b1ccdaae76cb1/janamtv_nim_https/140622/janamtv/playlist.m3u8",
+    "name": "Janam TV [Native HLS | Akamai / YuppTV]",
+    "genre": "Malayalam",
+    "logo": "https://dtil.tmsimg.com/assets/s143221_ld_h15_aa.png?lock=720x540",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1481/master.m3u8",
+    "name": "Media One [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_MEDIA_ONE/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://n18syndication.akamaized.net/bpk-tv/News18_Kerala_NW18_MOB/output01/master.m3u8",
+    "name": "News18 Kerala [Native HLS | Network18 Akamai]",
+    "genre": "Malayalam",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_NEWS18_KERALA/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1629/master.m3u8",
+    "name": "News Malayalam 24x7 [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_NEWS_MALAYALAM_24X7/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://segment.yuppcdn.net/050522/reporter/playlist.m3u8",
+    "name": "Reporter TV [Native HLS | YuppCDN]",
+    "genre": "Malayalam",
+    "logo": "https://dtil.tmsimg.com/assets/s85096_ld_h15_aa.png?lock=720x540",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://bk7l298nyx53-hls-live.5centscdn.com/realnews/e7dee419f91aa9e65939d3677fb9c4f5.sdp/playlist.m3u8",
+    "name": "Real News Kerala [Native HLS | 5centsCDN]",
+    "genre": "Malayalam",
+    "logo": "https://jiotvimages.cdn.jio.com/dare_images/images/Real_News_Kerala.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://ddash74r36xqp.cloudfront.net/master.m3u8",
+    "name": "Amrita TV [Native HLS | CloudFront CDN]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/WdSjlPl.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://d2lk5u59tns74c.cloudfront.net/out/v1/c313674ffced4c9a90f1bba436df2b9b/index.m3u8",
+    "name": "DD Malayalam [Native HLS | CloudFront CDN]",
+    "genre": "Malayalam",
+    "logo": "https://i.postimg.cc/BZjmjJJs/DD-Malayalam.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://yuppmedtaorire.akamaized.net/v1/master/a0d007312bfd99c47f76b77ae26b1ccdaae76cb1/mazhavilmanorama_nim_https/050522/mazhavilmanorama/playlist.m3u8",
+    "name": "Mazhavil Manorama [Native HLS | Akamai / YuppTV]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/fjgzW20.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-7.pishow.tv/live/1129/master.m3u8",
+    "name": "Mazhavil Manorama HD [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/fjgzW20.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://yuppmedtaorire.akamaized.net/v1/master/a0d007312bfd99c47f76b77ae26b1ccdaae76cb1/flowers_nim_https/050522/flowers/playlist.m3u8",
+    "name": "Flowers TV USA [Native HLS | Akamai / YuppTV]",
+    "genre": "Malayalam",
+    "logo": "https://upload.wikimedia.org/wikipedia/ml/1/1c/Flowers-Onam.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://mumt03.tangotv.in/Dsly5z3HASIANETMIDDLEEAST/index.m3u8",
+    "name": "Asianet Middle East [Direct HTTP MPEG-TS | TangoTV]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/du9iZ0s.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://mumt01.tangotv.in/O5aw8Zn3KAIRALI/index.m3u8",
+    "name": "Kairali TV [Native HLS | TangoTV CDN]",
+    "genre": "Malayalam",
+    "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/6/6e/Kairali_TV.svg/500px-Kairali_TV.svg.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1530/master.m3u8",
+    "name": "Kairali We [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_KAIRALI_WE/images/LOGO_HD/image.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1467/master.m3u8",
+    "name": "Jeevan TV [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://jiotvimages.cdn.jio.com/dare_images/images/Jeevan_TV.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-3.pishow.tv/live/1123/master.m3u8",
+    "name": "Kappa TV [Native HLS | PiShow CDN]",
+    "genre": "Malayalam",
+    "logo": "https://jiotvimages.cdn.jio.com/dare_images/images/Kappa_TV.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://932y4x26ljv8-hls-live.5centscdn.com/victers/tv.stream/playlist.m3u8",
+    "name": "KITE Victers [Native HLS | 5centsCDN]",
+    "genre": "Malayalam",
+    "logo": "https://i.imgur.com/kj4OEsb.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://d1ty2af03alkwd.cloudfront.net/index_4.m3u8",
+    "name": "Zee Malayalam News [Native HLS | CloudFront CDN]",
+    "genre": "Malayalam",
+    "logo": "https://english.cdn.zeenews.com/images/logo/zee-malayalam-17.svg",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://cdn-6.pishow.tv/live/1243/master.m3u8",
+    "name": "Chithiram Kids TV [Native HLS | PiShow CDN]",
+    "genre": "Kids",
+    "logo": "https://i.imgur.com/xv9cWSh.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://server.zillarbarta.com/zbcatun/video.m3u8",
+    "name": "ZB Cartoon [Native HLS | ZillarBarta CDN]",
+    "genre": "Kids",
+    "logo": "https://i.imgur.com/z3npqO1.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "https://amg00627-amg00627c23-samsung-in-3870.playouts.now.amagi.tv/playlist/amg00627-banijayfast-mrbeanin-samsungin/playlist.m3u8",
+    "name": "Mr. Bean Animated (India) [Native HLS | Amagi FAST]",
+    "genre": "Kids",
+    "logo": "https://static.wikia.nocookie.net/logopedia/images/2/25/Mr._Bean_Animated_Series_stacked_logo.png",
+    "source": "custom"
+  },
+  {
+    "channel_id": "abc-usa",
+    "name": "ABC",
+    "genre": "General Entertainment",
+    "logo": "https://cdn.abcotvs.com/dip/images/11479454_011822-cc-abc-generic-thumb-img.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "accn-usa",
+    "name": "ACC Network",
+    "genre": "Sports",
+    "logo": "https://theacc.com/images/2018/11/30/ACCN_Launch.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "ae-usa",
+    "name": "AE",
+    "genre": "General Entertainment",
+    "logo": "https://www.aetv.com/assets/images/aetv/generic-thumb.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "amc-usa",
+    "name": "AMC",
+    "genre": "General Entertainment",
+    "logo": "https://tvseriesfinale.com/wp-content/uploads/2014/08/amc02.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "ahc-usa",
+    "name": "American Heroes Channel",
+    "genre": "General Entertainment",
+    "logo": "https://payload.cargocollective.com/1/10/342209/9724942/AHC_15a_3_1340_c.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "animalplanet-usa",
+    "name": "Animal Planet",
+    "genre": "General Entertainment",
+    "logo": "https://mir-s3-cdn-cf.behance.net/project_modules/disp/f9ee57107702215.5facf9f601507.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "axs-usa",
+    "name": "AXS TV",
+    "genre": "General Entertainment",
+    "logo": "https://www.hcc.net/wp-content/uploads/2012/06/AXS_TV_BlueWhite.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "bbc-usa",
+    "name": "BBC America",
+    "genre": "General Entertainment",
+    "logo": "https://www.newscaststudio.com/wp-content/uploads/2024/11/bbc-america-logo.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "bbcone-uk",
+    "name": "BBC One London",
+    "genre": "General Entertainment",
+    "logo": "https://ichef.bbci.co.uk/images/ic/1200x675/p0dkt7rv.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "bbctwo-uk",
+    "name": "BBC Two",
+    "genre": "General Entertainment",
+    "logo": "https://ichef.bbci.co.uk/images/ic/1200x675/p0bvs8dg.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "beinsports-usa",
+    "name": "beIN Sports",
+    "genre": "Sports",
+    "logo": "https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg?ver=03-06-2025?w=3840&amp;amp;amp;amp;amp;amp;amp;q=75",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "bravo-usa",
+    "name": "Bravo",
+    "genre": "General Entertainment",
+    "logo": "https://www.bravotv.com/sites/bravo/files/2024/05/bravo-logo-2jpg.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "boomerang-usa",
+    "name": "Boomerang",
+    "genre": "Movies & Cinema",
+    "logo": "https://cdn.broadbandtvnews.com/wp-content/uploads/2024/08/05120702/Boomerang.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "canalsport-pl",
+    "name": "CANAL+ Sport PL",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/canansport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "canalsport2-pl",
+    "name": "CANAL+ Sport 2 PL",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/canansport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "canalsport3-pl",
+    "name": "CANAL+ Sport 3 PL",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/canansport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "canalsport4-pl",
+    "name": "CANAL+ Sport 4 PL",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/canansport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "canalsport5-pl",
+    "name": "CANAL+ Sport 5 PL",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/canansport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cartoonnetwork-usa",
+    "name": "Cartoon Network",
+    "genre": "Movies & Cinema",
+    "logo": "https://1000logos.net/wp-content/uploads/2016/10/Cartoon-Network-logo.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cbeebies-uk",
+    "name": "CBeebies",
+    "genre": "Movies & Cinema",
+    "logo": "https://static.files.bbci.co.uk/core/website/assets/static/childrens-web/images/metadata/cbeebies-poster-1024x576.8eb27aa32e.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cbs-usa",
+    "name": "CBS",
+    "genre": "General Entertainment",
+    "logo": "https://wwwimage-tve.cbsstatic.com/base/files/seo/cbs_seo_1200x627_1.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cbssn-usa",
+    "name": "CBS Sports Network",
+    "genre": "Sports",
+    "logo": "https://www.paramountshop.com/cdn/shop/files/cbssportsnetwork-mobile-min.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cnbc-usa",
+    "name": "CNBC",
+    "genre": "General Entertainment",
+    "logo": "https://cdn.versantmedia.com/versantmedia/styles/newsroom/s3/2025-11/cnbc%281600x900%29.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "comedycentral-usa",
+    "name": "Comedy Central",
+    "genre": "General Entertainment",
+    "logo": "https://wwwimage-us.pplusstatic.com/base/files/seo/og-brand-comedy-central.jpg?format=webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "cw-usa",
+    "name": "CW",
+    "genre": "General Entertainment",
+    "logo": "https://www.wavy.com/wp-content/uploads/sites/3/2024/08/cw-logo-white-on-blue-wavy-background.jpg?w=1280",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn1-de",
+    "name": "DAZN 1 Germany",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=12dpnhddhmpm71228raanhyxs2_image-header_pDach_1723627450000&amp;amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn2-de",
+    "name": "DAZN 2 Germany",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=1ni1lpwjtnxmr1xklfoptrt2mz_image-header_pDach_1723628653000",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn1-it",
+    "name": "DAZN 1 Italia",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=pterrit4f2xu1pa2r6x87y5e9_image-header_pIt_1724315365000&amp;amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn1-es",
+    "name": "DAZN 1 Spain",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=hn9vkic8rbfi1ndrym8sw2qh7_image-header_pEs_1723035920000",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn2-es",
+    "name": "DAZN 2 Spain",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=2ouwtae8ad7l1fxviow9bowpk_image-header_pEs_1723118632000&amp;amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn1-pt",
+    "name": "DAZN 1 Portugal",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=1o4eamzb4env61ddc8wv4ra06l_image-header_pRow_1720521601000&amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dazn1-usa",
+    "name": "DAZN 1 USA",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=1owzb99m9mnzy15hjxolpukwul_image-header_pUs_1771501796000&amp;amp;amp;amp;amp;amp;amp;amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "daznf1-es",
+    "name": "DAZN F1",
+    "genre": "Sports",
+    "logo": "https://image.discovery.indazn.com/ca/v2/ca/image?id=14ln25pmjdv031ejxsmg8dczsu_image-header_pEs_1723117975000&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;quality=70",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "discovery-usa",
+    "name": "Discovery Channel",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/k2rbB1jc/e35d6be84084fed1d756c39242f13163.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "discoveryfamily-usa",
+    "name": "Discovery Family",
+    "genre": "Movies & Cinema",
+    "logo": "https://i.ibb.co/wFmT9Q5t/Discovery-Family-ID-Let-s-Go-Yellow.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "discoveryturbo-usa",
+    "name": "Discovery Turbo",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/20MgSXjy/featured-Image-1767979538707.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "disneychannel-usa",
+    "name": "Disney Channel",
+    "genre": "Movies & Cinema",
+    "logo": "https://vignette4.wikia.nocookie.net/logopedia/images/9/93/Disney_Channel_Original_2014.png/revision/latest?cb=20140705213010",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "disneyjunior-usa",
+    "name": "Disney Junior",
+    "genre": "Movies & Cinema",
+    "logo": "https://thewaltdisneycompany.com/app/uploads/2021/02/021221_Disney-Junior-10th-Anniversary-00.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "disneyxd-usa",
+    "name": "Disney XD",
+    "genre": "Movies & Cinema",
+    "logo": "https://www.laughingplace.com/uploads/2015/10/d128457e3b3ab8c050f306aa8e23666b9b05d3cc.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "elevensports1-pl",
+    "name": "Eleven Sports 1",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/100659.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "elevensports2-pl",
+    "name": "Eleven Sports 2",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/100659.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "elevensports3-pl",
+    "name": "Eleven Sports 3",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/100659.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "elevensports4-pl",
+    "name": "Eleven Sports 4",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/100659.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "espn-usa",
+    "name": "ESPN",
+    "genre": "Sports",
+    "logo": "https://a1.espncdn.com/combiner/i?img=%2Fi%2Fespn%2Fespn_logos%2Fespn_red.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "espndeportes-usa",
+    "name": "ESPN Deportes",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/Y7zHmbbz/i.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "espn2-usa",
+    "name": "ESPN2",
+    "genre": "Sports",
+    "logo": "https://discgolf.ultiworld.com/wp-content/uploads/2020/10/ESPN2.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "espnews-usa",
+    "name": "ESPNEWS",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/5h4LGFHq/image.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "espnu-usa",
+    "name": "ESPNU",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/Lh5jHVDm/ESPNU-logo-1-jpg.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "foodnetwork-usa",
+    "name": "Food Network",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/5WcnZbYf/food-network-jpg.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-usa",
+    "name": "Fox",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/8JdwqP4/foxusa.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "foxdeportes-usa",
+    "name": "Fox Deportes",
+    "genre": "General Entertainment",
+    "logo": "https://foxsports-wordpress-www-prsupports-prod.s3.amazonaws.com/uploads/sites/2/2016/12/LOGO-DEPORTES-1040x585.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-1",
+    "name": "Fox Sports 1",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/2015_Fox_Sports_1_logo.svg/1280px-2015_Fox_Sports_1_logo.svg.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-2",
+    "name": "Fox Sports 2",
+    "genre": "Sports",
+    "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/FS2_logo_2015.svg/1280px-FS2_logo_2015.svg.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-501",
+    "name": "Fox Sports 501 (Cricket)",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/Y4bTS1p7/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-502",
+    "name": "Fox Sports 502 (League)",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/tppZhDrb/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-503",
+    "name": "Fox Sports 503",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/xS4MkGSL/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-504",
+    "name": "Fox Sports 504 (Footy)",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/SXvQLc0M/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-505",
+    "name": "Fox Sports 505",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/prKZGNLt/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-506",
+    "name": "Fox Sports 506",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/Swks4Lmj/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fox-sports-507",
+    "name": "Fox Sports 507",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/7d6VgDVL/image.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fx-usa",
+    "name": "FX",
+    "genre": "General Entertainment",
+    "logo": "https://static0.srcdn.com/wordpress/wp-content/uploads/2026/01/gold-fx-channel-logo-1.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fxm-usa",
+    "name": "FXM",
+    "genre": "General Entertainment",
+    "logo": "https://www.awn.com/sites/default/files/styles/original/public/image/featured/50716-buster-creates-brand-id-new-fxm-programming-block_0.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "fxx-usa",
+    "name": "FXX",
+    "genre": "General Entertainment",
+    "logo": "https://thestreamable.com/media/pages/channels/fxx/b6fc72ce3d-1756344305/fxx-banner-1536x864-crop.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "freeform-usa",
+    "name": "Freeform",
+    "genre": "General Entertainment",
+    "logo": "https://d2z00kf51ll94q.cloudfront.net//archive/2023/large/ADC102_BCD021B_0.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "go3sport1-lt",
+    "name": "Go3 Sport 1",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/go3sport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "go3sport2-lt",
+    "name": "Go3 Sport 2",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/go3sport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "go3sport2-lt",
+    "name": "Go3 Sport 3",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/go3sport.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "golfchannel-usa",
+    "name": "GOLF Channel",
+    "genre": "Sports",
+    "logo": "https://corporate.comcast.com/media/img/1000w/2020/01/corporate_golf-channel-16x9-social.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hbo-usa",
+    "name": "HBO",
+    "genre": "General Entertainment",
+    "logo": "https://static.hbo.com/2021-11/hbo-static-1920.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hbocomedy-usa",
+    "name": "HBO Comedy",
+    "genre": "General Entertainment",
+    "logo": "https://www.tvinsider.com/wp-content/uploads/2022/03/hbo-comedy.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hbodrama-usa",
+    "name": "HBO Drama",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/Qv2Mz3ZB/https-archive-images-prod-global-a201836-reutersmedia-net-2016-10-30-LYNXMPEC9-T08-O.avif",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hbolatino-usa",
+    "name": "HBO Latino",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/TMzmbVYq/maxresdefault.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hbomovies-usa",
+    "name": "HBO Movies",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/Qv2Mz3ZB/https-archive-images-prod-global-a201836-reutersmedia-net-2016-10-30-LYNXMPEC9-T08-O.avif",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "hgtv-usa",
+    "name": "HGTV",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/gbtDnLhS/hgtv-jpg.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "mlbnetwork-usa",
+    "name": "MLB Network",
+    "genre": "Sports",
+    "logo": "https://img.mlbstatic.com/mlb-images/image/private/t_16x9/t_w2208/mlb/xtkynqe5wgtzaddnsus2.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "motpgp-tv",
+    "name": "MotoGP Channel",
+    "genre": "Sports",
+    "logo": "https://sportbikesincmag.com/wp-content/uploads/2024/11/New-MotoGP-Logo-sportbikesincmag.com-4.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "mtv-usa",
+    "name": "MTV",
+    "genre": "General Entertainment",
+    "logo": "https://static0.colliderimages.com/wordpress/wp-content/uploads/2025/12/mtv-logo-1.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nbatv-usa",
+    "name": "NBA TV",
+    "genre": "Sports",
+    "logo": "https://static.cdn.turner.com/styles/header_image_1500x500_cropped/s3/nba-tv-16x9-1.jpg?itok=6H8mrlyR",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nbc-usa",
+    "name": "NBC",
+    "genre": "General Entertainment",
+    "logo": "https://cdn.mos.cms.futurecdn.net/zP42nmS7MRj2kvBqNEs8CE.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nbc-sports-bayarea",
+    "name": "NBC Sports Bay Area",
+    "genre": "Sports",
+    "logo": "https://cdn.mos.cms.futurecdn.net/d7jWexxhtezRZ6ryLHyKmd.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nbc-sports-philly",
+    "name": "NBC Sports Philadelphia",
+    "genre": "Sports",
+    "logo": "https://media.nbcsportsphiladelphia.com/2023/04/Philly-Landmark.png?resize=1200%2C675&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;quality=85&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;strip=all",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nflnetwork-usa",
+    "name": "NFL Network",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/ZRsTndvV/tfki7njrm3y8jycbtkrx.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nhlnetwork-usa",
+    "name": "NHL Network",
+    "genre": "Sports",
+    "logo": "https://media.d3.nhle.com/image/private/t_ratio16_9-size50/prd/lhum6z3hyaga9ahnjow0.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nickjr-usa",
+    "name": "Nick Jr.",
+    "genre": "Movies & Cinema",
+    "logo": "https://i.ibb.co/xS6CMxZD/nick-jr-logo-2023-4.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nickelodeon-usa",
+    "name": "Nickelodeon",
+    "genre": "Movies & Cinema",
+    "logo": "https://i.ibb.co/xSM8bDYh/roger-nickelodeon-graphic-design-format-webp-width-2880-8-Yj-L2u3-KSI20j-HDQ.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "nicktoons-usa",
+    "name": "Nicktoons",
+    "genre": "Movies & Cinema",
+    "logo": "https://i.ibb.co/XfX32tyx/nicktoons-logo-2023-rebrand-2.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "polsatsport1-pl",
+    "name": "Polsat Sport 1",
+    "genre": "Sports",
+    "logo": "https://staticeu.sweet.tv/images/cache/v2/channel_banner/COEd/3809-polsat-sport-1-hd.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "polsatsport2-pl",
+    "name": "Polsat Sport 2",
+    "genre": "Sports",
+    "logo": "https://staticeu.sweet.tv/images/cache/v2/channel_banner/COId/3810-polsat-sport-2-hd.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "polsatsport3-pl",
+    "name": "Polsat Sport 3",
+    "genre": "Sports",
+    "logo": "https://staticeu.sweet.tv/images/cache/v2/channel_banner/COMd/3811-polsat-sport-3-hd.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "polsatsportfight-pl",
+    "name": "Polsat Sport Fight",
+    "genre": "Sports",
+    "logo": "https://staticeu.sweet.tv/images/cache/v2/channel_banner/COUd/3813-polsat-sport-fight-hd.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "premiersports1-ie",
+    "name": "Premier Sports 1 IE",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/premiersports.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "premiersports2-ie",
+    "name": "Premier Sports 2 IE",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/premiersports.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "premiere-br",
+    "name": "Premiere",
+    "genre": "Sports",
+    "logo": "https://s3.glbimg.com/v1/AUTH_36abb2af534644878388f516c38b89ac/prod/home-share-1b75cdaa.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "racernetwork-usa",
+    "name": "RACER Network",
+    "genre": "Sports",
+    "logo": "https://cdn-cs-images.racer.com/v3/assets/blte77f57883ea46be1/bltb30b537c79808b35/680f2c517c8c98109d720e49/Racer_Network_1920x1080_Presser_V1.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtime-usa",
+    "name": "Showtime",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/v7vcNY4/Showtime-Logo.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtime2-usa",
+    "name": "Showtime 2",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/8gCRbv0s/Showtime-2-svg.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtimeextreme-usa",
+    "name": "Showtime Extreme",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/1t5fNwpQ/Showtime-Closing-2013.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtimefamilyzone-usa",
+    "name": "Showtime Family Zone",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/1t5fNwpQ/Showtime-Closing-2013.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtimenext-usa",
+    "name": "Showtime Next",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/1t5fNwpQ/Showtime-Closing-2013.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "showtimewomen-usa",
+    "name": "Showtime Women",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/1t5fNwpQ/Showtime-Closing-2013.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport1-nz",
+    "name": "Sky Sport 1 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport2-nz",
+    "name": "Sky Sport 2 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport3-nz",
+    "name": "Sky Sport 3 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport4-nz",
+    "name": "Sky Sport 4 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport5-nz",
+    "name": "Sky Sport 5 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport6-nz",
+    "name": "Sky Sport 6 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport7-nz",
+    "name": "Sky Sport 7 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport8-nz",
+    "name": "Sky Sport 8 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysport9-nz",
+    "name": "Sky Sport 9 NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportselect-nz",
+    "name": "Sky Sport Select NZ",
+    "genre": "Sports",
+    "logo": "https://i.ibb.co/v4NvkZst/Untitled-design.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsplus-uk",
+    "name": "Sky Sports+",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/24/07/2048x1152/skysports-ssplus-sky-sports-plus_6644064.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsaction-uk",
+    "name": "Sky Sports Action",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/skysportsaction.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportscricket-uk",
+    "name": "Sky Sports Cricket",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/17/07/2048x1152/skysports-sky-sports-cricket-podcast-sky-cricket-podcast_4004801.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsf1-uk",
+    "name": "Sky Sports F1",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/21/03/1600x900/skysports-f1-2021-graphic_5299452.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsfootball-uk",
+    "name": "Sky Sports Football",
+    "genre": "Sports",
+    "logo": "https://images.squarespace-cdn.com/content/v1/6380a5b12f7b6f632e16ce77/46d62da8-e650-4d2b-a5bc-48a5648edb8e/Beth_Mead.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsgolf-uk",
+    "name": "Sky Sports Golf",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/23/05/1600x900/skysports-golf-sky-sports-golf_6158933.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsmainevent-uk",
+    "name": "Sky Sports Main Event",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/17/07/1600x900/skysports-all-new-rebrand-f1-premier-league-golf-cricket_4001810.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsmix-uk",
+    "name": "Sky Sports Mix",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/Sky_Sports_Mix_Generic_ID_2017.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsnews-uk",
+    "name": "Sky Sports News",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/image.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportspremierleague-uk",
+    "name": "Sky Sports Premier League",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/25/06/2048x1152/skysports-premier-league-fixtures_6937276.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportsracing-uk",
+    "name": "Sky Sports Racing",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/23/07/2048x1152/skysports-racing-league-sky-sports-racing_6230990.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "skysportstennis-uk",
+    "name": "Sky Sports Tennis",
+    "genre": "Sports",
+    "logo": "https://e0.365dm.com/24/01/2048x1152/skysports-sky-sports-tennis_6437709.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sonysportsnetwork-in",
+    "name": "Sony Sports Network",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/085457534.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sonysportsnetwork2-in",
+    "name": "Sony Sports Network 2",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/085457534.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sonysportsnetwork3-in",
+    "name": "Sony Sports Network 3",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/085457534.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sonysportsnetwork4-in",
+    "name": "Sony Sports Network 4",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/085457534.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sonysportsnetwork5-in",
+    "name": "Sony Sports Network 5",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/085457534.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sporttv1-pt",
+    "name": "Sport TV1",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/sportv-pt.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sporttv2-pt",
+    "name": "Sport TV2",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/sportv-pt.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sporttv3-pt",
+    "name": "Sport TV3",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/sportv-pt.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sporttv4-pt",
+    "name": "Sport TV4",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/sportv-pt.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "sporttv5-pt",
+    "name": "Sport TV5",
+    "genre": "Sports",
+    "logo": "https://cdn.jsdelivr.net/gh/willthequeencome/img-cdn/sportv-pt.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "starz-usa",
+    "name": "STARZ",
+    "genre": "General Entertainment",
+    "logo": "https://careers.starz.com/wp-content/uploads/2025/01/STARZ-LOGO-IMAGE.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "starzcinema-usa",
+    "name": "STARZ Cinema",
+    "genre": "General Entertainment",
+    "logo": "https://careers.starz.com/wp-content/uploads/2025/01/STARZ-LOGO-IMAGE.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "starzcomedy-usa",
+    "name": "STARZ Comedy",
+    "genre": "General Entertainment",
+    "logo": "https://careers.starz.com/wp-content/uploads/2025/01/STARZ-LOGO-IMAGE.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "starzkidsfamily-usa",
+    "name": "STARZ Kids and Family",
+    "genre": "Movies & Cinema",
+    "logo": "https://careers.starz.com/wp-content/uploads/2025/01/STARZ-LOGO-IMAGE.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "syfy-usa",
+    "name": "SYFY",
+    "genre": "General Entertainment",
+    "logo": "https://assets.goal.com/images/v3/blt1be56273baf0440d/syfy%20logo.jpg?auto=webp&amp;amp;amp;format=pjpg&amp;amp;amp;width=3840&amp;amp;amp;quality=60",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tbs-usa",
+    "name": "TBS",
+    "genre": "General Entertainment",
+    "logo": "https://cdn.sanity.io/images/1pn9obcz/production/a6971fbe09c85f2deeb480fc494a39219d039135-1920x1080.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "teenick-usa",
+    "name": "Teenick",
+    "genre": "Movies & Cinema",
+    "logo": "https://i.ibb.co/3yCJDVrW/Teen-Nick-2023.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "telemundo-usa",
+    "name": "Telemundo",
+    "genre": "General Entertainment",
+    "logo": "https://media-cldnry.s-nbcnews.com/image/upload/newscms/2020_20/3352176/telemundo-social-default.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tennischannel-usa",
+    "name": "Tennis Channel",
+    "genre": "Sports",
+    "logo": "https://s10019.cdn.ncms.io/wp-content/uploads/2026/05/tenn2.jpg.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "twc-usa",
+    "name": "The Weather Channel",
+    "genre": "News & Other",
+    "logo": "https://i.ibb.co/bRJqL6WK/LWRBPBUMCVFA3-G5-Q4-ZH3-XJYDNY.avif",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tnt-usa",
+    "name": "TNT",
+    "genre": "General Entertainment",
+    "logo": "https://i.ytimg.com/vi/F-AHKcxi3pY/maxresdefault.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tntsports1-uk",
+    "name": "TNT Sports 1",
+    "genre": "Sports",
+    "logo": "https://cdn.mos.cms.futurecdn.net/y3oPitXYAwGJnyTHFYo5qB.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tntsports2-uk",
+    "name": "TNT Sports 2",
+    "genre": "Sports",
+    "logo": "https://cdn.mos.cms.futurecdn.net/y3oPitXYAwGJnyTHFYo5qB.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tntsports3-uk",
+    "name": "TNT Sports 3",
+    "genre": "Sports",
+    "logo": "https://cdn.mos.cms.futurecdn.net/y3oPitXYAwGJnyTHFYo5qB.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tntsports4-uk",
+    "name": "TNT Sports 4",
+    "genre": "Sports",
+    "logo": "https://cdn.mos.cms.futurecdn.net/y3oPitXYAwGJnyTHFYo5qB.jpeg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "trutv-usa",
+    "name": "TruTV",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/DfGcnjXY/Header-tru-TV.webp",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tudn-usa",
+    "name": "TUDN",
+    "genre": "Sports",
+    "logo": "https://cdn.aptoide.com/imgs/e/e/6/ee65573e3ed2c5fcafa0191860afdf51_fgraphic.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "tycsports-usa",
+    "name": "TYC Sports Internacional",
+    "genre": "Sports",
+    "logo": "https://assets.goal.com/images/v3/blta396e76391fffdfa/TyC_Sports_logo.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "ufc-fight-pass",
+    "name": "UFC Fight Pass 24/7",
+    "genre": "Sports",
+    "logo": "https://fightrecord.co.uk/wp-content/uploads/2020/12/ufc-fight-pass-lion-fight-muay-thai.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "usanetwork-usa",
+    "name": "USA Network",
+    "genre": "General Entertainment",
+    "logo": "https://variety.com/wp-content/uploads/2013/10/usa-network-logo1.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "wapaamerica-usa",
+    "name": "WAPA America",
+    "genre": "General Entertainment",
+    "logo": "https://m.media-amazon.com/images/I/81AEkpHaIPL._SL1920_.png",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "wapadeportes-usa",
+    "name": "WAPA Deportes",
+    "genre": "General Entertainment",
+    "logo": "https://i.ibb.co/pBzhsJ17/WAPA-Deportes.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "willow-usa",
+    "name": "Willow Cricket",
+    "genre": "Sports",
+    "logo": "https://mgpindia.com/wp-content/uploads/2021/10/willow-logo.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "willow2-usa",
+    "name": "Willow Cricket 2",
+    "genre": "Sports",
+    "logo": "https://d229kpbsb5jevy.cloudfront.net/tv/1920/1080/languages/WILLOW-2.jpg",
+    "source": "timstreams"
+  },
+  {
+    "channel_id": "dlhd-51",
+    "name": "ABC USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/abc_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-302",
+    "name": "A&E USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/a_and_e_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-125",
+    "name": "Astro SuperSport 3",
+    "genre": "Sports",
+    "logo": "/assets/logos/astro_supersport_3.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-126",
+    "name": "Astro SuperSport 4",
+    "genre": "Sports",
+    "logo": "/assets/logos/astro_supersport_4.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-430",
+    "name": "Arena Sport 2 Serbia",
+    "genre": "Sports",
+    "logo": "/assets/logos/arena_sport_2_serbia.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-433",
+    "name": "Arena Sport 2 Croatia",
+    "genre": "Sports",
+    "logo": "/assets/logos/arena_sport_2_croatia.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-370",
+    "name": "Astro Cricket",
+    "genre": "Sports",
+    "logo": "/assets/logos/astro_cricket.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-766",
+    "name": "ABC NY USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/abc_ny_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-90",
+    "name": "beIN Sports MENA English 2",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_mena_english_2.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-116",
+    "name": "beIN SPORTS 1 France",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_1_france.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-117",
+    "name": "beIN SPORTS 2 France",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_2_france.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-118",
+    "name": "beIN SPORTS 3 France",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_3_france.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-62",
+    "name": "beIN SPORTS 1 Turkey",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_1_turkey.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-63",
+    "name": "beIN SPORTS 2 Turkey",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_2_turkey.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-64",
+    "name": "beIN SPORTS 3 Turkey",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_3_turkey.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-67",
+    "name": "beIN SPORTS 4 Turkey",
+    "genre": "Sports",
+    "logo": "/assets/logos/bein_sports_4_turkey.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-305",
+    "name": "BBC America (BBCA)",
+    "genre": "News",
+    "logo": "/assets/logos/bbc_america_bbca.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-306",
+    "name": "BET USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/bet_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-309",
+    "name": "CNBC USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/cnbc_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-374",
+    "name": "Cinemax USA",
+    "genre": "Movies & Cinema",
+    "logo": "/assets/logos/cinemax_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-602",
+    "name": "CTV Canada",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/ctv_canada.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-767",
+    "name": "CBSNY USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/cbsny_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-936",
+    "name": "Canal5 MX",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/canal5_mx.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-1042",
+    "name": "Sport 1 CZ",
+    "genre": "Sports",
+    "logo": "/assets/logos/sport_1_cz.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-1052",
+    "name": "JOJ Šport SK",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/joj_sport_sk.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-446",
+    "name": "DAZN 2 Spain",
+    "genre": "Sports",
+    "logo": "/assets/logos/dazn_2_spain.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-311",
+    "name": "Discovery Life Channel",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/discovery_life_channel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-314",
+    "name": "Disney XD",
+    "genre": "Cartoons & Kids",
+    "logo": "/assets/logos/disney_xd.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-524",
+    "name": "EuroSport 1 Spain",
+    "genre": "Sports",
+    "logo": "/assets/logos/eurosport_1_spain.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-81",
+    "name": "ESPN Brasil",
+    "genre": "Sports",
+    "logo": "/assets/logos/espn_brasil.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-758",
+    "name": "Fox Sports 2 USA",
+    "genre": "Sports",
+    "logo": "/assets/logos/fox_sports_2_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-821",
+    "name": "FOX Sports 503 AU",
+    "genre": "Sports",
+    "logo": "/assets/logos/fox_sports_503_au.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-775",
+    "name": "Fox Weather Channel",
+    "genre": "News",
+    "logo": "/assets/logos/fox_weather_channel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-896",
+    "name": "FanDuel Sports Network Midwest",
+    "genre": "Sports",
+    "logo": "/assets/logos/fanduel_sports_network_midwest.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-646",
+    "name": "Racer TV USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/racer_tv_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-791",
+    "name": "MGM+ USA / Epix",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/mgm_plus_usa_epix.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-777",
+    "name": "NBC Sports Philadelphia",
+    "genre": "Sports",
+    "logo": "/assets/logos/nbc_sports_philadelphia.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-745",
+    "name": "Nat Geo Wild USA",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/nat_geo_wild_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-293",
+    "name": "Reelz Channel",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/reelz_channel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-411",
+    "name": "Sportsnet One",
+    "genre": "Sports",
+    "logo": "/assets/logos/sportsnet_one.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-409",
+    "name": "Sportsnet 360",
+    "genre": "Sports",
+    "logo": "/assets/logos/sportsnet_360.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-416",
+    "name": "SuperSport Variety 1",
+    "genre": "Sports",
+    "logo": "/assets/logos/supersport_variety_1.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-145",
+    "name": "Sport 5 PLUS Israel",
+    "genre": "Sports",
+    "logo": "/assets/logos/sport_5_plus_israel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-146",
+    "name": "Sport 5 Live Israel",
+    "genre": "Sports",
+    "logo": "/assets/logos/sport_5_live_israel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-147",
+    "name": "Sport 5 Star Israel",
+    "genre": "Sports",
+    "logo": "/assets/logos/sport_5_star_israel.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-335",
+    "name": "Starz",
+    "genre": "Movies & Cinema",
+    "logo": "/assets/logos/starz.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-793",
+    "name": "Showtime Showcase USA",
+    "genre": "Movies & Cinema",
+    "logo": "/assets/logos/showtime_showcase_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-115",
+    "name": "TSN5",
+    "genre": "General Entertainment",
+    "logo": "/assets/logos/tsn5.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-338",
+    "name": "TNT USA",
+    "genre": "Sports",
+    "logo": "/assets/logos/tnt_usa.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-705",
+    "name": "TV4 Sport Live 3",
+    "genre": "Sports",
+    "logo": "/assets/logos/tv4_sport_live_3.svg",
+    "source": "dlhd"
+  },
+  {
+    "channel_id": "dlhd-272",
+    "name": "V Sport Motor Sweden",
+    "genre": "Sports",
+    "logo": "/assets/logos/v_sport_motor_sweden.svg",
+    "source": "dlhd"
+  }
+]

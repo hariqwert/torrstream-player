@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stalker Pro - The Ultimate Entertainment Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent !important; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            overflow-y: auto;
+            user-select: text;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: auto;
+        }
+
+        /* Ambient Glows */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(150px);
+            opacity: 0.5;
+            z-index: 1;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            transition: background 1s ease;
+        }
+
+        .glow-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #ff0055; animation: drift 20s infinite alternate ease-in-out; }
+        .glow-2 { bottom: -20%; right: -10%; width: 60vw; height: 60vw; background: #4a00e0; animation: drift 25s infinite alternate-reverse ease-in-out; }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10vw, 10vh) scale(1.2); }
+        }
+
+        /* Main UI Container */
+        .ui-container {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        header {
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .logo-text {
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            background: linear-gradient(90deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Carousel Container */
+        .carousel {
+            position: relative;
+            width: 100vw;
+            height: 70vh;
+            display: flex;
+            align-items: center;
+            perspective: 2000px;
+            pointer-events: auto;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            gap: 4vw;
+            padding: 0 50vw;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+        }
+
+        .card {
+            flex: 0 0 55vw; /* Massive width */
+            height: 55vh;
+            position: relative;
+            border-radius: 2.5rem;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1200px; /* Enable native nested 3D rendering */
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease, filter 0.8s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: #050505;
+            user-select: none;
+        }
+
+        .card.active {
+            /* Transform is animated smoothly via JS requestAnimationFrame lerp, so exclude it from CSS transitions when active */
+            transition: opacity 0.8s ease, filter 0.8s ease, border 0.8s ease, box-shadow 0.8s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 100px rgba(255,255,255,0.05);
+            z-index: 10;
+        }
+
+        .card:not(.active) {
+            opacity: 0.3;
+            filter: grayscale(80%) brightness(0.4);
+            transform: scale(0.85) translateZ(-150px) rotateY(15deg);
+        }
+
+        /* Card Backgrounds */
+        .card-bg {
+            position: absolute;
+            inset: -10%; /* Extra margin to allow seamless 3D movement */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            transform-style: preserve-3d;
+            transform: translateZ(-60px); /* Deep behind the card elements */
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 1s ease;
+        }
+
+        .card.active .card-bg {
+            opacity: 0.65;
+            transform: scale(1.15) translateZ(-60px); /* Deep and slightly zoomed */
+        }
+
+        .card:nth-child(1) .card-bg { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1920&auto=format&fit=crop'); }
+        .card:nth-child(2) .card-bg { background-image: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop'); }
+        .card:nth-child(3) .card-bg { background-image: url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1920&auto=format&fit=crop'); }
+        .card:nth-child(4) .card-bg { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1920&auto=format&fit=crop'); }
+
+        /* Dynamic CRT screen for Live TV */
+        .crt-screen {
+            position: absolute;
+            inset: 0;
+            background: #0f172a;
+            overflow: hidden;
+            border-radius: 2.5rem;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .card.active .crt-screen {
+            opacity: 0.15;
+        }
+        .crt-static {
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            background-size: 100% 4px;
+            animation: crtScanline 6s infinite linear;
+        }
+        @keyframes crtScanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        /* Cinema ambient embers */
+        .cinema-particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+            z-index: 1;
+        }
+        .card.active .cinema-particles {
+            opacity: 0.35;
+        }
+
+        /* Live sound bars for Audio */
+        .audio-bars {
+            position: absolute;
+            bottom: 4rem;
+            right: 4rem;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 40px;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.5s;
+            pointer-events: none;
+        }
+        .card.active .audio-bars {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .audio-bar {
+            width: 4px;
+            background: #a855f7;
+            border-radius: 2px;
+            animation: bounceBar 1s infinite alternate ease-in-out;
+        }
+        .audio-bar:nth-child(1) { animation-delay: 0.1s; height: 40%; }
+        .audio-bar:nth-child(2) { animation-delay: 0.3s; height: 75%; }
+        .audio-bar:nth-child(3) { animation-delay: 0.5s; height: 95%; }
+        .audio-bar:nth-child(4) { animation-delay: 0.2s; height: 55%; }
+        .audio-bar:nth-child(5) { animation-delay: 0.4s; height: 85%; }
+        @keyframes bounceBar {
+            0% { height: 20%; }
+            100% { height: 100%; }
+        }
+
+        /* 3D opening page for Library */
+        .book-spine-glow {
+            position: absolute;
+            top: 10%;
+            left: 5%;
+            width: 10px;
+            height: 80%;
+            background: linear-gradient(to right, rgba(59,130,246,0.8), transparent);
+            filter: blur(5px);
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+        .card.active .book-spine-glow {
+            opacity: 1;
+        }
+        .card.active .card-active-lib-particles {
+            opacity: 0.35;
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 4rem;
+            transform-style: preserve-3d; /* Key to make nested 3D translateZ work perfectly! */
+            z-index: 5;
+        }
+
+        .card-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(2rem, 5vw, 5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateZ(50px) translateY(30px); /* 3D translateZ layer */
+            opacity: 0;
+            text-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .card.active .card-title {
+            transform: translateZ(50px) translateY(0); /* Floating high above the background */
+            opacity: 1;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.2s;
+        }
+
+        .card-desc {
+            font-size: clamp(1rem, 1.5vw, 1.5rem);
+            color: #ddd;
+            max-width: 70%;
+            transform: translateZ(30px) translateY(30px); /* 3D translateZ layer */
+            opacity: 0;
+            font-weight: 300;
+            text-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .card.active .card-desc {
+            transform: translateZ(30px) translateY(0); /* Floating in mid-ground */
+            opacity: 1;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.3s;
+        }
+
+        .explore-btn {
+            margin-top: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.1rem 2.8rem;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 100px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            width: fit-content;
+            transform: translateZ(70px) translateY(30px); /* 3D translateZ layer */
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s, color 0.3s, box-shadow 0.3s;
+            pointer-events: auto; /* Ensure clickable inside overlay */
+        }
+
+        .card.active .explore-btn {
+            transform: translateZ(70px) translateY(0); /* Floating high above the background */
+            opacity: 1;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.4s, background 0.3s, color 0.3s, box-shadow 0.3s;
+        }
+
+        .explore-btn:hover {
+            background: #fff;
+            color: #000;
+            transform: translateZ(95px) scale(1.05) !important; /* Move even closer on hover */
+            box-shadow: 0 15px 35px rgba(255,255,255,0.4);
+        }
+
+        .icon-wrap {
+            position: absolute;
+            top: 4rem;
+            right: 4rem;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(30px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            transform: translateZ(100px) rotateY(-30deg) scale(0.5); /* Deepest Z extrusion */
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .card.active .icon-wrap {
+            transform: translateZ(80px) rotateY(0deg) scale(1);
+            opacity: 1;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.5s;
+        }
+
+        /* Controls */
+        .controls {
+            position: relative;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .control-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(15px);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #fff;
+            color: #000;
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
+
+        .progress-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .progress-dot {
+            width: 45px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .progress-dot.active {
+            background: #fff;
+            width: 90px;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8);
+        }
+
+        /* Dynamic Background Overlay */
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, #000 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .noise {
+            position: fixed;
+            inset: 0;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.04"/%3E%3C/svg%3E');
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Mobile Responsiveness Rules */
+        @media (max-width: 768px) {
+            header {
+                padding: 1.5rem;
+            }
+            .logo-text {
+                font-size: 1.1rem;
+            }
+            .carousel {
+                height: 55vh;
+            }
+            .card {
+                flex: 0 0 85vw; /* Much wider card on mobile so content is readable */
+                height: 45vh;
+                border-radius: 1.5rem;
+            }
+            .card-overlay {
+                padding: 1.5rem;
+            }
+            .card-title {
+                font-size: 2.2rem;
+                margin-bottom: 0.75rem;
+            }
+            .card-desc {
+                font-size: 0.95rem;
+                max-width: 100%;
+                line-height: 1.4;
+            }
+            .explore-btn {
+                margin-top: 1.5rem;
+                padding: 0.8rem 2rem;
+                font-size: 0.95rem;
+            }
+            .icon-wrap {
+                top: 2rem;
+                right: 2rem;
+                width: 60px;
+                height: 60px;
+            }
+            .icon-wrap i {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+            }
+            .controls {
+                bottom: 2rem;
+                gap: 2rem;
+            }
+            .control-btn {
+                width: 50px;
+                height: 50px;
+            }
+            .control-btn i {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+            }
+            .progress-dot {
+                width: 25px;
+            }
+            .progress-dot.active {
+                width: 50px;
+            }
+            .audio-bars {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                height: 25px;
+            }
+            .crt-screen {
+                border-radius: 1.5rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Glows -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- Massive 3D Interactive Background -->
+    <div id="canvas-container"></div>
+    <div class="bg-overlay"></div>
+    <div class="noise"></div>
+
+    <!-- UI Container -->
+    <div class="ui-container">
+        
+        <!-- Interactive Hero Block (100vh viewport) -->
+        <section class="h-screen relative w-full flex flex-col justify-between overflow-hidden">
+            <header class="w-full">
+                <div class="flex items-center gap-4">
+                    <i data-lucide="infinity" class="w-10 h-10 text-white"></i>
+                    <span class="logo-text">STALKER PRO</span>
+                </div>
+                <div class="text-sm tracking-[0.3em] font-bold uppercase text-gray-400 hidden sm:block">
+                    Immersive Hub
+                </div>
+            </header>
+
+            <div class="carousel" id="carousel">
+                <div class="carousel-track" id="track">
+                    
+                    <!-- Card 1: Live TV -->
+                    <div class="card active" data-index="0" onclick="goToSlide(0)">
+                        <div class="card-bg"></div>
+                        
+                        <!-- Dynamic CRT screen active visual preview -->
+                        <div class="crt-screen">
+                            <div class="crt-static"></div>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                                <div class="w-16 h-12 bg-red-600/30 rounded border border-red-500/50 flex items-center justify-center animate-pulse">
+                                    <span class="text-[9px] font-bold text-red-400">CH 01</span>
+                                </div>
+                                <span class="text-[8px] tracking-widest font-black text-red-500 animate-pulse flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> FEED STATUS: OK
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="icon-wrap shadow-[0_0_50px_rgba(239,68,68,0.5)] text-red-500">
+                            <i data-lucide="tv" class="w-12 h-12"></i>
+                        </div>
+                        <div class="card-overlay">
+                            <h2 class="card-title">Live TV</h2>
+                            <p class="card-desc">Experience real-time global broadcasting with zero latency. Thousands of channels at your command.</p>
+                            <a href="/index.php" class="explore-btn">Enter Portal <i data-lucide="arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Cinema -->
+                    <div class="card" data-index="1" onclick="goToSlide(1)">
+                        <div class="card-bg"></div>
+                        
+                        <!-- Dynamic Cinema active visual preview -->
+                        <div class="cinema-particles">
+                            <div class="absolute w-2 h-2 rounded-full bg-amber-500/40 animate-ping" style="top: 25%; left: 30%;"></div>
+                            <div class="absolute w-1.5 h-1.5 rounded-full bg-amber-400/30 animate-pulse" style="top: 65%; left: 80%; animation-delay: 0.4s;"></div>
+                            <div class="absolute w-2.5 h-2.5 rounded-full bg-orange-500/20 animate-bounce" style="top: 45%; left: 70%; animation-delay: 0.8s;"></div>
+                        </div>
+
+                        <div class="icon-wrap shadow-[0_0_50px_rgba(245,158,11,0.5)] text-amber-500">
+                            <i data-lucide="film" class="w-12 h-12"></i>
+                        </div>
+                        <div class="card-overlay">
+                            <h2 class="card-title">Cinema</h2>
+                            <p class="card-desc">Immerse yourself in 4K HDR blockbusters and trending series. A massive private theater.</p>
+                            <a href="/consumet.html" class="explore-btn">Explore Cinema <i data-lucide="arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Audio -->
+                    <div class="card" data-index="2" onclick="goToSlide(2)">
+                        <div class="card-bg"></div>
+                        
+                        <!-- Dynamic Sound visualizer bars active preview -->
+                        <div class="audio-bars">
+                            <div class="audio-bar" style="height: 40%;"></div>
+                            <div class="audio-bar" style="height: 70%;"></div>
+                            <div class="audio-bar" style="height: 90%;"></div>
+                            <div class="audio-bar" style="height: 50%;"></div>
+                            <div class="audio-bar" style="height: 80%;"></div>
+                        </div>
+
+                        <div class="icon-wrap shadow-[0_0_50px_rgba(168,85,247,0.5)] text-purple-500">
+                            <i data-lucide="music" class="w-12 h-12"></i>
+                        </div>
+                        <div class="card-overlay">
+                            <h2 class="card-title">Audio</h2>
+                            <p class="card-desc">High-fidelity soundscapes. Stream millions of tracks and curated playlists effortlessly.</p>
+                            <a href="/music.html" class="explore-btn">Listen Now <i data-lucide="arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Library -->
+                    <div class="card" data-index="3" onclick="goToSlide(3)">
+                        <div class="card-bg"></div>
+                        
+                        <!-- Dynamic Library active visual preview -->
+                        <div class="book-spine-glow"></div>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-1000 card-active-lib-particles">
+                            <div class="absolute text-[8px] text-blue-400 font-mono animate-bounce" style="top: 25%; left: 40%;">A</div>
+                            <div class="absolute text-[10px] text-blue-300 font-serif animate-pulse" style="top: 50%; left: 35%; animation-delay: 0.3s;">Ω</div>
+                            <div class="absolute text-[9px] text-blue-500 font-sans animate-bounce" style="top: 35%; left: 60%; animation-delay: 0.6s;">&Phi;</div>
+                        </div>
+
+                        <div class="icon-wrap shadow-[0_0_50px_rgba(59,130,246,0.5)] text-blue-500">
+                            <i data-lucide="book-open" class="w-12 h-12"></i>
+                        </div>
+                        <div class="card-overlay">
+                            <h2 class="card-title">Library</h2>
+                            <p class="card-desc">Unlock an endless universe of knowledge. Read books, comics, and magazines without limits.</p>
+                            <a href="/books.html" class="explore-btn">Read Books <i data-lucide="arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Navigation Controls & Dots -->
+            <div class="flex flex-col items-center gap-4 py-8 relative">
+                <div class="controls">
+                    <div class="control-btn" id="prevBtn" onclick="move(-1)">
+                        <i data-lucide="chevron-left" class="w-8 h-8"></i>
+                    </div>
+                    <div class="progress-container" id="progressDots">
+                        <div class="progress-dot active" onclick="goToSlide(0)"></div>
+                        <div class="progress-dot" onclick="goToSlide(1)"></div>
+                        <div class="progress-dot" onclick="goToSlide(2)"></div>
+                        <div class="progress-dot" onclick="goToSlide(3)"></div>
+                    </div>
+                    <div class="control-btn" id="nextBtn" onclick="move(1)">
+                        <i data-lucide="chevron-right" class="w-8 h-8"></i>
+                    </div>
+                </div>
+
+                <!-- Bounce scroll indicator prompting users to see content below -->
+                <div class="mt-2 flex flex-col items-center gap-1.5 pointer-events-auto cursor-pointer animate-bounce" onclick="scrollToContent()">
+                    <span class="text-[9px] tracking-[0.4em] font-black uppercase text-zinc-500">SCROLL DOWN</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Beautiful Detailed Long-Form Showcase Sections -->
+        <section id="details-section" class="relative z-10 w-full bg-black/60 backdrop-blur-md border-t border-white/5 py-24 select-text pointer-events-auto">
+            <div class="max-w-6xl mx-auto px-6 space-y-32">
+                
+                <!-- Section 1: Intro -->
+                <div class="space-y-6 text-center max-w-3xl mx-auto">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
+                        SYSTEM ARCHITECTURE
+                    </span>
+                    <h2 class="text-4xl sm:text-6xl font-black tracking-tight leading-none bg-gradient-to-r from-white via-zinc-400 to-zinc-700 bg-clip-text text-transparent uppercase">THE STALKER PRO PLATFORM</h2>
+                    <p class="text-sm sm:text-lg text-zinc-400 font-light leading-relaxed">
+                        Stalker Pro represents a complete evolution of the digital streaming ecosystem. Combining hyper-isolated container routing, native portal integration engine, lossless audio pipelines, and a decentralized digital library in a single unified canvas.
+                    </p>
+                </div>
+
+                <!-- Bento Grid Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Bento 1: Live IPTV -->
+                    <div class="md:col-span-2 group relative overflow-hidden rounded-3xl bg-zinc-950/80 border border-white/5 p-8 flex flex-col h-[380px] hover:border-red-500/30 transition-all duration-500 shadow-2xl">
+                        <div class="absolute -right-16 -top-16 w-48 h-48 bg-red-600/10 rounded-full blur-3xl group-hover:scale-125 transition-all duration-700"></div>
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            <div class="w-12 h-12 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                                <i data-lucide="tv" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-black text-white uppercase tracking-tight">HIGH-PERFORMANCE IPTV RETRIEVAL</h3>
+                            <p class="text-sm text-zinc-400 leading-relaxed max-w-lg font-light">
+                                Direct handshakes with external stalker portals. It queries thousands of global live channels, networks.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-bold text-red-400 relative z-10 mt-auto">
+                            <span>HLS DATA STRIPPING</span>
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                            <span>ZERO BUFFERING</span>
+                        </div>
+                    </div>
+
+                    <!-- Bento 2: Cinema Engine -->
+                    <div class="group relative overflow-hidden rounded-3xl bg-zinc-950/80 border border-white/5 p-8 flex flex-col h-[380px] hover:border-amber-500/30 transition-all duration-500 shadow-2xl">
+                        <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl group-hover:scale-125 transition-all duration-700"></div>
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+                                <i data-lucide="film" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-black text-white uppercase tracking-tight">OTT CINEMA ENGINE</h3>
+                            <p class="text-xs text-zinc-400 leading-relaxed font-light">
+                                Full integration with open meta indexes. Dynamic subtitle rendering, cross-origin proxy layer, automated episode crawler, and ad-free sandboxed player environment.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bento 3: Audio Deck -->
+                    <div class="group relative overflow-hidden rounded-3xl bg-zinc-950/80 border border-white/5 p-8 flex flex-col justify-between h-[380px] hover:border-purple-500/30 transition-all duration-500 shadow-2xl">
+                        <div class="absolute -right-16 -bottom-16 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl group-hover:scale-125 transition-all duration-700"></div>
+                        <div class="space-y-4 relative z-10">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500">
+                                <i data-lucide="music" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-black text-white uppercase tracking-tight">LOSSLESS AUDIO</h3>
+                            <p class="text-xs text-zinc-400 leading-relaxed font-light">
+                                Deep integrations with Audius  servers. Direct playback, custom queue management, persistent favorite registers, and responsive visual frequency spectrums.
+                            </p>
+                        </div>
+                        <div class="text-[10px] font-mono text-zinc-500 tracking-wider relative z-10">
+                            FLAC AUDIO &middot; METADATA INJECTOR
+                        </div>
+                    </div>
+
+                    <!-- Bento 4: Kindle Codex -->
+                    <div class="md:col-span-2 group relative overflow-hidden rounded-3xl bg-zinc-950/80 border border-white/5 p-8 flex flex-col justify-between h-[380px] hover:border-blue-500/30 transition-all duration-500 shadow-2xl">
+                        <div class="absolute -left-16 -top-16 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl group-hover:scale-125 transition-all duration-700"></div>
+                        <div class="space-y-4 relative z-10">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                                <i data-lucide="book-open" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-black text-white uppercase tracking-tight">KINDLE READER & MASTERPIECES</h3>
+                            <p class="text-sm text-zinc-400 leading-relaxed max-w-lg font-light">
+                                Read thousands of public domain novels from the Project database. Features custom sepia reading modes, dyslexia-friendly typography scaling, instant word definition searches, and persistent bookmarks.
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-bold text-blue-400 relative z-10">
+                            <span>70,000+ NOVELS</span>
+                            <div class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                            <span>OFFLINE STATE PERSISTENCE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deep Dive Tech Specs Table Section -->
+                <div class="space-y-12">
+                    <div class="text-center md:text-left space-y-4">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            SPECIFICATIONS
+                        </span>
+                        <h2 class="text-3xl sm:text-5xl font-black uppercase tracking-tight">Stalker Pro Tech Spec Grid</h2>
+                    </div>
+                    
+                    <div class="overflow-x-auto rounded-3xl border border-white/5 bg-zinc-950/40">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="border-b border-white/5 bg-white/5 text-zinc-300 uppercase tracking-widest text-[10px] font-bold">
+                                    <th class="p-4 sm:p-6">Ecosystem Module</th>
+                                    <th class="p-4 sm:p-6">Technology Stack</th>
+                                    <th class="p-4 sm:p-6">Performance Metric</th>
+                                    <th class="p-4 sm:p-6 font-mono">Backend Proxy Service</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 text-zinc-400 font-light">
+                                <tr class="hover:bg-white/[0.01] transition-colors">
+                                    <td class="p-4 sm:p-6 font-bold text-white uppercase tracking-wide">Live TV (Stalker)</td>
+                                    <td class="p-4 sm:p-6">Node.js Express + TS, crypt-decryption core</td>
+                                    <td class="p-4 sm:p-6 text-emerald-400 font-semibold">&lt; 150ms handshake loop</td>
+                                    <td class="p-4 sm:p-6 font-mono">/live.php dynamic stream chunking</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.01] transition-colors">
+                                    <td class="p-4 sm:p-6 font-bold text-white uppercase tracking-wide">Cinema Streaming</td>
+                                    <td class="p-4 sm:p-6"> ArtPlayer, Hls.js segment buffer</td>
+                                    <td class="p-4 sm:p-6 text-emerald-400 font-semibold">1080p / 4K dynamic auto-select</td>
+                                    <td class="p-4 sm:p-6 font-mono">new gen security</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.01] transition-colors">
+                                    <td class="p-4 sm:p-6 font-bold text-white uppercase tracking-wide">Lossless Audio</td>
+                                    <td class="p-4 sm:p-6">Audius  JSON payload pipelines</td>
+                                    <td class="p-4 sm:p-6 text-emerald-400 font-semibold">320kbps MP3 / FLAC stream source</td>
+                                    <td class="p-4 sm:p-6 font-mono">Dynamic media endpoint routing</td>
+                                </tr>
+                                <tr class="hover:bg-white/[0.01] transition-colors">
+                                    <td class="p-4 sm:p-6 font-bold text-white uppercase tracking-wide">Kindle E-Reader</td>
+                                    <td class="p-4 sm:p-6">Project  API indexers, local DB storage</td>
+                                    <td class="p-4 sm:p-6 text-emerald-400 font-semibold">Instant text segment pagination</td>
+                                    <td class="p-4 sm:p-6 font-mono">Structured HTML clean parser</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Dynamic disclaimer block -->
+                <div class="relative overflow-hidden rounded-3xl bg-zinc-950/40 border border-red-500/10 p-8 sm:p-10 flex flex-col sm:flex-row items-start gap-6 hover:border-red-500/25 transition-all duration-500 group">
+                    <div class="absolute -right-24 -bottom-24 w-64 h-64 bg-red-600/5 rounded-full blur-3xl pointer-events-none group-hover:scale-125 transition-all duration-700"></div>
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center justify-center shrink-0">
+                        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                    </div>
+                    <div class="space-y-3">
+                        <h4 class="text-sm font-black uppercase tracking-widest text-zinc-200">Legal Disclaimer & Content Policy</h4>
+                        <p class="text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+                            Stalker Pro is an advanced visual client application. <span class="text-red-400/90 font-semibold">We do not store, host, transmit, or cache any video feeds, files, music, or streams on our servers.</span> All content is fetched and streamed dynamically from public third-party sources or user-configured external portals. Stalker Pro does not endorse or promote the unauthorized streaming of copyrighted material.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sleek Footer / Status indicators -->
+                <div class="border-t border-white/5 pt-12 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-zinc-500 font-medium tracking-widest">
+                    <div class="flex items-center gap-3 uppercase">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>All systems operational</span>
+                    </div>
+                    <div class="uppercase text-center sm:text-right font-light text-zinc-600">
+                        &copy; 2026 Stalker Pro &middot; External Source Indexer &middot; Client Deck
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Carousel Logic ---
+        const track = document.getElementById('track');
+        const cards = document.querySelectorAll('.card');
+        const dots = document.querySelectorAll('.progress-dot');
+        let currentIndex = 0;
+        const totalCards = cards.length;
+
+        function updateCarousel() {
+            cards.forEach((card, index) => {
+                if (index === currentIndex) {
+                    card.classList.add('active');
+                    card.style.transform = `scale(1.05) translateZ(50px) rotateY(0deg)`;
+                } else {
+                    card.classList.remove('active');
+                    const diff = index - currentIndex;
+                    if(diff > 0) {
+                        card.style.transform = `scale(0.85) translateZ(-150px) rotateY(-25deg)`;
+                    } else {
+                        card.style.transform = `scale(0.85) translateZ(-150px) rotateY(25deg)`;
+                    }
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            // Card width is 55vw + gap 4vw = 59vw per step.
+            const isMobile = window.innerWidth <= 768;
+            const cardWidth = window.innerWidth * (isMobile ? 0.85 : 0.55);
+            const gap = window.innerWidth * 0.04;
+            const step = cardWidth + gap;
+            
+            const paddingLeft = window.innerWidth * 0.5;
+            const activeCardCenter = paddingLeft + (currentIndex * step) + (cardWidth / 2);
+            const shift = window.innerWidth * 0.5 - activeCardCenter;
+
+            track.style.transform = `translateX(${shift}px)`;
+            
+            // Background Glows
+            const colors = [
+                ['#ff0055', '#4a00e0'], // TV
+                ['#f59e0b', '#b45309'], // Cinema
+                ['#a855f7', '#7e22ce'], // Music
+                ['#3b82f6', '#1d4ed8']  // Books
+            ];
+            
+            const glow1 = document.querySelector('.glow-1');
+            const glow2 = document.querySelector('.glow-2');
+            glow1.style.background = colors[currentIndex][0];
+            glow2.style.background = colors[currentIndex][1];
+
+            // Trigger GSAP for text pop
+            if (window.gsap) {
+                gsap.fromTo(cards[currentIndex].querySelector('.card-title'), 
+                    { y: 50, opacity: 0 }, 
+                    { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.7)", delay: 0.1 }
+                );
+            }
+        }
+
+        function move(dir) {
+            currentIndex += dir;
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= totalCards) currentIndex = totalCards - 1;
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateCarousel();
+        }
+
+        updateCarousel();
+
+        // Mouse Wheel Scroll (Only capture carousel switch at the very top of the page)
+        window.addEventListener('wheel', (e) => {
+            if (window.scrollY === 0) {
+                if (e.deltaY > 50) {
+                    if (currentIndex < totalCards - 1) {
+                        move(1);
+                        e.preventDefault();
+                    }
+                } else if (e.deltaY < -50) {
+                    if (currentIndex > 0) {
+                        move(-1);
+                        e.preventDefault();
+                    }
+                }
+            }
+        }, { passive: false });
+
+        // Touch Drag Swipe & 3D Tilt Support for Mobile Devices
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        const carouselElement = document.getElementById('carousel');
+        carouselElement.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].clientX;
+            touchStartY = e.changedTouches[0].clientY;
+            targetRotX = 0;
+            targetRotY = 0;
+        }, { passive: true });
+        
+        carouselElement.addEventListener('touchmove', (e) => {
+            const currentX = e.changedTouches[0].clientX;
+            const currentY = e.changedTouches[0].clientY;
+            const diffX = currentX - touchStartX;
+            const diffY = currentY - touchStartY;
+            
+            // Subtly rotate the active card based on touch drag coordinates
+            targetRotY = Math.max(-15, Math.min(15, (diffX / window.innerWidth) * 45));
+            targetRotX = Math.max(-15, Math.min(15, -(diffY / window.innerHeight) * 45));
+            
+            // Map the touch positions to Three.js mouse uniform
+            const normX = (currentX / window.innerWidth) * 2 - 1;
+            const normY = -(currentY / window.innerHeight) * 2 + 1;
+            material.uniforms.mouse.value.set(normX * 2, -normY * 2);
+        }, { passive: true });
+        
+        carouselElement.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            touchEndY = e.changedTouches[0].clientY;
+            targetRotX = 0;
+            targetRotY = 0;
+            handleSwipe();
+        }, { passive: true });
+        
+        function handleSwipe() {
+            const swipeThreshold = 50; // pixels minimum distance
+            if (touchEndX < touchStartX - swipeThreshold) {
+                // Swipe Left -> Next Card
+                move(1);
+            } else if (touchEndX > touchStartX + swipeThreshold) {
+                // Swipe Right -> Prev Card
+                move(-1);
+            }
+        }
+
+        // Scroll Down function
+        function scrollToContent() {
+            const detailsSection = document.getElementById('details-section');
+            detailsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Three.js Massive Interactive Background ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 120;
+        camera.position.y = 20;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const count = 20000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 3);
+        const scales = new Float32Array(count);
+
+        for (let i = 0; i < count; i++) {
+            const x = (Math.random() - 0.5) * 400;
+            const z = (Math.random() - 0.5) * 400;
+            const y = (Math.random() - 0.5) * 60;
+            positions[i * 3 + 0] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+            scales[i] = Math.random() * 2 + 0.5;
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                color: { value: new THREE.Color(0xffffff) },
+                mouse: { value: new THREE.Vector2(0, 0) }
+            },
+            vertexShader: `
+                uniform float time;
+                uniform vec2 mouse;
+                attribute float aScale;
+                varying vec3 vPosition;
+                
+                void main() {
+                    vPosition = position;
+                    vec3 pos = position;
+                    
+                    // Wave motion
+                    pos.y += sin(pos.x * 0.015 + time) * 15.0;
+                    pos.y += cos(pos.z * 0.015 + time) * 15.0;
+                    
+                    // Interactive repulse
+                    float dist = distance(vec2(pos.x, pos.z), mouse * 150.0);
+                    if(dist < 80.0) {
+                        float force = (80.0 - dist) / 80.0;
+                        pos.y += force * 30.0;
+                    }
+
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = aScale * (200.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform vec3 color;
+                varying vec3 vPosition;
+                
+                void main() {
+                    float dist = distance(gl_PointCoord, vec2(0.5));
+                    if (dist > 0.5) discard;
+                    
+                    float alpha = smoothstep(-30.0, 40.0, vPosition.y) * 0.6;
+                    float strength = 0.05 / dist - 0.1;
+                    
+                    gl_FragColor = vec4(color, alpha * strength);
+                }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        const mouse = new THREE.Vector2();
+        let targetX = 0;
+        let targetY = 0;
+        let currentRotX = 0;
+        let currentRotY = 0;
+        let targetRotX = 0;
+        let targetRotY = 0;
+
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            targetX = mouse.x;
+            targetY = mouse.y;
+
+            material.uniforms.mouse.value.set(targetX * 2, -targetY * 2);
+            
+            // Map mouse coordinates to 3D rotation angles (up to 15 degrees tilt)
+            targetRotX = mouse.y * 15;
+            targetRotY = mouse.x * 15;
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            targetRotX = 0;
+            targetRotY = 0;
+        });
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const elapsedTime = clock.getElapsedTime();
+
+            material.uniforms.time.value = elapsedTime * 0.8;
+            particles.rotation.y = elapsedTime * 0.03;
+
+            camera.position.x += (mouse.x * 30 - camera.position.x) * 0.05;
+            camera.position.y += ((mouse.y * 30 + 30) - camera.position.y) * 0.05;
+            camera.lookAt(0, 0, 0);
+
+            // Interpolate active card rotation for incredibly buttery smooth 3D tilt tracking
+            const activeCard = document.querySelector('.card.active');
+            if (activeCard) {
+                currentRotX += (targetRotX - currentRotX) * 0.1;
+                currentRotY += (targetRotY - currentRotY) * 0.1;
+                
+                // On active card, translateZ is 80px so it hovers dramatically, and tilts on currentRotX/Y
+                activeCard.style.transform = `scale(1.05) translateZ(80px) rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateCarousel();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 10;
+            const y = (e.clientY / window.innerHeight - 0.5) * 10;
+            const carousel = document.querySelector('.carousel');
+            if (carousel) {
+                carousel.style.perspectiveOrigin = `${50 + x}% ${50 + y}%`;
+            }
+        });
+    </script>
+<script src="/watchdog.js" id="maintenance-watchdog"></script>
+</body>
+</html>

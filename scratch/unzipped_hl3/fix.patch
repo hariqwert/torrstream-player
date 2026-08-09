@@ -1,0 +1,38 @@
+--- consumet.html
++++ consumet.html
+@@ -1262,21 +1262,22 @@
+             // Load all sections
+             await refreshAllData();
+ 
+             setInterval(() => { refreshAllData(true); }, 15 * 60 * 1000);
+-
+-        }
+-
+-        async function refreshAllData(silent = false) {
+-            await Promise.all([
+-                loadHomeSpotlight(),
+-                loadTrendingMovies(),
+-                loadPopularSeries(),
+-                loadTopRatedMasterpieces(),
+-                loadAsianDramaAndAnime(),
+-                loadSportsChannels(),
+-                loadAnimeCatalog()
+-            ]);
+             document.getElementById('mainLoader').classList.add('hidden');
+             switchTab('home');
+             initAutoTrailerDetection();
+             lucide.createIcons();
+         }
++
++        async function refreshAllData(silent = false) {
++            await Promise.all([
++                loadHomeSpotlight(),
++                loadTrendingMovies(),
++                loadPopularSeries(),
++                loadTopRatedMasterpieces(),
++                loadAsianDramaAndAnime(),
++                loadSportsChannels(),
++                loadAnimeCatalog()
++            ]);
++            if (silent) lucide.createIcons();
++        }
