@@ -9,7 +9,7 @@ let currentTorrentData = null;
 let statsPollInterval = null;
 let serverPollInterval = null;
 let metadataPollTimer = null;
-let waitingTimer = null;
+let isPlaybackInitiated = false;
 
 // DOM Elements
 const serverStatusPill = document.getElementById('serverStatusPill');
@@ -227,36 +227,29 @@ function setupEventListeners() {
     });
   });
 
-  // Video Events - Smooth Glitch-Free Overlay Logic
+  // Video Events - Smooth Non-Blinking Overlay Logic
   if (videoPlayer) {
     videoPlayer.addEventListener('playing', () => {
-      if (waitingTimer) clearTimeout(waitingTimer);
+      isPlaybackInitiated = true;
       hideLoading();
       if (playerPlaceholder) playerPlaceholder.classList.add('hidden');
     });
 
     videoPlayer.addEventListener('timeupdate', () => {
-      if (videoPlayer.currentTime > 0.1 && !videoPlayer.paused) {
+      if (videoPlayer.currentTime > 0.1) {
+        isPlaybackInitiated = true;
         hideLoading();
       }
     });
 
     videoPlayer.addEventListener('canplay', () => {
+      isPlaybackInitiated = true;
       hideLoading();
-    });
-
-    videoPlayer.addEventListener('waiting', () => {
-      if (waitingTimer) clearTimeout(waitingTimer);
-      waitingTimer = setTimeout(() => {
-        if (videoPlayer.paused || videoPlayer.seeking) {
-          showLoading('Buffering Stream...', 'Fetching data from TorrServer cache...');
-        }
-      }, 500);
     });
 
     videoPlayer.addEventListener('error', (e) => {
       console.error('Video player error:', videoPlayer.error);
-      if (waitingTimer) clearTimeout(waitingTimer);
+      isPlaybackInitiated = false;
       hideLoading();
     });
   }
@@ -428,6 +421,7 @@ function setServerStatus(isOnline, text) {
 
 // Main Function: Play Magnet Link or Stream URL
 async function playMagnetOrUrl(input) {
+  isPlaybackInitiated = false;
   if (metadataPollTimer) clearTimeout(metadataPollTimer);
   if (statsPollInterval) clearInterval(statsPollInterval);
 
@@ -472,6 +466,7 @@ async function playMagnetOrUrl(input) {
 
 // Poll TorrServer until torrent metadata is loaded
 async function pollTorrentMetadata(hash, attempts = 0) {
+  if (isPlaybackInitiated) return;
   const maxAttempts = 40;
 
   try {
@@ -563,7 +558,8 @@ function playTorrentFile(hash, fileId, filePath, title, fileLength) {
     hideLoading();
     alert(`⚠️ AVI Format Detected:\n\nBrowsers do not support .avi video playback natively.\n\nClick "Copy Stream URL" and paste into VLC Media Player (Ctrl+N) to play instantly!`);
   } else {
-    showLoading('Instant Stream Starting...', 'Prioritizing video header...');
+    isPlaybackInitiated = true;
+    hideLoading();
     if (videoPlayer) {
       videoPlayer.src = streamUrl;
       videoPlayer.play().catch(e => {
@@ -581,6 +577,8 @@ function startDirectVideo(url, title) {
   if (currentSize) currentSize.textContent = 'Size: Dynamic';
   
   if (playerPlaceholder) playerPlaceholder.classList.add('hidden');
+  isPlaybackInitiated = true;
+  hideLoading();
   if (videoPlayer) {
     videoPlayer.src = url;
     videoPlayer.play();
@@ -718,10 +716,10 @@ async function loadActiveTorrentsList() {
   }
 }
 
-// Loading Helpers - Smooth Glitch-Free Overlay
+// Loading Helpers - Absolute Protection Against Blinking Overlays
 function showLoading(title, subtitle) {
-  // Do not overlay loading screen if video is actively playing!
-  if (videoPlayer && !videoPlayer.paused && videoPlayer.currentTime > 0.5) {
+  // If playback has been initiated or video has played past start, NEVER show loading overlay!
+  if (isPlaybackInitiated || (videoPlayer && videoPlayer.currentTime > 0.1)) {
     return;
   }
   if (loadingTitle) loadingTitle.textContent = title;
