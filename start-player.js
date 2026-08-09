@@ -151,7 +151,9 @@ async function handleSearchV1(params) {
   // 1. TMDB ID Direct Resolution
   if (tmdbId && !imdbId) {
     const endpoint = mediaType === 'series' ? 'tv' : 'movie';
-    const extUrl = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}${endpoint === 'tv' ? '/external_ids' : ''}?api_key=${TMDB_API_KEY}`;
+    const extUrl = endpoint === 'tv'
+      ? `https://api.themoviedb.org/3/tv/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`
+      : `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`;
     const extData = await fetchJsonUrl(extUrl);
     if (extData) {
       imdbId = extData.imdb_id || (extData.external_ids && extData.external_ids.imdb_id);
@@ -178,7 +180,9 @@ async function handleSearchV1(params) {
       else if (item.media_type === 'movie') mediaType = 'movie';
 
       const endpoint = mediaType === 'series' ? 'tv' : 'movie';
-      const extUrl = `https://api.themoviedb.org/3/${endpoint}/${item.id}${endpoint === 'tv' ? '/external_ids' : ''}?api_key=${TMDB_API_KEY}`;
+      const extUrl = endpoint === 'tv'
+        ? `https://api.themoviedb.org/3/tv/${item.id}/external_ids?api_key=${TMDB_API_KEY}`
+        : `https://api.themoviedb.org/3/movie/${item.id}?api_key=${TMDB_API_KEY}`;
       const extData = await fetchJsonUrl(extUrl);
       if (extData) {
         imdbId = extData.imdb_id || (extData.external_ids && extData.external_ids.imdb_id);
