@@ -23,7 +23,7 @@ const DEFAULT_TRACKERS = [
   'udp://opentracker.i2p.rocks:6969/announce'
 ];
 
-// Fallback Open Movies Catalog
+// Fallback Open Movies Catalog (MP4 / MKV only)
 const MOVIE_CATALOG = [
   {
     title: "Sintel (4K Open Movie)",
@@ -123,7 +123,7 @@ function startAutoCacheRemoval() {
   }, 10 * 60 * 1000);
 }
 
-// Multi-Provider Search API V1 (TMDB Multi-Search Auto Detection & Torrentio Mapping)
+// Multi-Provider Search API V1 (TMDB Multi-Search Auto Detection & Browser-Compatible Stream Filter)
 async function handleSearchV1(params) {
   let query = (params.query || params.q || '').trim();
   let tmdbId = params.tmdb || params.tmdb_id || null;
@@ -190,7 +190,7 @@ async function handleSearchV1(params) {
     }
   }
 
-  // 3. Query Torrentio Provider for Streams (Movies or TV Series Episodes)
+  // 3. Query Torrentio Provider for Streams & Filter out unplayable legacy AVI files
   let streams = [];
   if (imdbId) {
     const torrentioType = mediaType === 'series' ? 'series' : 'movie';
@@ -200,33 +200,39 @@ async function handleSearchV1(params) {
     const torData = await fetchJsonUrl(torUrl);
 
     if (torData && torData.streams && torData.streams.length > 0) {
-      streams = torData.streams.map(s => {
-        const infoHash = s.infoHash;
-        let magnet = s.magnet;
-        if (!magnet && infoHash) {
-          magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}`;
-          DEFAULT_TRACKERS.forEach(tr => {
-            magnet += `&tr=${encodeURIComponent(tr)}`;
-          });
-        }
+      streams = torData.streams
+        .filter(s => {
+          const raw = (s.title || s.name || '').toLowerCase();
+          // Filter out unplayable legacy .avi files from search results
+          return !raw.includes('.avi') && !raw.includes(' xvid ') && !raw.includes(' divx ');
+        })
+        .map(s => {
+          const infoHash = s.infoHash;
+          let magnet = s.magnet;
+          if (!magnet && infoHash) {
+            magnet = `magnet:?xt=urn:btih:${infoHash}&dn=${encodeURIComponent(title)}`;
+            DEFAULT_TRACKERS.forEach(tr => {
+              magnet += `&tr=${encodeURIComponent(tr)}`;
+            });
+          }
 
-        const rawTitle = s.title || s.name || title;
-        const seedMatch = rawTitle.match(/👤\s*(\d+)/);
-        const sizeMatch = rawTitle.match(/💾\s*([\d\.]+\s*[GMK]B)/i);
-        const qualityMatch = rawTitle.match(/(2160p|4K|1080p|720p|HDR|Remux|CAM|TS)/i);
+          const rawTitle = s.title || s.name || title;
+          const seedMatch = rawTitle.match(/👤\s*(\d+)/);
+          const sizeMatch = rawTitle.match(/💾\s*([\d\.]+\s*[GMK]B)/i);
+          const qualityMatch = rawTitle.match(/(2160p|4K|1080p|720p|HDR|Remux|CAM|TS)/i);
 
-        return {
-          name: s.name || 'Torrent Stream',
-          title: `${title} ${mediaType === 'series' ? `S${season}E${episode}` : ''} (${qualityMatch ? qualityMatch[1] : '1080p'})`,
-          raw_title: rawTitle,
-          quality: qualityMatch ? qualityMatch[1] : '1080p HD',
-          size: sizeMatch ? sizeMatch[1] : '1.5 GB',
-          seeders: seedMatch ? parseInt(seedMatch[1]) : 45,
-          infoHash: infoHash || '',
-          magnet: magnet || '',
-          play_url: `http://localhost:${PORT}/?magnet=${encodeURIComponent(magnet || '')}`
-        };
-      }).filter(s => s.magnet);
+          return {
+            name: s.name || 'Torrent Stream',
+            title: `${title} ${mediaType === 'series' ? `S${season}E${episode}` : ''} (${qualityMatch ? qualityMatch[1] : '1080p'})`,
+            raw_title: rawTitle,
+            quality: qualityMatch ? qualityMatch[1] : '1080p HD',
+            size: sizeMatch ? sizeMatch[1] : '1.5 GB',
+            seeders: seedMatch ? parseInt(seedMatch[1]) : 45,
+            infoHash: infoHash || '',
+            magnet: magnet || '',
+            play_url: `http://localhost:${PORT}/?magnet=${encodeURIComponent(magnet || '')}`
+          };
+        }).filter(s => s.magnet);
     }
   }
 
@@ -413,7 +419,7 @@ function startWebPlayerServer() {
     console.log(`✨ TorrStream Web Player is live at: ${url}`);
     console.log(`🧹 Auto Cache Removal: Active (Purges idle torrent RAM every 10m)`);
     console.log(`🔍 Standalone Search API V1: ${url}/api/v1/search?q=...`);
-    console.log(`📺 Movie/Series TMDB Multi-Search API: ${url}/api/v1/search?q=Breaking+Bad&s=1&e=1`);
+    console.log(`📺 Movie/Series Browser-Compatible Filter: Active (Legacy .avi removed)`);
     console.log(`🎬 Direct Play API Link: ${url}/api/play?q=Movie+Title`);
     console.log(`====================================================\n`);
 

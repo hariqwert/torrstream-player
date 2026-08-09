@@ -454,7 +454,11 @@ async function pollTorrentMetadata(hash, attempts = 0) {
       const videoFiles = fileStats.filter(f => isVideoFile(f.path));
       let targetFile = null;
 
-      if (videoFiles.length > 0) {
+      // Prefer MKV/MP4 files over legacy AVI files for native browser playback
+      const mkvMp4Files = videoFiles.filter(f => !f.path.toLowerCase().endsWith('.avi'));
+      if (mkvMp4Files.length > 0) {
+        targetFile = mkvMp4Files.reduce((prev, current) => (prev.length > current.length) ? prev : current);
+      } else if (videoFiles.length > 0) {
         targetFile = videoFiles.reduce((prev, current) => (prev.length > current.length) ? prev : current);
       } else {
         targetFile = fileStats.reduce((prev, current) => (prev.length > current.length) ? prev : current);
@@ -498,21 +502,27 @@ function playTorrentFile(hash, fileId, filePath, title, fileLength) {
   activeTorrentHash = hash;
   activeFileIndex = fileId;
 
+  const isAvi = filePath.toLowerCase().endsWith('.avi');
   const streamUrl = `${TORRSERVER_BASE}/stream?link=${encodeURIComponent(hash)}&index=${fileId}&play=1`;
 
   currentTitle.textContent = getFileName(title || filePath || 'Torrent Video Stream');
-  currentHash.textContent = `Hash: ${hash.substring(0, 10)}...`;
+  currentHash.textContent = isAvi ? '⚠️ Legacy AVI Format (Use Copy Stream URL for VLC)' : `Hash: ${hash.substring(0, 10)}...`;
   currentSize.textContent = fileLength ? `Size: ${formatBytes(fileLength)}` : 'Size: Dynamic';
 
   highlightActiveFile(fileId);
 
   playerPlaceholder.classList.add('hidden');
-  showLoading('Instant Stream Starting...', 'Prioritizing video header...');
-  
-  videoPlayer.src = streamUrl;
-  videoPlayer.play().catch(e => {
-    console.log('Autoplay deferred, waiting for user click:', e);
-  });
+
+  if (isAvi) {
+    hideLoading();
+    alert(`⚠️ AVI Format Detected:\n\nBrowsers do not support .avi video playback natively.\n\nClick "Copy Stream URL" and paste into VLC Media Player (Ctrl+N) to play instantly!`);
+  } else {
+    showLoading('Instant Stream Starting...', 'Prioritizing video header...');
+    videoPlayer.src = streamUrl;
+    videoPlayer.play().catch(e => {
+      console.log('Autoplay deferred, waiting for user click:', e);
+    });
+  }
 
   startStatsPolling(hash);
 }
@@ -579,6 +589,8 @@ function renderFileList(fileStats) {
   filesListContainer.innerHTML = '';
   fileStats.forEach(file => {
     const isVideo = isVideoFile(file.path);
+    const isAvi = file.path.toLowerCase().endsWith('.avi');
+
     const item = document.createElement('div');
     item.className = `file-item ${file.id === activeFileIndex ? 'active' : ''}`;
     item.dataset.fileId = file.id;
@@ -586,7 +598,7 @@ function renderFileList(fileStats) {
     const fileNameSpan = document.createElement('span');
     fileNameSpan.className = 'file-name';
     fileNameSpan.title = file.path;
-    fileNameSpan.textContent = (isVideo ? '🎬 ' : '📄 ') + getFileName(file.path);
+    fileNameSpan.textContent = (isAvi ? '⚠️ ' : (isVideo ? '🎬 ' : '📄 ')) + getFileName(file.path);
 
     const fileSizeSpan = document.createElement('span');
     fileSizeSpan.className = 'file-size';
