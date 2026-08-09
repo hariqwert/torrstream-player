@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Binaries & Large Executables
+bin/*.exe
+bin/TorrServer.exe
+
+# Database & Runtime State
+*.db
+*.json.bak
+settings.json
+config.db
+
+# Temporary Scripts
+push-repo.js
+setup-git-token.js
+
+# Logs & Temporary files
+*.log
+.DS_Store
+Thumbs.db
+
+# Nested repositories
+torrserver/

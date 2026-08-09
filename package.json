@@ -1,0 +1,18 @@
+{
+  "name": "torrstream-player",
+  "version": "1.0.0",
+  "description": "Instant Torrent Magnet Video Player integrated with TorrServer",
+  "main": "start-player.js",
+  "scripts": {
+    "start": "node start-player.js",
+    "download-bin": "powershell -ExecutionPolicy Bypass -File download-torrserver.ps1"
+  },
+  "keywords": [
+    "torrserver",
+    "torrent-player",
+    "magnet-player",
+    "video-stream"
+  ],
+  "author": "",
+  "license": "MIT"
+}
