@@ -97,7 +97,6 @@ function startAutoCacheRemoval() {
             const list = JSON.parse(body);
             if (Array.isArray(list) && list.length > 3) {
               console.log(`[Auto Cache Removal] Found ${list.length} active torrents in memory. Purging old idle torrent cache...`);
-              // Drop oldest idle torrents keeping only the latest active ones
               const toRemove = list.slice(0, list.length - 2);
               toRemove.forEach(t => {
                 const dropReq = http.request({
@@ -121,10 +120,10 @@ function startAutoCacheRemoval() {
     } catch (err) {
       console.warn('[Auto Cache Removal Warning]', err.message);
     }
-  }, 10 * 60 * 1000); // Runs every 10 minutes
+  }, 10 * 60 * 1000);
 }
 
-// Dedicated REST Search API Engine V1 (TMDB, IMDb, TV Series & Episode Resolution)
+// Multi-Provider Search API V1 (TMDB Multi-Search Auto Detection & Torrentio Mapping)
 async function handleSearchV1(params) {
   let query = (params.query || params.q || '').trim();
   let tmdbId = params.tmdb || params.tmdb_id || null;
@@ -135,7 +134,7 @@ async function handleSearchV1(params) {
   let season = parseInt(params.season || params.s || '1');
   let episode = parseInt(params.episode || params.e || '1');
 
-  // Detect S01E01 pattern in query text (e.g. "Breaking Bad S02E05")
+  // Detect S01E01 pattern in query text
   if (query) {
     const seMatch = query.match(/s(\d+)e(\d+)/i) || query.match(/(\d+)x(\d+)/i);
     if (seMatch) {
@@ -149,7 +148,7 @@ async function handleSearchV1(params) {
   let title = query || 'Media Stream';
   let year = '2024';
 
-  // 1. TMDB ID Resolution
+  // 1. TMDB ID Direct Resolution
   if (tmdbId && !imdbId) {
     const endpoint = mediaType === 'series' ? 'tv' : 'movie';
     const extUrl = `https://api.themoviedb.org/3/${endpoint}/${tmdbId}${endpoint === 'tv' ? '/external_ids' : ''}?api_key=${TMDB_API_KEY}`;
@@ -163,10 +162,9 @@ async function handleSearchV1(params) {
     }
   }
 
-  // 2. Text Search Resolution via TMDB
+  // 2. Text Search Resolution via TMDB Multi-Search Auto-Detection
   if (!imdbId && !tmdbId && query) {
-    const endpoint = mediaType === 'series' ? 'tv' : 'movie';
-    const searchUrl = `https://api.themoviedb.org/3/search/${endpoint}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
+    const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
     const searchData = await fetchJsonUrl(searchUrl);
 
     if (searchData && searchData.results && searchData.results.length > 0) {
@@ -174,10 +172,17 @@ async function handleSearchV1(params) {
       tmdbId = item.id;
       title = item.title || item.name || query;
       year = (item.release_date || item.first_air_date || '2024').substring(0, 4);
+      
+      // Auto-detect media type (movie vs tv series)
+      if (item.media_type === 'tv') mediaType = 'series';
+      else if (item.media_type === 'movie') mediaType = 'movie';
 
-      const extUrl = `https://api.themoviedb.org/3/${endpoint}/${item.id}/external_ids?api_key=${TMDB_API_KEY}`;
+      const endpoint = mediaType === 'series' ? 'tv' : 'movie';
+      const extUrl = `https://api.themoviedb.org/3/${endpoint}/${item.id}${endpoint === 'tv' ? '/external_ids' : ''}?api_key=${TMDB_API_KEY}`;
       const extData = await fetchJsonUrl(extUrl);
-      if (extData) imdbId = extData.imdb_id;
+      if (extData) {
+        imdbId = extData.imdb_id || (extData.external_ids && extData.external_ids.imdb_id);
+      }
     }
   }
 
@@ -187,7 +192,7 @@ async function handleSearchV1(params) {
     const torrentioType = mediaType === 'series' ? 'series' : 'movie';
     const streamPath = torrentioType === 'series' ? `${imdbId}:${season}:${episode}` : imdbId;
     const torUrl = `https://torrentio.strem.fun/stream/${torrentioType}/${streamPath}.json`;
-    console.log(`[Search V1] Querying Torrentio: ${torUrl}`);
+    console.log(`[Search V1] Querying Torrentio for ${title} (${torrentioType}): ${torUrl}`);
     const torData = await fetchJsonUrl(torUrl);
 
     if (torData && torData.streams && torData.streams.length > 0) {
@@ -221,7 +226,7 @@ async function handleSearchV1(params) {
     }
   }
 
-  // 4. Fallback to Catalog if no streams found
+  // 4. Fallback to Open Movie Catalog if no streams resolved
   if (streams.length === 0) {
     const queryLower = query.toLowerCase();
     const matched = MOVIE_CATALOG.filter(m => m.title.toLowerCase().includes(queryLower));
@@ -404,7 +409,7 @@ function startWebPlayerServer() {
     console.log(`✨ TorrStream Web Player is live at: ${url}`);
     console.log(`🧹 Auto Cache Removal: Active (Purges idle torrent RAM every 10m)`);
     console.log(`🔍 Standalone Search API V1: ${url}/api/v1/search?q=...`);
-    console.log(`📺 Movie/Series TMDB API: ${url}/api/v1/search?tmdb=1396&type=series&s=1&e=1`);
+    console.log(`📺 Movie/Series TMDB Multi-Search API: ${url}/api/v1/search?q=Breaking+Bad&s=1&e=1`);
     console.log(`🎬 Direct Play API Link: ${url}/api/play?q=Movie+Title`);
     console.log(`====================================================\n`);
 
