@@ -964,15 +964,16 @@ async function loadStreamWithExactTimeline(ffmpegStreamUrl) {
     videoPlayer.src = ffmpegStreamUrl;
     videoPlayer.load();
     enforceExactDuration();
-    if (window.plyrInstance) {
-      window.plyrInstance.play().catch(e => {
-        console.log('Autoplay deferred, waiting for user click:', e);
-        hideLoading();
-      });
-    } else {
-      videoPlayer.play().catch(e => {
-        console.log('Autoplay deferred, waiting for user click:', e);
-        hideLoading();
+    
+    const promise = window.plyrInstance ? window.plyrInstance.play() : videoPlayer.play();
+    if (promise && promise.catch) {
+      promise.catch(err => {
+        console.warn('[Autoplay Policy] Unmuted autoplay blocked by browser. Auto-switching to muted playback...', err);
+        videoPlayer.muted = true;
+        const mutedPromise = window.plyrInstance ? window.plyrInstance.play() : videoPlayer.play();
+        if (mutedPromise && mutedPromise.catch) {
+          mutedPromise.catch(() => { hideLoading(); });
+        }
       });
     }
   }
