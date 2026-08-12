@@ -420,6 +420,25 @@ function setupEventListeners() {
     }
   });
 
+  const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+  if (downloadVideoBtn) {
+    downloadVideoBtn.addEventListener('click', () => {
+      if (!currentStreamInfo || !currentStreamInfo.hash) {
+        alert('Please play a video torrent first before downloading.');
+        return;
+      }
+      const directStreamUrl = `${TORRSERVER_BASE}/stream?link=${encodeURIComponent(currentStreamInfo.hash)}&index=${currentStreamInfo.fileId}&play=1`;
+      const a = document.createElement('a');
+      a.href = directStreamUrl;
+      const cleanFileName = getFileName(currentStreamInfo.title || currentStreamInfo.filePath || 'torrent_video.mp4');
+      a.download = cleanFileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  }
+
   refreshTorrentsBtn.addEventListener('click', loadActiveTorrentsList);
 }
 

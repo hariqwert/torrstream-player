@@ -23,15 +23,10 @@
   <div class="app-container">
     <!-- Header -->
     <header class="header">
-      <div class="brand">
-        <div class="brand-icon">
-          <i data-lucide="zap"></i>
-        </div>
-        <div class="brand-text">
-          <h1>Stalker Pro Torrent</h1>
-          <span class="badge">Powered by TorrServer</span>
-        </div>
-      </div>
+      <a href="/hero.html" class="brand" style="text-decoration: none;">
+        <img src="/stalker_pro_infinity.svg" alt="Stalker Pro" style="height: 36px; width: auto; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));" />
+        <span class="badge" style="margin-left: 10px;">TorrServer Engine</span>
+      </a>
 
       <div class="server-status-container">
         <!-- Movie/Series Search Trigger Button -->
@@ -118,7 +113,7 @@
             </div>
 
             <!-- Video HTML5 Element -->
-            <iframe id="videoPlayer" class="video-iframe" allowfullscreen allow="autoplay; fullscreen" frameborder="0"></iframe>
+            <video id="videoPlayer" class="video-iframe" controls autoplay playsinline preload="auto"></video>
 
             <!-- Empty Placeholder state when no video is playing -->
             <div class="player-placeholder" id="playerPlaceholder">
@@ -135,6 +130,7 @@
               <div class="loading-text">
                 <h4 id="loadingTitle">Buffering Torrent...</h4>
                 <p id="loadingSubtitle">Connecting to BitTorrent peers via TorrServer...</p>
+                <p id="loadingStats" style="font-size: 0.85rem; color: #a1a1aa; margin-top: 6px; font-weight: bold;"></p>
                 <div class="progress-bar-track">
                   <div class="progress-bar-fill" id="bufferProgressFill" style="width: 0%"></div>
                 </div>
@@ -149,10 +145,25 @@
               <div class="meta-tags">
                 <span class="meta-tag" id="currentHash">Hash: -</span>
                 <span class="meta-tag" id="currentSize">Size: -</span>
+                <span class="meta-tag" id="ffmpegStatusTag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3);">
+                  <i data-lucide="cpu" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:2px;"></i> Engine: <strong id="currentEngineLabel">FFmpeg (Live Remux)</strong>
+                </span>
               </div>
             </div>
             <div class="player-actions">
-              <button class="btn btn-secondary btn-sm" id="copyStreamUrlBtn" title="Copy direct HTTP stream link">
+              <button class="btn btn-primary btn-sm" id="subtitlesBtn" title="Fetch & Manage Subtitles">
+                <i data-lucide="subtitles"></i> Subtitles
+              </button>
+              <button class="btn btn-secondary btn-sm" id="audioTracksBtn" title="Select Audio Stream / Language">
+                <i data-lucide="volume-2"></i> Audio Tracks
+              </button>
+              <button class="btn btn-primary btn-sm" id="downloadVideoBtn" title="Download Video File to Disk" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                <i data-lucide="download"></i> Download Video
+              </button>
+              <button class="btn btn-outline btn-sm" id="ffmpegEngineBtn" title="Toggle Stream Engine (Direct, FFmpeg Remux, FFmpeg Transcode)">
+                <i data-lucide="film"></i> FFmpeg Engine
+              </button>
+              <button class="btn btn-secondary btn-sm" id="copyStreamUrlBtn" title="Copy active HTTP stream link">
                 <i data-lucide="copy"></i> Copy Stream URL
               </button>
               <button class="btn btn-outline btn-sm" id="toggleFilesBtn" title="Show torrent files">
@@ -267,11 +278,77 @@
       </div>
     </div>
 
+    <!-- Subtitle Fetcher Modal -->
+    <div class="search-modal-backdrop hidden" id="subtitleModal">
+      <div class="search-modal-container" style="max-width: 600px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="subtitles"></i>
+            <h2>Subtitle Fetcher & Manager</h2>
+          </div>
+          <button class="btn-close-modal" id="closeSubtitleBtn">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body space-y-4" style="padding: 20px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="subSearchQuery" placeholder="Search title or IMDb ID (e.g. tt0903747)..." class="modal-input-wrapper" style="flex:1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+            <select id="subLangSelect" style="padding: 10px; border-radius: 8px; background: #18181b; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+              <option value="all">All Languages</option>
+              <option value="English" selected>English</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Malayalam">Malayalam</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Japanese">Japanese</option>
+            </select>
+            <button class="btn btn-primary" id="btnFetchSubs">Fetch</button>
+          </div>
+
+          <div id="subResultsList" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
+            <p style="color: #a1a1aa; font-size: 13px;">Click Fetch to auto-search subtitles online for the active video.</p>
+          </div>
+
+          <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+
+          <div>
+            <h4 style="color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Upload Custom Subtitle File (.srt / .vtt)</h4>
+            <input type="file" id="subFileInput" accept=".srt,.vtt" style="color: #a1a1aa; font-size: 12px;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Track Selector Modal -->
+    <div class="search-modal-backdrop hidden" id="audioTrackModal">
+      <div class="search-modal-container" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="volume-2"></i>
+            <h2>Audio Track Switcher</h2>
+          </div>
+          <button class="btn-close-modal" id="closeAudioBtn">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px;">
+          <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 15px;">Select an audio stream from the multi-audio / dual-audio video torrent:</p>
+          <div id="audioTracksList" style="display: flex; flex-direction: column; gap: 10px;">
+            <p style="color: #71717a; font-size: 12px;">Loading available audio streams...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <footer class="footer">
       <p>Stalker Pro • Integrated with <a href="https://github.com/yourok/torrserver" target="_blank" rel="noopener">yourok/torrserver</a> engine</p>
     </footer>
   </div>
 
-  <script src="torrent.js?v=2"></script>
+  <script src="torrent.js?v=3"></script>
 </body>
 </html>
