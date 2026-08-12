@@ -1,0 +1,24 @@
+<!DOCTYPE html>');
+    if (htmlIdx !== -1) {
+      let raw = lines[i].substring(htmlIdx);
+      // Unescape json string encoding if needed
+      try {
+        // Try parsing string
+        const parsed = JSON.parse(`"${raw.replace(/\\"/g, '"').replace(/"/g, '\\"')}"`);
+        fs.writeFileSync('scratch/old_consumet.html', parsed, 'utf8');
+        console.log('Saved old_consumet.html via JSON parse, length:', parsed.length);
+      } catch(e) {
+        // Unescape backslashes manually
+        let html = raw.replace(/\\"/g, '"').replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t').replace(/\\\\/g, '\\');
+        const endTag = html.lastIndexOf('</html>');
+        if (endTag !== -1) {
+          html = html.substring(0, endTag + 7);
+        }
+        fs.writeFileSync('scratch/old_consumet.html', html, 'utf8');
+        console.log('Saved old_consumet.html manually, length:', html.length);
+      }
+      break;
+    }
+  }
+}
+","Description":"Extract old_consumet.html from transcript_full.jsonl","Overwrite":true,"TargetFile":"c:\Users\HP\Documents\antigravity\brave-maxwell\scratch\extract_old.js","toolAction":"Extract old_consumet.html","toolSummary":"Creating scratch/extract_old.js"}}]}

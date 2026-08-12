@@ -386,7 +386,7 @@ function startWebPlayerServer() {
       return;
     }
 
-    let filePath = path.join(__dirname, reqUrl.pathname === '/' ? 'index.html' : reqUrl.pathname);
+    let filePath = path.join(__dirname, reqUrl.pathname === '/' ? 'hero.html' : reqUrl.pathname);
     
     if (!filePath.startsWith(__dirname)) {
       res.writeHead(403);

@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE CONTROL PANEL | STALKER PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Glowing elements */
+        .glow-red {
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+        }
+        .glow-green {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+        .glow-blue {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(31, 41, 55, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden flex flex-col justify-between">
+
+    <!-- 1. LOGIN OVERLAY -->
+    <div id="loginView" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/90 backdrop-blur-md p-4">
+        <div class="glass-card w-full max-w-md rounded-3xl p-8 shadow-2xl glow-red border border-red-500/10">
+            <div class="flex flex-col items-center text-center mb-8">
+                <div class="inline-flex p-4 rounded-2xl bg-red-500/10 text-red-500 mb-4 border border-red-500/20">
+                    <i data-lucide="shield-alert" class="w-8 h-8 animate-pulse"></i>
+                </div>
+                <h1 class="text-2xl font-black text-white tracking-tight">STALKER PRO</h1>
+                <p class="text-xs text-red-500 font-bold uppercase tracking-widest mt-1">Secret Admin Access Gate</p>
+                <p class="text-gray-400 text-xs mt-2 max-w-xs">Authorized personnel only. Sessions are bound to your active IP address.</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Admin Username</label>
+                    <div class="relative mt-1">
+                        <input type="text" id="usernameInput" placeholder="Enter username" required
+                            class="w-full bg-gray-900/80 border border-gray-700/80 focus:border-red-500 rounded-2xl p-4 text-sm pl-12 text-white outline-none transition-all focus:ring-4 focus:ring-red-500/10">
+                        <i data-lucide="user" class="w-4 h-4 absolute left-4 top-[18px] text-gray-500"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Admin Password</label>
+                    <div class="relative mt-1">
+                        <input type="password" id="passwordInput" placeholder="••••••••" required
+                            class="w-full bg-gray-900/80 border border-gray-700/80 focus:border-red-500 rounded-2xl p-4 text-sm pl-12 text-white outline-none transition-all focus:ring-4 focus:ring-red-500/10">
+                        <i data-lucide="lock" class="w-4 h-4 absolute left-4 top-[18px] text-gray-500"></i>
+                    </div>
+                </div>
+
+                <div id="loginError" class="hidden flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-xl">
+                    <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+                    <span id="loginErrorText">Incorrect credentials.</span>
+                </div>
+
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 active:scale-[0.98] transition-all py-4 rounded-2xl text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-red-600/20">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    <span>Authenticate Session</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- 2. MAIN DASHBOARD CONTENT -->
+    <div id="dashboardView" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-full md:w-80 bg-gray-950 border-r border-gray-800/80 flex flex-col justify-between shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="p-6 border-b border-gray-800/80 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 text-white shadow-md shadow-red-600/10">
+                            <i data-lucide="terminal" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-extrabold text-white text-lg leading-tight tracking-tight">STALKER PRO</h2>
+                            <p class="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Admin Console</p>
+                        </div>
+                    </div>
+                    <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors" title="Logout Session">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Session Security Status Widget -->
+                <div class="m-4 p-4 rounded-2xl bg-gray-900/60 border border-gray-800/60 flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active Security Link</span>
+                        <span class="flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span>Secure</span>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                            <i data-lucide="network" class="w-4 h-4"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Client Session IP</p>
+                            <p id="securityIpDisplay" class="text-sm font-bold text-white tracking-tight mono truncate">Loading IP...</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs pt-1 border-t border-gray-800/40">
+                        <div class="flex items-center gap-1.5 text-gray-400">
+                            <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-500 animate-pulse"></i>
+                            <span>Heartbeat Loop</span>
+                        </div>
+                        <span id="heartbeatTimer" class="font-mono text-gray-400 text-[10px] bg-gray-800/80 px-1.5 py-0.5 rounded font-bold">60s</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="px-3 space-y-1">
+                    <button onclick="switchTab('overview')" id="tabBtn-overview"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="layout-dashboard" class="w-4.5 h-4.5 text-blue-500"></i>
+                            <span>System Overview</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">1</span>
+                    </button>
+
+                    <button onclick="switchTab('portals')" id="tabBtn-portals"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="server" class="w-4.5 h-4.5"></i>
+                            <span>Portal Manager</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">2 / T</span>
+                    </button>
+
+                    <button onclick="switchTab('m3u')" id="tabBtn-m3u"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="folder-archive" class="w-4.5 h-4.5"></i>
+                            <span>M3U Local Vault</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">3 / M</span>
+                    </button>
+
+                    <button onclick="switchTab('monitor')" id="tabBtn-monitor"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="activity" class="w-4.5 h-4.5 text-amber-500"></i>
+                            <span>Live Monitor</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">4</span>
+                    </button>
+
+                    <button onclick="switchTab('system')" id="tabBtn-system"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="settings" class="w-4.5 h-4.5"></i>
+                            <span>System Maintenance</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">5</span>
+                    </button>
+
+                    
+                    <button onclick="switchTab('liveevents')" id="tabBtn-liveevents"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="zap" class="w-4.5 h-4.5 text-red-500"></i>
+                            <span>Live Events Manager</span>
+                        </div>
+                    </button>
+
+                    <button onclick="switchTab('sports')" id="tabBtn-sports"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="trophy" class="w-4.5 h-4.5 text-red-500"></i>
+                            <span>Sports Manager</span>
+                        </div>
+                        <span class="text-[10px] text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">6</span>
+                    </button>
+
+                    <button onclick="window.location.href='index.php'"
+                        class="w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all text-gray-400 hover:text-white hover:bg-gray-900/50 mt-4 border-t border-gray-800/40 pt-6">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="monitor-play" class="w-4.5 h-4.5 text-emerald-500"></i>
+                            <span>Return to Player</span>
+                        </div>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Footer Meta -->
+            <div class="p-6 border-t border-gray-800/60 text-center">
+                <a href="/index.php" class="inline-flex items-center justify-center gap-2 text-xs text-gray-400 hover:text-white font-bold bg-gray-900/80 hover:bg-gray-900 px-4 py-2.5 rounded-xl border border-gray-800 transition-all w-full">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    <span>Return to TV Portal</span>
+                </a>
+                <p class="text-[9px] text-gray-600 mt-3 mono">STALKER PRO SECURE OS v1.2</p>
+            </div>
+        </aside>
+
+        <!-- MAIN VIEWPORT -->
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+
+            <!-- TAB 0: SYSTEM OVERVIEW (DASHBOARD) -->
+            <div id="tabContent-overview" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">System Health & Analytics</h1>
+                        <p class="text-sm text-gray-400 mt-1">Real-time performance metrics and core system status.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="clearSystemCache()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2.5 rounded-xl border border-gray-700 font-bold text-xs flex items-center gap-2 transition-all">
+                            <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                            <span>Clear Stalker Cache</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STATS BENTO GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- STAT 1: ACTIVE PORTAL -->
+                    <div class="glass-card p-6 rounded-2xl border border-gray-800 flex flex-col justify-between group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="globe" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-500/60">Active Source</span>
+                        </div>
+                        <div>
+                            <div id="stat-activePortal" class="text-xl font-black text-white truncate">LOADING...</div>
+                            <div class="text-xs text-gray-500 font-medium mt-1 uppercase tracking-tighter">Current Primary API</div>
+                        </div>
+                    </div>
+
+                    <!-- STAT 2: TOTAL CHANNELS -->
+                    <div class="glass-card p-6 rounded-2xl border border-gray-800 flex flex-col justify-between group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="tv-2" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-emerald-500/60">Resources</span>
+                        </div>
+                        <div>
+                            <div id="stat-totalChannels" class="text-3xl font-black text-white">0</div>
+                            <div class="text-xs text-gray-500 font-medium mt-1 uppercase tracking-tighter">Total Indexed Channels</div>
+                        </div>
+                    </div>
+
+                    <!-- STAT 3: ACTIVE SESSIONS -->
+                    <div class="glass-card p-6 rounded-2xl border border-gray-800 flex flex-col justify-between group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-amber-500/60">Live Traffic</span>
+                        </div>
+                        <div>
+                            <div id="stat-activeSessions" class="text-3xl font-black text-white">0</div>
+                            <div class="text-xs text-gray-500 font-medium mt-1 uppercase tracking-tighter">Concurrent Streams</div>
+                        </div>
+                    </div>
+
+                    <!-- STAT 4: SECURITY STATUS -->
+                    <div class="glass-card p-6 rounded-2xl border border-gray-800 flex flex-col justify-between group">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="shield-check" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-red-500/60">Firewall</span>
+                        </div>
+                        <div>
+                            <div id="stat-blockedIps" class="text-3xl font-black text-white">0</div>
+                            <div class="text-xs text-gray-500 font-medium mt-1 uppercase tracking-tighter">Blacklisted Addresses</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECONDARY ROW -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- SYSTEM LOGS SNIPPET -->
+                    <div class="lg:col-span-2 glass-card rounded-2xl border border-gray-800 overflow-hidden flex flex-col min-h-[300px]">
+                        <div class="p-5 border-b border-gray-800/60 bg-gray-900/40 flex items-center justify-between">
+                            <h3 class="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-widest">
+                                <i data-lucide="scroll-text" class="w-4 h-4 text-blue-400"></i>
+                                <span>Recent System Activity</span>
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                <span class="text-[9px] font-bold text-blue-500 uppercase">Live Log</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-black/40 flex-1 font-mono text-[11px] text-gray-400 space-y-1 overflow-y-auto" id="dashboard-logs">
+                            <div class="text-blue-500/80">[SYSTEM] Initialization complete...</div>
+                            <div class="text-gray-600">[AUTH] Secure session verified for Admin</div>
+                            <div class="text-emerald-500/80">[API] Connected to primary portal gateway</div>
+                        </div>
+                    </div>
+
+                    <!-- QUICK ACTIONS -->
+                    <div class="glass-card rounded-2xl border border-gray-800 p-6 flex flex-col justify-between">
+                        <h3 class="font-bold text-white mb-6 text-sm uppercase tracking-widest border-b border-gray-800 pb-4">Quick Commands</h3>
+                        <div class="space-y-3">
+                            <button onclick="switchTab('monitor')" class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-900/60 hover:bg-gray-800 transition-all border border-gray-800 group">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
+                                    <span class="text-xs font-bold text-gray-300">Review Security Alerts</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-white transition-colors"></i>
+                            </button>
+                            <button onclick="switchTab('system')" class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-900/60 hover:bg-gray-800 transition-all border border-gray-800 group">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="power" class="w-4 h-4 text-red-500"></i>
+                                    <span class="text-xs font-bold text-gray-300">Kill Switch Settings</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-white transition-colors"></i>
+                            </button>
+                            <button onclick="window.location.reload()" class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-900/60 hover:bg-gray-800 transition-all border border-gray-800 group">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-500"></i>
+                                    <span class="text-xs font-bold text-gray-300">Force Global Refresh</span>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-600 group-hover:text-white transition-colors"></i>
+                            </button>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-gray-800 text-center">
+                            <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Stalker Pro Panel v2.5</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: LIVE ACTIVITY MONITOR -->
+            <div id="tabContent-monitor" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">Live Activity Monitor</h1>
+                        <p class="text-sm text-gray-400 mt-1">Real-time stream connections, session tracking and IP firewall management.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="loadActivity()" class="bg-amber-600/10 hover:bg-amber-600/20 text-amber-500 px-4 py-2.5 rounded-xl border border-amber-600/20 font-bold text-xs flex items-center gap-2 transition-all">
+                            <i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+                            <span>Refresh Stream Logs</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-8">
+                    <!-- MASTER POWER SWITCH -->
+                    <div id="systemPowerCard" class="glass-card rounded-2xl border border-gray-800 p-8 shadow-2xl transition-all duration-500 overflow-hidden relative group">
+                        <div class="absolute top-0 right-0 p-8 opacity-5">
+                            <i data-lucide="power" class="w-32 h-32 text-white"></i>
+                        </div>
+                        <div class="relative flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div class="flex items-center gap-6">
+                                <div id="powerIconContainer" class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg">
+                                    <i data-lucide="power" id="powerIcon" class="w-8 h-8"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                                        System Network Power: 
+                                        <span id="powerStatusText" class="uppercase tracking-widest text-sm bg-gray-800 px-3 py-1 rounded-full border border-gray-700 ml-2">CHECKING...</span>
+                                    </h2>
+                                    <p class="text-gray-400 text-sm mt-1 max-w-lg">Instantly kill all public access, stream proxies, and frontend views. Only this panel remains active.</p>
+                                </div>
+                            </div>
+                            <button onclick="toggleSystemPower()" id="powerBtn" 
+                                class="px-8 py-4 rounded-2xl font-black text-sm tracking-widest flex items-center gap-3 transition-all active:scale-[0.95] shadow-xl">
+                                <i data-lucide="power" class="w-5 h-5"></i>
+                                <span id="powerBtnText">INITIALIZING...</span>
+                            </button>
+                        </div>
+
+                        <!-- System Power Music Settings -->
+                        <div id="powerMusicSection" class="mt-8 pt-8 border-t border-gray-800 space-y-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400">
+                                    <i data-lucide="music" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">System Offline Lounge Music</h3>
+                                    <p class="text-xs text-gray-400 mt-1">Configure what users hear when the system is offline or in maintenance mode.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Music Mode</label>
+                                    <select id="powerMusicMode" onchange="syncMusicSettings('power')" class="w-full bg-gray-900/60 border border-gray-800 focus:border-teal-500 rounded-xl p-3.5 text-sm text-white outline-none mt-1 transition-all">
+                                        <option value="query">Specific Search Query</option>
+                                        <option value="random">Play Random Chill Songs</option>
+                                        <option value="playlist">Play Curated Playlist Tracks</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Query / URL</label>
+                                    <div class="flex gap-2 mt-1">
+                                        <input type="text" id="powerMusicQuery" placeholder="e.g. Lofi Chill Mix"
+                                            class="flex-1 bg-gray-900/60 border border-gray-800 focus:border-teal-500 rounded-xl p-3.5 text-sm text-white outline-none transition-all">
+                                        <button type="button" onclick="searchAdminMusic('power')" class="bg-teal-600 hover:bg-teal-500 px-5 rounded-xl font-bold text-xs text-black transition-all">Search</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Music Preview Bar -->
+                            <div class="p-4 rounded-xl bg-black/40 border border-white/5 space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="toggleAdminMusic('power')" class="w-10 h-10 rounded-full bg-teal-500 hover:bg-teal-400 text-black flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-teal-500/20">
+                                        <i data-lucide="play" class="w-5 h-5 fill-black" id="powerPlayIcon"></i>
+                                        <i data-lucide="pause" class="w-5 h-5 hidden text-black" id="powerPauseIcon"></i>
+                                    </button>
+                                    <div class="flex-1 overflow-hidden">
+                                        <div id="powerMusicTitle" class="text-sm font-bold text-slate-200 truncate">No Track Loaded</div>
+                                        <div id="powerMusicArtist" class="text-[10px] text-slate-500 truncate">Search and select a track to preview</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="saveMusicOnly()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-600/10">Save Settings</button>
+                                    </div>
+                                </div>
+
+                                <div id="powerMusicResults" class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar hidden bg-zinc-950/50 p-2 rounded-xl border border-white/5 text-xs text-slate-300"></div>
+
+                                <!-- Saved Playlist -->
+                                <div class="space-y-2 pt-2 border-t border-white/5">
+                                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Lounge Playlist Queue</span>
+                                    <div id="powerSavedPlaylist" class="max-h-36 overflow-y-auto space-y-1 custom-scrollbar bg-zinc-950/50 p-2 rounded-xl border border-white/5">
+                                        <div class="text-slate-500 text-center py-2 text-[10px]">No saved tracks</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTIVE SESSIONS -->
+                    <div class="glass-card rounded-2xl border border-gray-800 overflow-hidden shadow-2xl">
+                        <div class="p-6 border-b border-gray-800/60 bg-gray-900/40 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <h3 class="text-lg font-bold text-white">Active Connections</h3>
+                            </div>
+                            <span id="activeSessionsCount" class="text-[10px] font-bold bg-green-500/10 text-green-500 px-3 py-1 rounded-full border border-green-500/20">0 ONLINE</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-900/60 text-[10px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-800">
+                                    <tr>
+                                        <th class="px-6 py-4">User IP Address</th>
+                                        <th class="px-6 py-4">Watching</th>
+                                        <th class="px-6 py-4">Start Time</th>
+                                        <th class="px-6 py-4">Device/UA</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activeSessionsList" class="divide-y divide-gray-800/60">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 text-sm">
+                                            <div class="flex flex-col items-center gap-3 opacity-50">
+                                                <i data-lucide="wifi-off" class="w-8 h-8"></i>
+                                                <p>No active stream connections detected.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- BLACKLIST MANAGER -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="glass-card rounded-2xl border border-gray-800 overflow-hidden shadow-2xl flex flex-col">
+                            <div class="p-6 border-b border-gray-800/60 bg-gray-900/40">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-3">
+                                    <i data-lucide="shield-alert" class="w-5 h-5 text-red-500"></i>
+                                    <span>Firewall: Blocked IP List</span>
+                                </h3>
+                            </div>
+                            <div class="p-6 bg-red-500/5 border-b border-red-500/10 flex flex-col md:flex-row items-center gap-4">
+                                <div class="flex-1">
+                                    <p class="text-xs text-red-400/80 font-medium">Manually block an IP address.</p>
+                                </div>
+                                <div class="flex items-center gap-2 w-full md:w-auto">
+                                    <input type="text" id="manualBlockIp" placeholder="IP Address" 
+                                        class="bg-gray-900 border border-red-500/20 focus:border-red-500 rounded-xl px-4 py-2 text-xs text-white outline-none flex-1 md:w-48">
+                                    <button onclick="blockIpManually()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-[10px] transition-all flex items-center gap-2">
+                                        <i data-lucide="plus" class="w-3 h-3"></i>
+                                        <span>Block</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto flex-1">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-900/60 text-[10px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-800">
+                                        <tr>
+                                            <th class="px-6 py-4">Blocked IP</th>
+                                            <th class="px-6 py-4 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="blacklistList" class="divide-y divide-gray-800/60">
+                                        <!-- Content loaded via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SECURITY INCIDENTS / ALERTS -->
+                        <div class="glass-card rounded-2xl border border-gray-800 overflow-hidden shadow-2xl flex flex-col">
+                            <div class="p-6 border-b border-gray-800/60 bg-gray-900/40 flex items-center justify-between">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-3">
+                                    <i data-lucide="bell-ring" class="w-5 h-5 text-amber-500 animate-bounce"></i>
+                                    <span>Security Alerts</span>
+                                </h3>
+                                <button onclick="loadIncidents()" class="p-2 text-gray-500 hover:text-white">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto flex-1 max-h-[400px]">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-900/60 text-[10px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-800">
+                                        <tr>
+                                            <th class="px-6 py-4">IP / Attempt</th>
+                                            <th class="px-6 py-4">Time</th>
+                                            <th class="px-6 py-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="incidentsList" class="divide-y divide-gray-800/60">
+                                        <tr>
+                                            <td colspan="3" class="px-6 py-8 text-center text-gray-600 text-xs italic">
+                                                No recent security violations.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: PORTAL MANAGER -->
+            <div id="tabContent-portals" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">Portal Manager</h1>
+                        <p class="text-sm text-gray-400 mt-1">Manage external Stalker Middleware Portals and register MAC address configs.</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4 my-6">
+                    <h4 class="text-sm font-bold text-red-400 flex items-center gap-2 mb-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        Live Errors on Screen
+                    </h4>
+                    <p class="text-xs text-gray-300 mb-2">Any error prompts encountered during initialization or playback come directly from the target portal server. Common issues include:</p>
+                    <ul class="list-disc list-inside text-xs text-gray-400 space-y-1">
+                        <li><strong class="text-gray-200">Authorization Expired:</strong> Check your subscription date on the success screen.</li>
+                        <li><strong class="text-gray-200">Wrong Device ID:</strong> Portals checking signatures strictly will refuse to stream if the Device ID 1/2 or Serial Number doesn't match the original hardware.</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- PORTAL FORM -->
+                    <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="plus" class="w-5 h-5 text-red-500"></i>
+                                <span id="formTitle">Register Portal</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Add a new external Stalker Portal credential.</p>
+                        </div>
+
+                        <form id="portalForm" class="space-y-4">
+                            <input type="hidden" id="portalEditId">
+                            
+                            <div class="mb-4">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Portal Type</label>
+                                <select id="portalType" onchange="togglePortalTypeFields()" class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3.5 text-sm text-white outline-none mt-1 transition-all">
+                                    <option value="stalker">Stalker Portal (MAC Address based)</option>
+                                    <option value="xtream">Xtream Codes Portal (User/Pass based)</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Portal Name</label>
+                                    <input type="text" id="portalName" placeholder="My Premium Portal" required
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Portal URL</label>
+                                    <input type="url" id="portalUrl" placeholder="http://example.com:8080/c/" required
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all">
+                                </div>
+                            </div>
+
+                            <!-- Xtream Fields -->
+                            <div id="xtreamFields" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Xtream Username</label>
+                                    <input type="text" id="portalUsername" placeholder="e.g. User123"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Xtream Password</label>
+                                    <input type="password" id="portalPassword" placeholder="e.g. Pass123"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                            </div>
+
+                            <!-- Stalker Fields -->
+                            <div id="stalkerFields" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">MAC Address</label>
+                                    <input type="text" id="portalMac" placeholder="00:1A:79:XX:XX:XX"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Serial Number (SN)</label>
+                                    <input type="text" id="portalSn" placeholder="Auto-generated if empty"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Device ID 1</label>
+                                    <input type="text" id="portalD1" placeholder="Auto-generated if empty"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Device ID 2</label>
+                                    <input type="text" id="portalD2" placeholder="Auto-generated if empty"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Signature (Sig)</label>
+                                    <input type="text" id="portalSig" placeholder="Optional"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Hardware / Model</label>
+                                    <select id="portalModel" class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all">
+                                        <option value="MAG250">MAG 250 (Default)</option>
+                                        <option value="MAG254">MAG 254</option>
+                                        <option value="MAG270">MAG 270</option>
+                                        <option value="MAG322">MAG 322</option>
+                                        <option value="MAG410">MAG 410</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Software / Image Version</label>
+                                    <input type="text" id="portalImageVersion" placeholder="e.g. 218"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Auth Token</label>
+                                    <input type="text" id="portalToken" placeholder="Leave empty to auto-fetch"
+                                        class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">User-Agent</label>
+                                <input type="text" id="portalUserAgent" placeholder="Default MAG User-Agent"
+                                    class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all mono">
+                            </div>
+
+                            <div class="flex gap-2 pt-2">
+                                <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 shadow-md">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span id="savePortalBtnText">Save Portal</span>
+                                </button>
+                                <button type="button" id="cancelEditBtn" onclick="resetPortalForm()" class="hidden bg-gray-800 hover:bg-gray-700 px-4 rounded-xl font-bold text-xs text-gray-300 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- PORTALS LIST -->
+                    <div class="lg:col-span-2 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="database" class="w-5 h-5 text-blue-400"></i>
+                                <span>Configured Portals</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Select and manage saved portals on this instance.</p>
+                        </div>
+
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-gray-800 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
+                                        <th class="pb-3 pl-2">Portal Name</th>
+                                        <th class="pb-3">URL</th>
+                                        <th class="pb-3">MAC</th>
+                                        <th class="pb-3 text-right pr-2">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portalsTableBody" class="divide-y divide-gray-800/50 text-sm">
+                                    <!-- Portals list injected dynamically -->
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-gray-500 font-medium">Loading saved portals...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: M3U LOCAL VAULT -->
+            <div id="tabContent-m3u" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">M3U Local Vault</h1>
+                        <p class="text-sm text-gray-400 mt-1">Upload and store playlist files securely in local disk storage, isolated from the public webroot.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- SECURE UPLOAD ZONE -->
+                    <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="upload-cloud" class="w-5 h-5 text-emerald-500"></i>
+                                <span>Secure Upload</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Strict local sandbox isolation.</p>
+                        </div>
+
+                        <form id="m3uUploadForm" class="space-y-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Custom Playlist Name</label>
+                                <input type="text" id="m3uName" placeholder="E.g., Sports Playlist" required
+                                    class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all">
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Import Method</label>
+                                <div class="flex gap-2 mt-1 mb-3">
+                                    <button type="button" onclick="setAdminM3UMethod('file')" id="adminMethodFile" class="flex-1 py-2 rounded-xl bg-red-600 text-white text-xs font-bold transition-all border border-red-500">File Upload</button>
+                                    <button type="button" onclick="setAdminM3UMethod('url')" id="adminMethodUrl" class="flex-1 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold transition-all border border-gray-800">M3U URL</button>
+                                </div>
+                            </div>
+
+                            <div id="adminM3uFileGroup">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select File (.m3u, .m3u8)</label>
+                                <div id="dropZone" class="border-2 border-dashed border-gray-800 hover:border-emerald-500/50 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-gray-900/40 relative mt-1">
+                                    <input type="file" id="m3uFileInput" accept=".m3u,.m3u8" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <div class="flex flex-col items-center gap-2 pointer-events-none">
+                                        <i data-lucide="file-plus" class="w-8 h-8 text-gray-500"></i>
+                                        <span id="dropZoneText" class="text-xs text-gray-400 font-bold">Drag file here or click to browse</span>
+                                        <span class="text-[10px] text-gray-600 font-bold uppercase tracking-wider">MAX 50MB</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="adminM3uUrlGroup" class="hidden">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">M3U Playlist URL</label>
+                                <input type="url" id="m3uUrlInput" placeholder="https://example.com/playlist.m3u"
+                                    class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3 text-sm text-white outline-none mt-1 transition-all">
+                            </div>
+
+                            <div id="uploadStatus" class="hidden p-3 rounded-xl border text-xs font-semibold"></div>
+
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3.5 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 shadow-md">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <span>Upload to Local Storage</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- PLAYLISTS VAULT LIST -->
+                    <div class="lg:col-span-2 glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="folder-open" class="w-5 h-5 text-amber-500"></i>
+                                    <span>Isolated Playlists Vault</span>
+                                </h3>
+                                <p class="text-xs text-gray-400 mt-1">These files sit strictly outside the public web server directory.</p>
+                            </div>
+                            <!-- Switch back to default portal shortcut -->
+                            <button onclick="activatePlaylist('portal')" class="text-xs bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-300 font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-blue-400"></i>
+                                <span>Reset to Portal Mode</span>
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-gray-800 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
+                                        <th class="pb-3 pl-2">Playlist Details</th>
+                                        <th class="pb-3">Channels Count</th>
+                                        <th class="pb-3">Local File Location</th>
+                                        <th class="pb-3 text-right pr-2">State / Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="m3uTableBody" class="divide-y divide-gray-800/50 text-sm">
+                                    <tr>
+                                        <td colspan="4" class="py-8 text-center text-gray-500 font-medium">No playlists uploaded yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: SYSTEM MAINTENANCE -->
+            <div id="tabContent-system" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">System Maintenance</h1>
+                        <p class="text-sm text-gray-400 mt-1">Control instance status, maintenance gates, and run database/cache sweeps.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- MAINTENANCE STATE CONFIG -->
+                    <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-5 h-5 text-amber-500"></i>
+                                <span>Maintenance Mode Gate (HTTP 503)</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Locks down all public user routes immediately.</p>
+                        </div>
+
+                        <form id="maintenanceForm" class="space-y-5">
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                                        <i data-lucide="power" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Maintenance Mode Active</p>
+                                        <p class="text-[11px] text-gray-500">Locks non-admin users behind a 503 template.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="maintenanceToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>                                </label>
+                            </div>
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                                        <i data-lucide="monitor" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Consumet HTML Maintenance</p>
+                                        <p class="text-[11px] text-gray-500">Locks consumet.html behind a 503 template.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="consumetMaintenanceToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Play PHP Maintenance</p>
+                                        <p class="text-[11px] text-gray-500">Locks play.php behind a 503 template.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="playMaintenanceToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-pink-500/10 border border-pink-500/20 text-pink-400">
+                                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Play Consumet PHP Maintenance</p>
+                                        <p class="text-[11px] text-gray-500">Locks play_consumet.php behind a 503 template.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="playConsumetMaintenanceToggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Template Screen Message</label>
+                                <select id="maintenanceTemplate" class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3.5 text-sm text-white outline-none mt-1 transition-all">
+                                    <option value="Scheduled Downtime">Scheduled Downtime (Default)</option>
+                                    <option value="Updating Portals">Updating Portals & Channels</option>
+                                    <option value="Database Maintenance">Server Optimization Maintenance</option>
+                                    <option value="System Upgrade">Sleek System Engine Upgrading</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Default Maintenance Music Mode</label>
+                                <select id="maintenanceMusicMode" onchange="toggleMusicInputs()" class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3.5 text-sm text-white outline-none mt-1 transition-all">
+                                    <option value="query">Specific Search Query</option>
+                                    <option value="random">Play Random Chill Songs</option>
+                                    <option value="playlist">Play Curated Playlist Tracks</option>
+                                </select>
+                            </div>
+
+                            <div id="musicQueryContainer">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Music Search Query / URL</label>
+                                <input type="text" id="maintenanceMusicQuery" placeholder="e.g. Lofi Chill Mix"
+                                    class="w-full bg-gray-900/60 border border-gray-800 focus:border-red-500 rounded-xl p-3.5 text-sm text-white outline-none mt-1 transition-all">
+                                                 <!-- Maintenance Preview Music Player Bar -->
+                             <div class="mt-4 p-4 rounded-xl bg-black/40 border border-white/5 space-y-3">
+                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Maintenance Music Preview Integration</span>
+                                 <audio id="adminMusicPlayer" class="hidden"></audio>
+                                 
+                                 <div class="flex items-center gap-3">
+                                     <button type="button" id="adminPlayBtn" onclick="toggleAdminMusic()" class="w-8 h-8 rounded-full bg-teal-500 hover:bg-teal-400 text-black flex items-center justify-center transition-all cursor-pointer">
+                                         <svg class="w-4 h-4 fill-black" id="adminPlayIcon" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                         <svg class="w-4 h-4 hidden text-black" id="adminPauseIcon" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                     </button>
+                                     <div class="flex-1 overflow-hidden">
+                                         <div id="adminMusicTitle" class="text-xs font-bold text-slate-200 truncate">No Track Loaded</div>
+                                         <div id="adminMusicArtist" class="text-[10px] text-slate-500 truncate">Enter query and click search</div>
+                                     </div>
+                                     <button type="button" onclick="searchAdminMusic()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest text-teal-400 cursor-pointer">Search/Load</button>
+                                 </div>
+
+                                 <div class="relative h-16 w-full bg-black/60 rounded-xl overflow-hidden border border-white/5">
+                                     <canvas id="adminVisualizer" class="absolute inset-0 w-full h-full"></canvas>
+                                 </div>
+                                 <div id="adminMusicResults" class="max-h-24 overflow-y-auto space-y-1 custom-scrollbar hidden bg-zinc-950 p-2 rounded-lg border border-white/5 text-xs text-slate-300"></div>
+
+                                 <!-- Saved Playlist -->
+                                 <div class="space-y-2 pt-2 border-t border-white/5">
+                                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Saved Playlist Queue (Max 10)</span>
+                                     <div id="adminSavedPlaylist" class="max-h-36 overflow-y-auto space-y-1 custom-scrollbar bg-zinc-950 p-2 rounded-lg border border-white/5">
+                                         <div class="text-slate-500 text-center py-2 text-[10px]">No saved tracks</div>
+                                     </div>
+                                 </div>
+                             </div>
+                             </div>
+
+                             <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 py-3 rounded-xl font-bold text-xs text-white transition-all flex items-center justify-center gap-2 shadow-md mt-4">
+                                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                 <span>Apply Maintenance State</span>
+                             </button>
+                         </form>
+                     </div>
+
+                    <!-- DEVELOPER MODE CONFIG -->
+                    <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="code" class="w-5 h-5 text-indigo-500"></i>
+                                <span>Developer Mode</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Locks out external IPs entirely. Only whitelisted IPs can access.</p>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                                        <i data-lucide="terminal" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Developer Mode Active</p>
+                                        <p class="text-[11px] text-gray-500">Only allowed IPs can connect</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="developerModeToggle" onchange="toggleDeveloperMode(this.checked)" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="space-y-3">
+                                <h4 class="text-sm font-bold text-white">Allowed Developer IPs</h4>
+                                <form id="devWhitelistForm" class="flex gap-2" onsubmit="addDevWhitelistIp(event)">
+                                    <input type="text" id="devWhitelistInput" placeholder="Enter IP address..." class="flex-1 bg-gray-900/60 border border-gray-800 focus:border-indigo-500 rounded-xl px-4 py-2 text-sm text-white outline-none transition-all" required>
+                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md">Add IP</button>
+                                </form>
+                                <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-2 overflow-y-auto max-h-48 custom-scrollbar">
+                                    <table class="w-full text-left text-sm text-gray-400">
+                                        <tbody id="devWhitelistTableBody" class="divide-y divide-gray-800/60">
+                                            <!-- Whitelisted IPs will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATA CLEANUP TRIGGERS -->
+                    <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i>
+                                <span>Instance Cleanup Triggers</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Clear caches, playlists logs, history trackers, or user state metadata safely on the server.</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <!-- Cache clear -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800/60">
+                                <div>
+                                    <h4 class="font-bold text-sm text-white">Clear Server Caches</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Purges all cached genres, play links, and handshakes in cache_stalker.</p>
+                                </div>
+                                <button onclick="triggerCleanup('cache')" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold text-xs border border-red-500/20 px-4 py-2.5 rounded-xl transition-all">
+                                    Purge Cache
+                                </button>
+                            </div>
+
+                            <!-- History clear -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800/60">
+                                <div>
+                                    <h4 class="font-bold text-sm text-white">Clear Recent Play History</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Cleans recent channels lists from the database across portals.</p>
+                                </div>
+                                <button onclick="triggerCleanup('history')" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold text-xs border border-red-500/20 px-4 py-2.5 rounded-xl transition-all">
+                                    Clear History
+                                </button>
+                            </div>
+
+                            <!-- Favorites clear -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800/60">
+                                <div>
+                                    <h4 class="font-bold text-sm text-white">Clear Favorites Settings</h4>
+                                    <p class="text-xs text-gray-500 mt-0.5">Erases all favorited profiles and channel alignments.</p>
+                                </div>
+                                <button onclick="triggerCleanup('favorites')" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold text-xs border border-red-500/20 px-4 py-2.5 rounded-xl transition-all">
+                                    Wipe Favorites
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FEATURE ACCESS MANAGEMENT (ICON OFF SECTION) -->
+                    <div class="lg:col-span-2 glass-card rounded-2xl p-6 border border-gray-800 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <i data-lucide="layers" class="w-5 h-5 text-blue-500"></i>
+                                <span>Feature Access Management (Master Toggles)</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">Enable or disable entire functional modules of the application instance.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- M3U Toggle -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+                                        <i data-lucide="folder-archive" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">M3U Playlist Feature</p>
+                                        <p class="text-[11px] text-gray-500">Enable local M3U vault.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="feat-m3u" class="sr-only peer feature-toggle" onchange="updateFeature('m3uEnabled', this.checked)">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- Stalker Toggle -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-blue-500/10 text-blue-400">
+                                        <i data-lucide="server" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Stalker Portal Feature</p>
+                                        <p class="text-[11px] text-gray-500">Enable external Stalker APIs.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="feat-stalker" class="sr-only peer feature-toggle" onchange="updateFeature('stalkerEnabled', this.checked)">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- Firewall Toggle -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-red-500/10 text-red-400">
+                                        <i data-lucide="shield" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">IP Firewall Security</p>
+                                        <p class="text-[11px] text-gray-500">Enable automatic blacklisting.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="feat-firewall" class="sr-only peer feature-toggle" onchange="updateFeature('firewallEnabled', this.checked)">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- Public Playlist Toggle -->
+                            <div class="flex items-center justify-between p-4 rounded-xl bg-gray-900/40 border border-gray-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
+                                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm text-white">Public M3U Export</p>
+                                        <p class="text-[11px] text-gray-500">Enable /playlist.php route.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="feat-public" class="sr-only peer feature-toggle" onchange="updateFeature('publicPlaylistEnabled', this.checked)">
+                                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: SPORTS MANAGER -->
+            <div id="tabContent-sports" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">Sports Manager</h1>
+                        <p class="text-sm text-gray-400 mt-1">Add and monitor your custom global sports streams shown in the consumer portal.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="extractSportsM3u()" id="extractSportsBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/10">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Extract Sports M3U
+                        </button>
+                        <button onclick="openNewSportsModal()" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-red-600/10">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Sports Stream
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sports Grid list -->
+                <div id="adminSportsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+
+                <!-- Dummy Play Frame inside admin panel -->
+                <div id="dummyPlayContainer" class="hidden p-6 bg-gray-950/80 border border-gray-800 rounded-2xl text-left">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-800">
+                        <h4 class="text-xs font-black uppercase text-gray-400 flex items-center gap-2">
+                            <i data-lucide="play" class="w-4 h-4 text-red-500 animate-pulse"></i> Stream Playback Preview
+                        </h4>
+                        <button onclick="closeDummyPlayer()" class="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-gray-800 relative">
+                        <video id="dummyVideoPlayer" class="w-full h-full" controls playsinline></video>
+                    </div>
+                    <p id="dummyVideoInfo" class="text-[10px] text-gray-500 mt-2 font-mono break-all"></p>
+                </div>
+            </div>
+
+        
+            <!-- TAB 7: LIVE EVENTS MANAGER -->
+            <div id="tabContent-liveevents" class="space-y-8 hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-black text-white tracking-tight">Live Events Manager</h1>
+                        <p class="text-sm text-gray-400 mt-1">Add and monitor your custom global live events shown in the consumer portal.</p>
+                    </div>
+                    <button onclick="openNewLiveEventModal()" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-red-600/10">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Live Event
+                    </button>
+                </div>
+                <!-- Live Events Grid list -->
+                <div id="adminLiveEventsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Sports Link Modal -->
+    <div id="sportsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-800 w-full max-w-lg rounded-2xl p-8 animate-in zoom-in-95 duration-200 shadow-2xl">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                <h3 id="sportsModalTitle" class="text-white text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                    <i data-lucide="trophy" class="w-5 h-5 text-red-500"></i> Add Sports Stream
+                </h3>
+                <button onclick="toggleSportsModal(false)" class="p-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="sportsForm" class="space-y-5" onsubmit="saveSportsStream(event)">
+                <input type="hidden" id="sportsId">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Title <span class="text-red-500">*</span></label>
+                    <input type="text" id="sportsTitle" required placeholder="e.g. Sky Sports Main Event" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Page Icon (Lucide name or Image URL Link) <span class="text-red-500">*</span></label>
+                    <input type="text" id="sportsIcon" required placeholder="e.g. trophy, tv OR https://example.com/logo.png" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">M3U or TS Stream Link <span class="text-red-500">*</span></label>
+                    <input type="url" id="sportsUrl" required placeholder="e.g. http://server:port/live/user/pass/123.ts" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-4 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-600/10">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Save Stream</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <!-- Live Events Modal -->
+    <div id="liveEventsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-800 w-full max-w-lg rounded-2xl p-8 animate-in zoom-in-95 duration-200 shadow-2xl">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+                <h3 id="liveEventsModalTitle" class="text-white text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                    <i data-lucide="zap" class="w-5 h-5 text-red-500"></i> Add Live Event
+                </h3>
+                <button onclick="toggleLiveEventsModal(false)" class="p-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="liveEventsForm" class="space-y-5" onsubmit="saveLiveEventStream(event)">
+                <input type="hidden" id="liveEventsId">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Title <span class="text-red-500">*</span></label>
+                    <input type="text" id="liveEventsTitle" required placeholder="e.g. UFC 300" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Page Icon (Lucide name or Image URL Link) <span class="text-red-500">*</span></label>
+                    <input type="text" id="liveEventsIcon" required placeholder="e.g. zap OR https://example.com/logo.png" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">M3U or TS Stream Link <span class="text-red-500">*</span></label>
+                    <input type="url" id="liveEventsUrl" required placeholder="e.g. http://server:port/live/user/pass/123.ts" class="w-full bg-gray-900 border border-gray-800 p-4 rounded-xl text-sm text-white focus:outline-none focus:border-red-500 transition-colors">
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-4 bg-red-600 hover:bg-red-500 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-600/10">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Save Event</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- UI TOAST -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl flex items-center gap-3 pr-6">
+            <div id="toastIconBg" class="p-2 rounded-xl">
+                <i id="toastIcon" class="w-4 h-4"></i>
+            </div>
+            <div>
+                <p id="toastTitle" class="font-bold text-sm text-white"></p>
+                <p id="toastMessage" class="text-xs text-gray-400"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/hari.js?v=20260718_v4"></script>
+</body>
+</html>

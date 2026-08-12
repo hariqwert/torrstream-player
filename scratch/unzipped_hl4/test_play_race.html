@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><body>
+<video id="v" controls></video>
+<script>
+const v = document.getElementById('v');
+async function run() {
+    v.src = 'http://127.0.0.1:9001/test-0';
+    v.load();
+    const p1 = v.play().catch(e => console.log('p1:', e.name));
+    
+    // immediately trigger another load
+    v.src = 'http://127.0.0.1:9001/test-garbage';
+    v.load();
+    const p2 = v.play().catch(e => console.log('p2:', e.name, e.message));
+}
+run();
+</script>
+</body></html>

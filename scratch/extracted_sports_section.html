@@ -1,0 +1,241 @@
+<section id="view-sports" class="hidden space-y-10 animate-fade-in relative">
+<!-- Sports Dynamic Stickers -->
+<div class="absolute -top-10 -left-10 pointer-events-none opacity-20 select-none z-0 hidden lg:block animate-bounce" style="animation-duration: 8s;">
+<span class="bg-amber-600/20 text-amber-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-500/30 shadow-lg flex items-center gap-1">🏆 CHAMPIONS LEAGUE LIVE</span>
+</div>
+<div class="absolute -top-6 right-[15%] pointer-events-none opacity-25 select-none z-0 hidden lg:block animate-pulse">
+<span class="bg-amber-600/20 text-amber-400 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-amber-500/30 shadow-lg flex items-center gap-1">⚡ LIVE BROADCAST</span>
+</div>
+<!-- Sports Main Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5 relative z-10">
+<div>
+</div>
+<!-- Dedicated Sports Search -->
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<i data-lucide="search" class="w-4 h-4 text-zinc-500"></i>
+</div>
+<input type="text" id="sportsSearch" onkeyup="filterSports()" placeholder="Search sports channel..." class="bg-white/10 border border-white/15 focus:border-white/40 backdrop-blur-xl rounded-full py-2.5 pl-10 pr-4 text-xs font-semibold outline-none text-white placeholder:text-zinc-400 w-48 sm:w-72 transition-all shadow-xl">
+</div>
+</div>
+<!-- Sports Home-like Structure -->
+<div id="sportsHomeLayout" class="space-y-12">
+<!-- Sports Spotlight Slider -->
+<div id="sportsHeroSliderContainer" class="relative rounded-3xl sm:rounded-[36px] overflow-hidden h-[500px] sm:h-[620px] lg:h-[680px] bg-zinc-950 border border-white/10 shadow-2xl">
+<!-- Injected dynamically via JS -->
+</div>
+<!-- Custom Channel M3U Launcher Card (Below Spotlight Slider) -->
+<div id="customM3uLauncherCard" class="p-5 sm:p-6 bg-zinc-900/80 backdrop-blur-2xl border border-amber-500/30 rounded-3xl shadow-2xl space-y-4 relative z-10">
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+<h3 class="text-xs font-extrabold uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+<i data-lucide="radio" class="w-4 h-4"></i> Custom Sports Channel M3U Link
+</h3>
+</div>
+<span class="text-[10px] text-zinc-400 font-mono bg-white/10 px-2.5 py-1 rounded-full border border-white/10">Direct Stream Launcher</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+<div class="sm:col-span-4">
+<input type="text" id="customM3uNameInput" placeholder="Channel Name (e.g. ESPN HD)" class="w-full bg-white/5 border border-white/15 focus:border-emerald-400 rounded-full py-2.5 px-4 text-xs font-medium outline-none text-white placeholder:text-zinc-500 transition-all">
+</div>
+<div class="sm:col-span-6">
+<input type="url" id="customM3uUrlInput" onkeydown="if(event.key==='Enter') playCustomM3uStream()" placeholder="Paste Channel M3U / M3U8 Stream URL (http://...)" class="w-full bg-white/5 border border-white/15 focus:border-emerald-400 rounded-full py-2.5 px-4 text-xs font-mono outline-none text-white placeholder:text-zinc-500 transition-all">
+</div>
+<div class="sm:col-span-2 flex gap-2">
+<button onclick="playCustomM3uStream()" class="w-full py-2.5 px-5 bg-amber-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-wider rounded-full transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-1.5 shrink-0 transform hover:scale-105 active:scale-95">
+<i data-lucide="play" class="w-4 h-4 fill-black"></i> Play
+</button>
+</div>
+</div>
+<!-- Saved Custom Feeds Quick Chips -->
+<div id="userCustomM3uChips" class="flex flex-wrap items-center gap-2 pt-1 hidden"></div>
+</div>
+<!-- Shelf: Admin Live Events -->
+<div class="space-y-4 animate-fade-in" id="sportsLiveEventsShelfContainer" style="display: none;">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-red-500 rounded-full shadow-lg shadow-red-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Live Events</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsLiveEventsShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsLiveEventsShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsLiveEventsShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf: Admin Custom Streams -->
+<div class="space-y-4 animate-fade-in" id="sportsCustomShelfContainer" style="display: none;">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-yellow-500 rounded-full shadow-lg shadow-yellow-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Premium Custom Streams</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsCustomShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsCustomShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsCustomShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 1: Sky Sports Network -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-sky-500 rounded-full shadow-lg shadow-sky-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Sky Sports Network</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsSkyShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsSkyShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsSkyShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<div id="sportsTimelinesContainer" class="space-y-10"></div>
+<!-- Shelf 2: Football Arenas -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-amber-500 rounded-full shadow-lg shadow-emerald-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Football & Soccer Arenas</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsFootballShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsFootballShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsFootballShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf: Cricket Network -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Cricket Network</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsCricketShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsCricketShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsCricketShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 3: F1 & Motorsports -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-red-500 rounded-full shadow-lg shadow-red-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Formula 1 & Motorsports</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsF1Shelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsF1Shelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsF1Shelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 4: US Sports Networks -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-amber-500 rounded-full shadow-lg shadow-amber-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">US Sports & ESPN</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsUSShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsUSShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsUSShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 5: Sony Network -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-purple-500 rounded-full shadow-lg shadow-purple-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Sony Network</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsSonyShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsSonyShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsSonyShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 6: HBO Network -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-zinc-400 rounded-full shadow-lg shadow-zinc-400/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">HBO Network</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsHBOShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsHBOShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsHBOShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 7: 4K Ultra HD Channels -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-teal-400 rounded-full shadow-lg shadow-teal-400/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">4K Ultra HD Channels</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sports4kShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sports4kShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sports4kShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 8: Malayalam News -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-indigo-500 rounded-full shadow-lg shadow-indigo-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Malayalam News 24x7</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsMalayalamNewsShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsMalayalamNewsShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsMalayalamNewsShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 9: Malayalam Entertainment -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-violet-500 rounded-full shadow-lg shadow-violet-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Malayalam Entertainment & Shows</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsMalayalamEntShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsMalayalamEntShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsMalayalamEntShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 10: Malayalam Movies & Education -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-fuchsia-500 rounded-full shadow-lg shadow-fuchsia-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Malayalam Movies, Music & Education</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsMalayalamMoviesShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsMalayalamMoviesShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsMalayalamMoviesShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+<!-- Shelf 11: Kids & Cartoons -->
+<div class="space-y-4">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-5 bg-pink-500 rounded-full shadow-lg shadow-pink-500/50 animate-pulse"></span>
+<h2 class="text-lg font-extrabold uppercase tracking-wider text-white">Kids & Cartoons</h2>
+</div>
+<div class="scroller-container">
+<button class="scroller-btn scroller-left" onclick="scrollShelf('sportsKidsShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+<div id="sportsKidsShelf" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-2"></div>
+<button class="scroller-btn scroller-right" onclick="scrollShelf('sportsKidsShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+</div>
+</div>
+</div>
+<!-- Sports Catalog / Search Results -->
+<div id="sportsCatalogLayout" class="hidden space-y-6">
+<!-- Category Buttons -->
+<div class="flex flex-wrap gap-2 pb-4 border-b border-white/5">
+<button id="btn-sport-all" onclick="filterSportsCategory('all')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-amber-600 text-white border border-amber-500/30">All Sports</button>
+<button id="btn-sport-saved" onclick="filterSportsCategory('saved')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5"><i data-lucide="heart" class="inline w-3 h-3 mr-1"></i> Saved</button>
+<button id="btn-sport-cricket" onclick="filterSportsCategory('cricket')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">Cricket</button>
+<button id="btn-sport-football" onclick="filterSportsCategory('football')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">Football</button>
+<button id="btn-sport-sky" onclick="filterSportsCategory('sky')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">Sky Sports</button>
+<button id="btn-sport-f1" onclick="filterSportsCategory('f1')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">F1 & Racing</button>
+<button id="btn-sport-us" onclick="filterSportsCategory('us')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">US Sports</button>
+<button id="btn-sport-sony" onclick="filterSportsCategory('sony')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">Sony</button>
+<button id="btn-sport-hbo" onclick="filterSportsCategory('hbo')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">HBO</button>
+<button id="btn-sport-kids" onclick="filterSportsCategory('kids')" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-zinc-900 text-slate-400 hover:text-white border border-white/5">Kids</button>
+</div>
+<div id="sportsGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4"></div>
+</div>
+</section>

@@ -1,0 +1,307 @@
+// Timelines Data
+const animeTimelines = [
+    {
+        id: 'naruto',
+        title: 'Naruto Saga',
+        jp: 'ナルト',
+        gradient: 'from-orange-950/20 via-yellow-950/10 to-orange-950/20',
+        textGradient: 'from-orange-400 via-yellow-500 to-amber-400',
+        borderColor: 'border-orange-500/10',
+        glowColors: ['bg-orange-600/5', 'bg-yellow-500/5'],
+        badgeBg: 'bg-orange-500/15',
+        badgeBorder: 'border-orange-500/20',
+        badgeText: 'text-orange-400',
+        accent: 'from-orange-500 to-yellow-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]',
+        accentLine: 'from-orange-500 to-yellow-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/13/Naruto-Uzumaki-PNG-Cutout.png',
+        items: [
+            { id: 46260, tmdbType: 'tv', title: "Naruto", chrono: "Part I", jpTitle: "ナルト", rating: "8.4", year: "2002", desc: "The journey of Naruto Uzumaki begins as he strives to become the Hokage." },
+            { id: 31910, tmdbType: 'tv', title: "Naruto Shippuden", chrono: "Part II", jpTitle: "ナルト 疾風伝", rating: "8.6", year: "2007", desc: "Two and a half years later, Naruto returns to the Hidden Leaf Village." },
+            { id: 317442, tmdbType: 'movie', title: "The Last: Naruto the Movie", chrono: "Post-War", jpTitle: "ザ・ラスト", rating: "7.8", year: "2014", desc: "The moon is approaching the Earth! The final chapter of Naruto's story." },
+            { id: 70881, tmdbType: 'tv', title: "Boruto: Naruto Next Generations", chrono: "New Era", jpTitle: "ボルト", rating: "7.9", year: "2017", desc: "The saga continues with Boruto Uzumaki and his generation of young shinobi." }
+        ]
+    },
+    {
+        id: 'onepiece',
+        title: 'One Piece Saga',
+        jp: 'ワンピース',
+        gradient: 'from-cyan-950/20 via-blue-950/10 to-cyan-950/20',
+        textGradient: 'from-cyan-400 via-blue-500 to-sky-400',
+        borderColor: 'border-cyan-500/10',
+        glowColors: ['bg-cyan-600/5', 'bg-blue-500/5'],
+        badgeBg: 'bg-cyan-500/15',
+        badgeBorder: 'border-cyan-500/20',
+        badgeText: 'text-cyan-400',
+        accent: 'from-cyan-500 to-blue-500 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
+        accentLine: 'from-cyan-500 to-blue-500',
+        characterImage: 'https://pngimg.com/uploads/one_piece/one_piece_PNG56.png',
+        items: [
+            { id: 37854, tmdbType: 'tv', title: "East Blue", chrono: "Saga 1", jpTitle: "ワンピース", rating: "8.7", year: "1999", desc: "Monkey D. Luffy begins his quest to find the legendary treasure, the One Piece." },
+            { id: 37854, tmdbType: 'tv', title: "Alabasta", chrono: "Saga 2", jpTitle: "アラバスタ編", rating: "8.8", year: "2001", desc: "The Straw Hats enter the Grand Line and face the Warlord Crocodile." },
+            { id: 37854, tmdbType: 'tv', title: "Marineford", chrono: "Saga 4", jpTitle: "マリンフォード頂上戦争", rating: "9.5", year: "2010", desc: "The ultimate war between the Marines and the Whitebeard Pirates." },
+            { id: 37854, tmdbType: 'tv', title: "Wano Country", chrono: "Saga 5", jpTitle: "ワノ国編", rating: "9.3", year: "2019", desc: "The alliance takes on the Emperor Kaido in the samurai country of Wano." }
+        ]
+    },
+    {
+        id: 'onepiece_movies',
+        title: 'One Piece Movies',
+        jp: '映画',
+        gradient: 'from-rose-950/20 via-pink-950/10 to-rose-950/20',
+        textGradient: 'from-rose-400 via-pink-500 to-red-400',
+        borderColor: 'border-rose-500/10',
+        glowColors: ['bg-rose-600/5', 'bg-pink-500/5'],
+        badgeBg: 'bg-rose-500/15',
+        badgeBorder: 'border-rose-500/20',
+        badgeText: 'text-rose-400',
+        accent: 'from-rose-500 to-pink-500 shadow-[0_0_15px_rgba(244,63,94,0.4)]',
+        accentLine: 'from-rose-500 to-pink-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2/Luffy-PNG-Pic.png',
+        items: [
+            { id: 34291, tmdbType: 'movie', title: "Strong World", chrono: "Movie 10", jpTitle: "ストロングワールド", rating: "7.6", year: "2009", desc: "The Straw Hat Pirates face off against the legendary pirate Shiki." },
+            { id: 132686, tmdbType: 'movie', title: "Film: Z", chrono: "Movie 12", jpTitle: "フィルム ゼット", rating: "7.9", year: "2012", desc: "A former Marine Admiral steals the Dyna Stones to destroy the New World." },
+            { id: 568012, tmdbType: 'movie', title: "Stampede", chrono: "Movie 14", jpTitle: "スタンピード", rating: "8.0", year: "2019", desc: "Pirates from around the world gather for the Pirate Festival." },
+            { id: 900667, tmdbType: 'movie', title: "Film: Red", chrono: "Movie 15", jpTitle: "フィルム レッド", rating: "7.3", year: "2022", desc: "Uta, the world's most beloved singer, reveals her identity at a live concert." }
+        ]
+    },
+    {
+        id: 'dragonball',
+        title: 'Dragon Ball Saga',
+        jp: 'ドラゴンボール',
+        gradient: 'from-yellow-950/20 via-amber-950/10 to-yellow-950/20',
+        textGradient: 'from-yellow-400 via-amber-500 to-orange-400',
+        borderColor: 'border-yellow-500/10',
+        glowColors: ['bg-yellow-600/5', 'bg-amber-500/5'],
+        badgeBg: 'bg-yellow-500/15',
+        badgeBorder: 'border-yellow-500/20',
+        badgeText: 'text-yellow-400',
+        accent: 'from-yellow-400 to-amber-500 shadow-[0_0_15px_rgba(250,204,21,0.4)]',
+        accentLine: 'from-yellow-400 to-amber-500',
+        characterImage: 'https://pngimg.com/uploads/goku/goku_PNG22.png',
+        items: [
+            { id: 12609, tmdbType: 'tv', title: "Dragon Ball", chrono: "Part 1", jpTitle: "ドラゴンボール", rating: "8.1", year: "1986", desc: "Goku meets Bulma and sets out on an adventure to find the Dragon Balls." },
+            { id: 12971, tmdbType: 'tv', title: "Dragon Ball Z", chrono: "Part 2", jpTitle: "ドラゴンボールZ", rating: "8.9", year: "1989", desc: "Goku learns of his Saiyan heritage and battles cosmic threats." },
+            { id: 62715, tmdbType: 'tv', title: "Dragon Ball Super", chrono: "Part 3", jpTitle: "ドラゴンボール超", rating: "8.3", year: "2015", desc: "Goku attains the power of gods and faces warriors across the multiverse." },
+            { id: 114461, tmdbType: 'tv', title: "Dragon Ball Daima", chrono: "Part 4", jpTitle: "ドラゴンボールDAIMA", rating: "8.0", year: "2024", desc: "Goku and his friends are turned small and must explore a new world." }
+        ]
+    }
+];
+
+const homeTimelines = [
+    {
+        id: 'marvel',
+        title: 'Marvel Cinematic Universe',
+        jp: 'MCU',
+        gradient: 'from-red-950/20 via-rose-950/10 to-red-950/20',
+        textGradient: 'from-red-400 via-rose-500 to-red-600',
+        borderColor: 'border-red-500/10',
+        glowColors: ['bg-red-600/5', 'bg-rose-500/5'],
+        badgeBg: 'bg-red-500/15',
+        badgeBorder: 'border-red-500/20',
+        badgeText: 'text-red-400',
+        accent: 'from-red-500 to-rose-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]',
+        accentLine: 'from-red-500 to-rose-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2016/05/Iron-Man-PNG.png',
+        items: [
+            { id: 1726, tmdbType: 'movie', title: "Iron Man", chrono: "Phase 1", jpTitle: "アイアンマン", rating: "7.6", year: "2008", desc: "Tony Stark builds an armored suit and becomes a technological superhero." },
+            { id: 24428, tmdbType: 'movie', title: "The Avengers", chrono: "Phase 1", jpTitle: "アベンジャーズ", rating: "7.7", year: "2012", desc: "Earth's mightiest heroes must come together and learn to fight as a team." },
+            { id: 299536, tmdbType: 'movie', title: "Avengers: Infinity War", chrono: "Phase 3", jpTitle: "インフィニティ", rating: "8.3", year: "2018", desc: "The Avengers and their allies must be willing to sacrifice all to defeat Thanos." },
+            { id: 299534, tmdbType: 'movie', title: "Avengers: Endgame", chrono: "Phase 3", jpTitle: "エンドゲーム", rating: "8.3", year: "2019", desc: "The remaining Avengers assemble once more to reverse Thanos' actions." }
+        ]
+    },
+    {
+        id: 'dc',
+        title: 'DC Multiverse & Batman',
+        jp: 'DCU',
+        gradient: 'from-blue-950/20 via-indigo-950/10 to-blue-950/20',
+        textGradient: 'from-blue-400 via-indigo-500 to-cyan-400',
+        borderColor: 'border-blue-500/10',
+        glowColors: ['bg-blue-600/5', 'bg-indigo-500/5'],
+        badgeBg: 'bg-blue-500/15',
+        badgeBorder: 'border-blue-500/20',
+        badgeText: 'text-blue-400',
+        accent: 'from-blue-500 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]',
+        accentLine: 'from-blue-500 to-indigo-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2016/03/Batman-PNG-Picture.png',
+        items: [
+            { id: 155, tmdbType: 'movie', title: "The Dark Knight", chrono: "Nolanverse", jpTitle: "ダークナイト", rating: "8.5", year: "2008", desc: "Batman faces his ultimate test as the Joker wreaks havoc on Gotham." },
+            { id: 49521, tmdbType: 'movie', title: "Man of Steel", chrono: "DCEU", jpTitle: "マンオブスティール", rating: "6.6", year: "2013", desc: "Clark Kent learns his true origin and must become the hero Superman." },
+            { id: 791373, tmdbType: 'movie', title: "Zack Snyder's Justice League", chrono: "DCEU", jpTitle: "ジャスティスリーグ", rating: "8.2", year: "2021", desc: "Determined to ensure Superman's sacrifice wasn't in vain, Bruce Wayne assembles a team." },
+            { id: 414906, tmdbType: 'movie', title: "The Batman", chrono: "Reevesverse", jpTitle: "ザ・バットマン", rating: "7.7", year: "2022", desc: "In his second year of fighting crime, Batman pursues the Riddler." }
+        ]
+    },
+    {
+        id: 'harrypotter',
+        title: 'Wizarding World',
+        jp: '魔法ワールド',
+        gradient: 'from-violet-950/20 via-purple-950/10 to-violet-950/20',
+        textGradient: 'from-violet-400 via-purple-500 to-fuchsia-400',
+        borderColor: 'border-violet-500/10',
+        glowColors: ['bg-violet-600/5', 'bg-purple-500/5'],
+        badgeBg: 'bg-violet-500/15',
+        badgeBorder: 'border-violet-500/20',
+        badgeText: 'text-violet-400',
+        accent: 'from-violet-500 to-purple-500 shadow-[0_0_15px_rgba(139,92,246,0.4)]',
+        accentLine: 'from-violet-500 to-purple-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2016/04/Harry-Potter-PNG-Picture.png',
+        items: [
+            { id: 671, tmdbType: 'movie', title: "The Sorcerer's Stone", chrono: "Year 1", jpTitle: "賢者の石", rating: "7.9", year: "2001", desc: "Harry Potter discovers he is a wizard and begins his education at Hogwarts." },
+            { id: 673, tmdbType: 'movie', title: "The Prisoner of Azkaban", chrono: "Year 3", jpTitle: "アズカバンの囚人", rating: "8.0", year: "2004", desc: "Harry learns the truth about Sirius Black and his connection to his parents." },
+            { id: 675, tmdbType: 'movie', title: "The Order of the Phoenix", chrono: "Year 5", jpTitle: "不死鳥の騎士団", rating: "7.7", year: "2007", desc: "Harry prepares for Voldemort's return in secret with Dumbledore's Army." },
+            { id: 12445, tmdbType: 'movie', title: "The Deathly Hallows: Part 2", chrono: "Year 7", jpTitle: "死の秘宝", rating: "8.1", year: "2011", desc: "The final battle between the forces of good and evil magic." }
+        ]
+    },
+    {
+        id: 'lotr',
+        title: 'Lord of the Rings',
+        jp: '指輪物語',
+        gradient: 'from-emerald-950/20 via-green-950/10 to-emerald-950/20',
+        textGradient: 'from-emerald-400 via-green-500 to-teal-400',
+        borderColor: 'border-emerald-500/10',
+        glowColors: ['bg-emerald-600/5', 'bg-green-500/5'],
+        badgeBg: 'bg-emerald-500/15',
+        badgeBorder: 'border-emerald-500/20',
+        badgeText: 'text-emerald-400',
+        accent: 'from-emerald-500 to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]',
+        accentLine: 'from-emerald-500 to-green-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2016/05/Lord-Of-The-Rings-PNG-Image.png',
+        items: [
+            { id: 120, tmdbType: 'movie', title: "The Fellowship of the Ring", chrono: "Part 1", jpTitle: "旅の仲間", rating: "8.4", year: "2001", desc: "A meek Hobbit and eight companions set out to destroy the powerful One Ring." },
+            { id: 121, tmdbType: 'movie', title: "The Two Towers", chrono: "Part 2", jpTitle: "二つの塔", rating: "8.4", year: "2002", desc: "While Frodo and Sam edge closer to Mordor, the divided fellowship makes a stand." },
+            { id: 122, tmdbType: 'movie', title: "The Return of the King", chrono: "Part 3", jpTitle: "王の帰還", rating: "8.5", year: "2003", desc: "Gandalf and Aragorn lead the World of Men against Sauron's army." },
+            { id: 84773, tmdbType: 'tv', title: "The Rings of Power", chrono: "Prequel", jpTitle: "力の指輪", rating: "7.4", year: "2022", desc: "Epic drama set thousands of years before the events of The Hobbit." }
+        ]
+    },
+    {
+        id: 'fastfurious',
+        title: 'The Fast Saga',
+        jp: 'ワイルド',
+        gradient: 'from-slate-950/20 via-zinc-950/10 to-slate-950/20',
+        textGradient: 'from-slate-300 via-gray-400 to-slate-200',
+        borderColor: 'border-slate-500/10',
+        glowColors: ['bg-slate-600/5', 'bg-zinc-500/5'],
+        badgeBg: 'bg-slate-500/15',
+        badgeBorder: 'border-slate-500/20',
+        badgeText: 'text-slate-300',
+        accent: 'from-slate-400 to-gray-500 shadow-[0_0_15px_rgba(148,163,184,0.4)]',
+        accentLine: 'from-slate-400 to-gray-500',
+        characterImage: 'https://www.pngall.com/wp-content/uploads/2/Dodge-Charger-PNG-Image-HD.png',
+        items: [
+            { id: 9799, tmdbType: 'movie', title: "The Fast and the Furious", chrono: "Part 1", jpTitle: "スピード", rating: "6.9", year: "2001", desc: "Los Angeles street racer Dominic Toretto falls under the suspicion of the LAPD." },
+            { id: 51497, tmdbType: 'movie', title: "Fast Five", chrono: "Part 5", jpTitle: "メガマックス", rating: "7.3", year: "2011", desc: "Dominic and his crew find themselves on the wrong side of the law once again." },
+            { id: 168259, tmdbType: 'movie', title: "Furious 7", chrono: "Part 7", jpTitle: "スカイミッション", rating: "7.2", year: "2015", desc: "Deckard Shaw seeks revenge against Dominic Toretto and his family." },
+            { id: 385687, tmdbType: 'movie', title: "Fast X", chrono: "Part 10", jpTitle: "ファイヤーブースト", rating: "7.1", year: "2023", desc: "Over many missions, Dom Toretto and his family have outsmarted every foe." }
+        ]
+    }
+];
+
+async function renderTimelines(containerId, timelinesArray) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    let html = "";
+    
+    for (const tl of timelinesArray) {
+        let itemsHtml = "";
+        for (let i = 0; i < tl.items.length; i++) {
+            const item = tl.items[i];
+            
+            // Default posters
+            let poster = "https://image.tmdb.org/t/p/w400/811LjuvO9QJMA0m18Zt41zZ1Hov.jpg";
+            
+            const nodeHtml = `
+                <div class="hidden sm:flex flex-col items-center justify-center shrink-0 pr-2">
+                    <div class="w-10 h-10 rounded-full bg-zinc-950 border-2 ${tl.borderColor} flex items-center justify-center font-black text-xs ${tl.badgeText} shadow-md relative z-20 hover:scale-110 transition-transform">
+                        ${i + 1}
+                    </div>
+                    ${i < tl.items.length - 1 ? `<div class="w-0.5 h-32 bg-gradient-to-b ${tl.accentLine} opacity-30 mt-2 z-10"></div>` : ''}
+                </div>
+            `;
+            
+            const isLast = i === tl.items.length - 1;
+            
+            itemsHtml += `
+                <div class="flex items-center gap-4 shrink-0 relative z-20">
+                    ${nodeHtml}
+                    <div class="w-56 sm:w-64 bg-zinc-950/90 rounded-2xl overflow-hidden cursor-pointer border border-white/5 hover:${tl.borderColor} transition-all duration-500 transform hover:scale-[1.03] active:scale-[0.98] relative flex flex-col group shadow-xl z-20" onclick="showPlayer('${item.id}', '${item.tmdbType}')">
+                        <div class="relative aspect-[2/3] overflow-hidden bg-zinc-900">
+                            <img src="${poster}" id="${containerId}-poster-${item.id}-${i}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy">
+                            <div class="absolute top-3 left-3 bg-gradient-to-r ${tl.accent} px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white border border-white/10 flex items-center gap-1 shadow-md">
+                                <i data-lucide="compass" class="w-3 h-3 animate-spin" style="animation-duration: 8s;"></i> <span>${item.chrono}</span>
+                            </div>
+                            <div class="absolute top-3 right-3 bg-black/85 px-2 py-0.5 rounded-lg text-[10px] font-black border border-white/15 flex items-center gap-0.5 shadow-md text-white">
+                                <i data-lucide="star" class="w-3 h-3 ${tl.badgeText} fill-current"></i> <span>${item.rating}</span>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-zinc-950/95 flex-grow flex flex-col justify-between border-t border-white/5 min-h-[160px]">
+                            <div class="space-y-1.5">
+                                <div class="text-[9px] font-black uppercase tracking-widest ${tl.badgeText} flex items-center justify-between">
+                                    <span>${item.jpTitle}</span>
+                                    <span class="${tl.badgeBg} px-1.5 py-0.5 rounded border ${tl.badgeBorder} ${tl.badgeText}">${item.tmdbType === 'tv' ? 'Series' : 'Movie'}</span>
+                                </div>
+                                <h3 class="text-xs sm:text-sm font-black text-white group-hover:${tl.badgeText} transition-colors uppercase tracking-tight line-clamp-1" title="${item.title}">${item.title}</h3>
+                                <p class="text-[10px] sm:text-[11px] text-zinc-400 leading-relaxed font-semibold line-clamp-3 group-hover:text-zinc-300 transition-colors">${item.desc}</p>
+                            </div>
+                            <div class="flex items-center justify-between text-[9px] font-bold text-zinc-500 uppercase tracking-widest mt-3 pt-3 border-t border-white/5">
+                                <span>${item.year}</span>
+                                <span class="text-indigo-400 font-extrabold flex items-center gap-1 group-hover:translate-x-1 transition-transform">Stream Arc <i data-lucide="chevron-right" class="w-3 h-3"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${!isLast ? `
+                    <div class="hidden md:flex items-center justify-center pointer-events-none select-none shrink-0 self-center -mx-1 z-10">
+                        <div class="w-10 h-0.5 bg-gradient-to-r ${tl.accentLine} opacity-20 relative">
+                            <div class="absolute inset-0 bg-white blur-sm opacity-50 animate-pulse"></div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        html += `
+        <div class="space-y-6 bg-gradient-to-r ${tl.gradient} p-5 sm:p-6 rounded-3xl border ${tl.borderColor} relative overflow-hidden">
+            <!-- Glows -->
+            <div class="absolute top-1/2 left-1/4 -translate-y-1/2 w-64 h-64 ${tl.glowColors[0]} blur-[120px] pointer-events-none"></div>
+            <div class="absolute top-1/2 right-1/4 -translate-y-1/2 w-64 h-64 ${tl.glowColors[1]} blur-[120px] pointer-events-none"></div>
+            
+            <!-- Character Standing Image (Absolute Right) -->
+            <img src="${tl.characterImage}" alt="${tl.title} Character" class="absolute -right-4 -bottom-4 h-[120%] object-contain opacity-[0.25] pointer-events-none z-0 transform translate-x-5 drop-shadow-2xl" loading="lazy" />
+
+            <div class="flex items-center justify-between relative z-10">
+                <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-6 bg-gradient-to-b ${tl.accentLine} rounded-full shadow-lg"></span>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+                        <h2 class="text-xl sm:text-2xl font-black uppercase tracking-tight bg-gradient-to-r ${tl.textGradient} bg-clip-text text-transparent filter drop-shadow-lg">${tl.title}</h2>
+                        <span class="inline-flex items-center gap-1 ${tl.badgeBg} border ${tl.badgeBorder} ${tl.badgeText} text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mt-1 sm:mt-0 w-fit animate-pulse">${tl.jp} Timeline</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scroller-container relative z-10">
+                <button class="scroller-btn scroller-left" onclick="scrollShelf('${containerId}-${tl.id}TimelineShelf', 'left')"><i data-lucide="chevron-left"></i></button>
+                <div id="${containerId}-${tl.id}TimelineShelf" class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth py-4 px-2 relative z-20">${itemsHtml}</div>
+                <button class="scroller-btn scroller-right" onclick="scrollShelf('${containerId}-${tl.id}TimelineShelf', 'right')"><i data-lucide="chevron-right"></i></button>
+            </div>
+        </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+    
+    // Async load posters
+    for (const tl of timelinesArray) {
+        for (let i = 0; i < tl.items.length; i++) {
+            const item = tl.items[i];
+            fetchTMDB(`${item.tmdbType}/${item.id}`).then(data => {
+                if (data.poster_path) {
+                    const img = document.getElementById(`${containerId}-poster-${item.id}-${i}`);
+                    if (img) img.src = `https://image.tmdb.org/t/p/w400${data.poster_path}`;
+                }
+            }).catch(e => {});
+        }
+    }
+}

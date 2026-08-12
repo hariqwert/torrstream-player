@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stalker Pro — Ultra-Fast Media Hub</title>
+  
+  <!-- Sleek Modern Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Syncopate:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * { -webkit-tap-highlight-color: transparent !important; }
+    * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #03060d;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #ffffff;
+      min-h-screen: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Ultra-Fast Hardware-Accelerated Ambient Glows */
+    .ambient-blur {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+      will-change: transform;
+    }
+
+    .glow-purple { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #8b5cf6; }
+    .glow-cyan { bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: #06b6d4; }
+    .glow-amber { top: 40%; left: 35%; width: 30vw; height: 30vw; background: #f59e0b; opacity: 0.15; }
+
+    /* Glassmorphism Design System */
+    .glass-nav {
+      background: rgba(3, 6, 13, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(13, 19, 33, 0.5);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.75rem;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-6px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Sound Bar Pulse */
+    .audio-bar-pulse {
+      animation: pulseBar 1s infinite alternate ease-in-out;
+    }
+    @keyframes pulseBar {
+      0% { height: 30%; }
+      100% { height: 100%; }
+    }
+
+    /* Modal Backdrop */
+    .cmd-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 13, 0.85);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 12vh;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .cmd-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between selection:bg-purple-500 selection:text-white">
+
+  <!-- Light Ambient Backgrounds (Zero GPU Lag) -->
+  <div class="ambient-blur glow-purple"></div>
+  <div class="ambient-blur glow-cyan"></div>
+  <div class="ambient-blur glow-amber"></div>
+
+  <!-- Header -->
+  <header class="glass-nav sticky top-0 z-50 w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="/hero.html" class="flex items-center gap-3 text-decoration-none group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
+          <i data-lucide="infinity" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="font-['Syncopate'] text-base font-extrabold tracking-[0.2em] text-white block leading-none">STALKER PRO</span>
+          <span class="text-[9px] font-mono tracking-[0.3em] text-purple-400 font-bold uppercase block mt-1">Lightweight Media Hub</span>
+        </div>
+      </a>
+
+      <!-- Quick Search & Server Status -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleCmd(true)" class="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md rounded-full px-4 py-2 text-xs font-bold text-white transition-all hover:scale-105 active:scale-95">
+          <i data-lucide="search" class="w-4 h-4 text-purple-400"></i>
+          <span class="hidden sm:inline">Search Hubs</span>
+          <kbd class="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-black/40 border border-white/20 rounded text-zinc-400">Ctrl K</kbd>
+        </button>
+
+        <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2 rounded-full text-xs font-bold text-emerald-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Online</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Bento Grid Section -->
+  <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full z-10 relative">
+    
+    <!-- Hero Header Banner -->
+    <div class="text-center space-y-3 mb-10">
+      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-xs font-bold text-purple-300">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> STALKER PRO ECOSYSTEM
+      </span>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
+        Select Your Experience
+      </h1>
+      <p class="text-xs sm:text-sm text-zinc-400 font-medium max-w-lg mx-auto">
+        Fast, ad-free streaming hubs for live television, 4K cinema, lossless music, e-books, and BitTorrent magnets.
+      </p>
+    </div>
+
+    <!-- Bento Grid (5 Feature Cards) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Card 1: IPTV Live TV -->
+      <a href="/index.php" class="glass-card group p-6 flex flex-col justify-between h-[280px] text-decoration-none hover:border-red-500/40 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500"></div>
+        <div class="space-y-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+            <i data-lucide="tv" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono font-bold tracking-widest text-red-400 uppercase">Stalker Middleware</span>
+            <h2 class="text-xl font-extrabold text-white mt-1 group-hover:text-red-400 transition-colors">IPTV Live TV</h2>
+            <p class="text-xs text-zinc-400 mt-2 font-medium leading-relaxed">
+              Global channel feeds, credential vault, and live broadcasting with zero latency.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-zinc-400 group-hover:text-white relative z-10 pt-4 border-t border-white/5">
+          <span>Enter Live Portal</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-red-400 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </a>
+
+      <!-- Card 2: Cinema 4K -->
+      <a href="/consumet.html" class="glass-card group p-6 flex flex-col justify-between h-[280px] text-decoration-none hover:border-amber-500/40 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500"></div>
+        <div class="space-y-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+            <i data-lucide="film" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono font-bold tracking-widest text-amber-400 uppercase">Apple TV Style Hub</span>
+            <h2 class="text-xl font-extrabold text-white mt-1 group-hover:text-amber-400 transition-colors">Cinema 4K Engine</h2>
+            <p class="text-xs text-zinc-400 mt-2 font-medium leading-relaxed">
+              IMDb direct link player, subtitles, 4K/8K quality selector, and trending blockbusters.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-zinc-400 group-hover:text-white relative z-10 pt-4 border-t border-white/5">
+          <span>Explore Movies & Shows</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </a>
+
+      <!-- Card 3: FLAC Audio -->
+      <a href="/music.html" class="glass-card group p-6 flex flex-col justify-between h-[280px] text-decoration-none hover:border-purple-500/40 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500"></div>
+        <div class="space-y-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
+            <i data-lucide="music" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono font-bold tracking-widest text-purple-400 uppercase">3D Turntable & EQ</span>
+            <h2 class="text-xl font-extrabold text-white mt-1 group-hover:text-purple-400 transition-colors">Lossless Audio</h2>
+            <p class="text-xs text-zinc-400 mt-2 font-medium leading-relaxed">
+              FLAC music streaming, WebAudio visualizer, 3-band equalizer, and JioSaavn engine.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-zinc-400 group-hover:text-white relative z-10 pt-4 border-t border-white/5">
+          <span>Listen Now</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-purple-400 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </a>
+
+      <!-- Card 4: Kindle E-Books -->
+      <a href="/books.html" class="glass-card group p-6 flex flex-col justify-between h-[280px] text-decoration-none hover:border-blue-500/40 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-500"></div>
+        <div class="space-y-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+            <i data-lucide="book-open" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono font-bold tracking-widest text-blue-400 uppercase">70,000+ Gutenberg Titles</span>
+            <h2 class="text-xl font-extrabold text-white mt-1 group-hover:text-blue-400 transition-colors">Kindle E-Book Reader</h2>
+            <p class="text-xs text-zinc-400 mt-2 font-medium leading-relaxed">
+              5 eye-safe themes, dyslexic fonts, instant dictionary popup, and sticky note annotations.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-zinc-400 group-hover:text-white relative z-10 pt-4 border-t border-white/5">
+          <span>Read Books</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </a>
+
+      <!-- Card 5: TorrStream BitTorrent Player -->
+      <a href="/torrent.html" class="glass-card group p-6 flex flex-col justify-between h-[280px] lg:col-span-2 text-decoration-none hover:border-emerald-500/40 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl group-hover:scale-150 transition-all duration-500"></div>
+        <div class="space-y-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+            <i data-lucide="zap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono font-bold tracking-widest text-emerald-400 uppercase">TorrServer Engine Integration</span>
+            <h2 class="text-xl font-extrabold text-white mt-1 group-hover:text-emerald-400 transition-colors">TorrStream Magnet Player</h2>
+            <p class="text-xs text-zinc-400 mt-2 font-medium leading-relaxed max-w-xl">
+              Zero-wait BitTorrent magnet video streaming, FFmpeg live remuxing, TMDB/Torrentio search modal, and RAM speed optimizer.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-zinc-400 group-hover:text-white relative z-10 pt-4 border-t border-white/5">
+          <span>Launch TorrStream Player</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="w-full glass-nav border-t border-white/10 py-6 z-10 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400 font-medium">
+      <div class="flex items-center gap-2">
+        <span class="text-white font-bold">Stalker Pro Platform</span>
+        <span>•</span>
+        <span>Fast Lightweight Hub</span>
+      </div>
+      <p class="text-[11px] text-zinc-500">Optimized for 60 FPS zero-lag performance on all devices.</p>
+    </div>
+  </footer>
+
+  <!-- Command Palette Modal -->
+  <div class="cmd-backdrop" id="cmdModal" onclick="toggleCmd(false)">
+    <div class="w-[90%] max-w-lg bg-zinc-950 border border-white/15 rounded-2xl p-4 shadow-2xl space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+        <i data-lucide="search" class="w-5 h-5 text-purple-400"></i>
+        <input type="text" id="cmdInput" placeholder="Quick jump to IPTV, Cinema, Audio, Books, or Torrent..." class="w-full bg-transparent text-sm font-semibold text-white outline-none placeholder:text-zinc-500">
+        <button onclick="toggleCmd(false)" class="text-xs text-zinc-400 font-bold px-2 py-1 bg-white/10 rounded">ESC</button>
+      </div>
+
+      <div class="space-y-2 max-h-[50vh] overflow-y-auto">
+        <a href="/index.php" class="flex items-center justify-between p-3 rounded-xl hover:bg-white/10 text-white text-decoration-none transition-colors">
+          <div class="flex items-center gap-3"><i data-lucide="tv" class="text-red-400"></i><span class="text-xs font-bold">IPTV Live TV</span></div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500"></i>
+        </a>
+        <a href="/consumet.html" class="flex items-center justify-between p-3 rounded-xl hover:bg-white/10 text-white text-decoration-none transition-colors">
+          <div class="flex items-center gap-3"><i data-lucide="film" class="text-amber-400"></i><span class="text-xs font-bold">Cinema 4K Engine</span></div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500"></i>
+        </a>
+        <a href="/music.html" class="flex items-center justify-between p-3 rounded-xl hover:bg-white/10 text-white text-decoration-none transition-colors">
+          <div class="flex items-center gap-3"><i data-lucide="music" class="text-purple-400"></i><span class="text-xs font-bold">Lossless Audio</span></div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500"></i>
+        </a>
+        <a href="/books.html" class="flex items-center justify-between p-3 rounded-xl hover:bg-white/10 text-white text-decoration-none transition-colors">
+          <div class="flex items-center gap-3"><i data-lucide="book-open" class="text-blue-400"></i><span class="text-xs font-bold">Kindle E-Book Reader</span></div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500"></i>
+        </a>
+        <a href="/torrent.html" class="flex items-center justify-between p-3 rounded-xl hover:bg-white/10 text-white text-decoration-none transition-colors">
+          <div class="flex items-center gap-3"><i data-lucide="zap" class="text-emerald-400"></i><span class="text-xs font-bold">TorrStream Magnet Player</span></div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-500"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+
+    function toggleCmd(show) {
+      const modal = document.getElementById('cmdModal');
+      const input = document.getElementById('cmdInput');
+      if (show) {
+        modal.classList.add('active');
+        input.focus();
+      } else {
+        modal.classList.remove('active');
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleCmd(true);
+      }
+      if (e.key === 'Escape') toggleCmd(false);
+    });
+  </script>
+</body>
+</html>
