@@ -987,29 +987,32 @@ function playTorrentFile(hash, fileId, filePath, title, fileLength) {
   directRetryCount = 0;
   window.currentSeekOffset = 0;
 
-  const fileName = (filePath || '').toLowerCase();
+  const fileName = (filePath || title || '').toLowerCase();
   const ext = fileName.split('.').pop();
   const isNonNativeFormat = ['avi', 'flv', 'wmv', 'vob', 'divx', 'xvid', 'ts', 'm2ts'].includes(ext);
+  const isHevcOr10Bit = /(x265|h265|hevc|10bit|hdr|dovi|dv)/i.test(fileName);
 
   const directStreamUrl = `${TORRSERVER_BASE}/stream?link=${encodeURIComponent(hash)}&index=${fileId}&play=1`;
 
   let modeToUse = gstEngineMode;
-  if (isNonNativeFormat && modeToUse === 'direct') {
+  if (isHevcOr10Bit) {
+    modeToUse = 'transcode';
+  } else if (isNonNativeFormat && modeToUse === 'direct') {
     modeToUse = 'remux';
   }
 
   let activeEngineLabel = 'Direct Stream (Full Timeline)';
-  let activeUrl = `/api/torrent/stream-ffmpeg?url=${encodeURIComponent(directStreamUrl)}&mode=remux`;
+  let activeUrl = directStreamUrl;
 
-  if (modeToUse === 'direct') {
-    activeUrl = directStreamUrl;
-    activeEngineLabel = 'Direct Stream Engine';
-  } else if (modeToUse === 'transcode') {
+  if (modeToUse === 'transcode') {
     activeUrl = `/api/torrent/stream-ffmpeg?url=${encodeURIComponent(directStreamUrl)}&mode=transcode`;
-    activeEngineLabel = 'FFmpeg (Live Transcode)';
+    activeEngineLabel = isHevcOr10Bit ? 'FFmpeg (Auto x264 Transcode for HEVC/x265)' : 'FFmpeg (Live Transcode)';
   } else if (modeToUse === 'remux') {
     activeUrl = `/api/torrent/stream-ffmpeg?url=${encodeURIComponent(directStreamUrl)}&mode=remux`;
     activeEngineLabel = 'FFmpeg (Live Remux)';
+  } else {
+    activeUrl = directStreamUrl;
+    activeEngineLabel = 'Direct Stream Engine';
   }
 
   const engineLabelEl = document.getElementById('currentEngineLabel');
