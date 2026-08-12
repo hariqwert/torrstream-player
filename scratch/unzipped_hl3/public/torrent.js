@@ -1200,11 +1200,20 @@ function showLoading(title, subtitle) {
   loadingTitle.textContent = title;
   loadingSubtitle.textContent = subtitle;
   loadingOverlay.classList.remove('hidden');
+
+  // Auto-dismiss safety: hide overlay after 5s max so it NEVER gets stuck
+  bufferTimeoutTimer = setTimeout(() => {
+    hideLoading();
+  }, 5000);
 }
 
 function hideLoading() {
   if (bufferTimeoutTimer) clearTimeout(bufferTimeoutTimer);
   loadingOverlay.classList.add('hidden');
+}
+
+if (loadingOverlay) {
+  loadingOverlay.addEventListener('click', hideLoading);
 }
 
 // Utilities
