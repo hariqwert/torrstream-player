@@ -12,6 +12,7 @@ let metadataPollTimer = null;
 let gstEngineMode = 'direct'; // Default: 'direct' (Direct Stream Raw), 'remux' (FFmpeg Remux), 'transcode' (FFmpeg Transcode)
 let currentStreamInfo = { hash: null, fileId: null, filePath: '', title: '', fileLength: 0 };
 let directRetryCount = 0;
+let isPlaybackInitiated = false;
 
 // DOM Elements
 const serverStatusPill = document.getElementById('serverStatusPill');
@@ -322,13 +323,16 @@ function setupEventListeners() {
   });
 
   // Video Events
-  videoPlayer.addEventListener('playing', () => {
-    hideLoading();
-    playerPlaceholder.classList.add('hidden');
+  ['playing', 'timeupdate', 'canplay'].forEach(evt => {
+    videoPlayer.addEventListener(evt, () => {
+      isPlaybackInitiated = true;
+      hideLoading();
+      playerPlaceholder.classList.add('hidden');
+    });
   });
 
   videoPlayer.addEventListener('waiting', () => {
-    if (videoPlayer.error || (videoPlayer.paused && typeof isPerformSeeking !== 'undefined' && !isPerformSeeking)) return;
+    if (isPlaybackInitiated || videoPlayer.error || (videoPlayer.paused && typeof isPerformSeeking !== 'undefined' && !isPerformSeeking)) return;
     showLoading('Buffering Stream...', 'Fetching data from TorrServer cache...');
   });
 
@@ -1189,14 +1193,10 @@ async function loadActiveTorrentsList() {
 // Loading Helpers
 let bufferTimeoutTimer = null;
 function showLoading(title, subtitle) {
+  if (isPlaybackInitiated && videoPlayer && !videoPlayer.paused && videoPlayer.currentTime > 0) {
+    return;
+  }
   if (bufferTimeoutTimer) clearTimeout(bufferTimeoutTimer);
-  bufferTimeoutTimer = setTimeout(() => {
-    if (!loadingOverlay.classList.contains('hidden') && title.includes('Buffering')) {
-      hideLoading();
-      alert('Stream buffering timed out. The torrent may be dead or have no active seeders. Try a different torrent.');
-    }
-  }, 25000);
-
   loadingTitle.textContent = title;
   loadingSubtitle.textContent = subtitle;
   loadingOverlay.classList.remove('hidden');
@@ -1204,7 +1204,6 @@ function showLoading(title, subtitle) {
 
 function hideLoading() {
   if (bufferTimeoutTimer) clearTimeout(bufferTimeoutTimer);
-
   loadingOverlay.classList.add('hidden');
 }
 
