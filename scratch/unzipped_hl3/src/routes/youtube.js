@@ -9,7 +9,6 @@ const router = (0, express_1.Router)();
 
 const INVIDIOUS_INSTANCES = [
     'https://inv.tux.pizza',
-    'https://yewtu.be',
     'https://invidious.nerdvpn.de',
     'https://invidious.drgns.space'
 ];
@@ -171,7 +170,10 @@ router.all('/api/v1/youtube/stream', async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="YouTube_${videoId}.${type}"`);
         streamRes.data.pipe(res);
     } catch (e) {
-        res.redirect(streamUrl);
+        console.error('[YouTube Stream Proxy Error]', e?.message || e);
+        if (!res.headersSent) {
+            res.status(503).send('YouTube download stream currently unavailable. Please try again in a few seconds.');
+        }
     }
 });
 
