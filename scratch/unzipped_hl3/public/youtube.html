@@ -364,15 +364,22 @@
 
     async function triggerDownload(videoId, format, title) {
       try {
-        const dlUrl = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
-        const a = document.createElement('a');
-        a.href = dlUrl;
-        a.download = `${(title || 'YouTube_Media').replace(/[^a-zA-Z0-9_\-]/g, '_')}.${format}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        const res = await fetch(`/api/v1/youtube/download?v=${encodeURIComponent(videoId)}`);
+        const data = await res.json();
+        const dlUrl = format === 'mp3' ? data.mp3Url : data.mp4Url;
+        if (dlUrl && dlUrl.startsWith('http')) {
+          const a = document.createElement('a');
+          a.href = dlUrl;
+          a.download = `${(title || data.title || 'YouTube_Media').replace(/[^a-zA-Z0-9_\-]/g, '_')}.${format}`;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          window.location.href = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
+        }
       } catch (e) {
-        alert('Download error. Please try again.');
+        window.location.href = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
       }
     }
 
