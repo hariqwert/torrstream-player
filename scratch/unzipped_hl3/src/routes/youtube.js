@@ -181,15 +181,60 @@ router.all('/api/v1/youtube/stream', async (req, res) => {
     const quality = (req.query.quality || '1080').toString().toLowerCase();
     if (!videoId) return res.status(400).send('Missing video ID');
 
-    console.log(`[YouTube Stream Proxy] Resolving signed stream for Video ID: ${videoId}, Type: ${type}, Quality: ${quality}`);
+    console.log(`[YouTube Stream Proxy] Extracting stream for Video ID: ${videoId}, Type: ${type}, Quality: ${quality}`);
     const directCdnUrl = await extractStreamUrlWithYtdlp(videoId, type, quality);
 
-    if (directCdnUrl && directCdnUrl.startsWith('http')) {
-        console.log(`[YouTube Stream Success] Redirecting to signed Google CDN URL: ${directCdnUrl.substring(0, 80)}...`);
-        return res.redirect(directCdnUrl);
+    if (!directCdnUrl || !directCdnUrl.startsWith('http')) {
+        return res.status(503).send('YouTube video stream currently unavailable.');
     }
 
-    res.status(503).send('YouTube video stream currently unavailable.');
+    try {
+        const title = await getYouTubeTitleWithYtdlp(videoId);
+        const safeTitle = (title || 'YouTube_Video').replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+        const reqHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        };
+        if (req.headers.range) {
+            reqHeaders['Range'] = req.headers.range;
+        }
+
+        console.log(`[YouTube Stream Proxy] Piping stream bytes directly to client for ${videoId}`);
+        const streamRes = await (0, axios_1.default)({
+            method: 'GET',
+            url: directCdnUrl,
+            responseType: 'stream',
+            headers: reqHeaders,
+            timeout: 60000
+        });
+
+        res.status(streamRes.status);
+        res.setHeader('Content-Type', type === 'mp3' ? 'audio/mpeg' : 'video/mp4');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}_${quality}p.${type}"`);
+
+        if (streamRes.headers['content-length']) {
+            res.setHeader('Content-Length', streamRes.headers['content-length']);
+        }
+        if (streamRes.headers['content-range']) {
+            res.setHeader('Content-Range', streamRes.headers['content-range']);
+        }
+        if (streamRes.headers['accept-ranges']) {
+            res.setHeader('Accept-Ranges', streamRes.headers['accept-ranges']);
+        }
+
+        streamRes.data.pipe(res);
+
+        req.on('close', () => {
+            if (streamRes.data && typeof streamRes.data.destroy === 'function') {
+                streamRes.data.destroy();
+            }
+        });
+    } catch (e) {
+        console.error('[YouTube Stream Pipe Error]', e?.message || e);
+        if (!res.headersSent) {
+            res.status(500).send('Failed to stream video bytes from YouTube server.');
+        }
+    }
 });
 
 module.exports = router;
