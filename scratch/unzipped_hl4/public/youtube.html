@@ -128,6 +128,101 @@
       border: none;
       background: #000;
     }
+
+    /* DOWNLOAD TIMELINE & PROGRESS CARD */
+    .dl-timeline-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(18, 22, 34, 0.95) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+      backdrop-filter: blur(20px);
+      transition: all 0.3s ease;
+    }
+    .dl-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .dl-title-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dl-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dl-progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .dl-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ef4444 0%, #10b981 100%);
+      border-radius: 10px;
+      transition: width 0.2s ease-out;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    }
+    .dl-timeline-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .dl-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #71717a;
+      z-index: 1;
+    }
+    .dl-step.active {
+      color: #10b981;
+    }
+    .dl-step-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #27272a;
+      border: 2px solid #52525b;
+      transition: all 0.3s ease;
+    }
+    .dl-step.active .dl-step-dot {
+      background: #10b981;
+      border-color: #059669;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+    }
+    .dl-metrics {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #a1a1aa;
+    }
+    .dl-metric-item strong {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -201,6 +296,52 @@
         </div>
       </section>
 
+      <!-- LIVE DOWNLOAD TIMELINE CARD (Appears on Download Click) -->
+      <div id="dlTimelineCard" class="dl-timeline-card hidden">
+        <div class="dl-header">
+          <div class="dl-title-box">
+            <div class="dl-icon" id="dlStatusIcon"><i data-lucide="download-cloud"></i></div>
+            <div>
+              <h4 id="dlVideoTitle" style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 2px;">Downloading YouTube Stream...</h4>
+              <span id="dlStatusText" style="font-size: 12px; color: #10b981; font-weight: 600;">⚡ Initializing Stream Resolver...</span>
+            </div>
+          </div>
+          <div style="font-size: 20px; font-weight: 800; color: #10b981;" id="dlPercentText">0%</div>
+        </div>
+
+        <!-- Animated Progress Track -->
+        <div class="dl-progress-track">
+          <div id="dlProgressFill" class="dl-progress-fill"></div>
+        </div>
+
+        <!-- Download Timeline Milestone Steps -->
+        <div class="dl-timeline-steps">
+          <div class="dl-step active" id="step1">
+            <div class="dl-step-dot"></div>
+            <span>1. Resolve Link</span>
+          </div>
+          <div class="dl-step" id="step2">
+            <div class="dl-step-dot"></div>
+            <span>2. Connect Stream</span>
+          </div>
+          <div class="dl-step" id="step3">
+            <div class="dl-step-dot"></div>
+            <span>3. Transfer Data</span>
+          </div>
+          <div class="dl-step" id="step4">
+            <div class="dl-step-dot"></div>
+            <span>4. Saved to Disk</span>
+          </div>
+        </div>
+
+        <!-- Live Speed & Size Metrics -->
+        <div class="dl-metrics">
+          <div class="dl-metric-item">Downloaded: <strong id="dlLoadedBytes">0.0 MB</strong> / <strong id="dlTotalBytes">Calculating...</strong></div>
+          <div class="dl-metric-item">Speed: <strong id="dlSpeedText">0.0 MB/s</strong></div>
+          <div class="dl-metric-item">ETA: <strong id="dlEtaText">--</strong></div>
+        </div>
+      </div>
+
       <!-- Interactive Player Area (Appears on Play) -->
       <div id="ytPlayerContainer" class="yt-player-card hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -239,6 +380,22 @@
     const ytIframe = document.getElementById('ytIframe');
     const ytPlayerTitle = document.getElementById('ytPlayerTitle');
     const closePlayerBtn = document.getElementById('closePlayerBtn');
+
+    // Download Timeline Elements
+    const dlTimelineCard = document.getElementById('dlTimelineCard');
+    const dlVideoTitle = document.getElementById('dlVideoTitle');
+    const dlStatusText = document.getElementById('dlStatusText');
+    const dlPercentText = document.getElementById('dlPercentText');
+    const dlProgressFill = document.getElementById('dlProgressFill');
+    const dlLoadedBytes = document.getElementById('dlLoadedBytes');
+    const dlTotalBytes = document.getElementById('dlTotalBytes');
+    const dlSpeedText = document.getElementById('dlSpeedText');
+    const dlEtaText = document.getElementById('dlEtaText');
+
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
 
     if (window.lucide) window.lucide.createIcons();
 
@@ -363,24 +520,100 @@
     }
 
     async function triggerDownload(videoId, format, title) {
+      // Show Download Timeline Card
+      dlTimelineCard.classList.remove('hidden');
+      dlTimelineCard.scrollIntoView({ behavior: 'smooth' });
+
+      dlVideoTitle.textContent = `📥 ${format.toUpperCase()}: ${title || videoId}`;
+      updateProgress(10, '⚡ Phase 1: Resolving Stream Link...', 1);
+
+      const startTime = Date.now();
+      let lastTime = startTime;
+      let lastLoaded = 0;
+
       try {
-        const res = await fetch(`/api/v1/youtube/download?v=${encodeURIComponent(videoId)}`);
-        const data = await res.json();
-        const dlUrl = format === 'mp3' ? data.mp3Url : data.mp4Url;
-        if (dlUrl && dlUrl.startsWith('http')) {
-          const a = document.createElement('a');
-          a.href = dlUrl;
-          a.download = `${(title || data.title || 'YouTube_Media').replace(/[^a-zA-Z0-9_\-]/g, '_')}.${format}`;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        } else {
-          window.location.href = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
+        updateProgress(35, '📥 Phase 2: Connecting to High-Speed Stream...', 2);
+
+        const streamUrl = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
+        const response = await fetch(streamUrl);
+
+        if (!response.ok) {
+          throw new Error(`Stream Error: HTTP ${response.status}`);
         }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        dlTotalBytes.textContent = total > 0 ? (total / (1024 * 1024)).toFixed(1) + ' MB' : 'Live Stream';
+
+        updateProgress(50, '🚀 Phase 3: Transferring File Data...', 3);
+
+        const reader = response.body.getReader();
+        const chunks = [];
+        let loaded = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          chunks.push(value);
+          loaded += value.length;
+
+          const now = Date.now();
+          const timeDiff = (now - lastTime) / 1000;
+          if (timeDiff >= 0.3) {
+            const speedBytes = (loaded - lastLoaded) / timeDiff;
+            const speedMb = (speedBytes / (1024 * 1024)).toFixed(1);
+            dlSpeedText.textContent = `${speedMb} MB/s`;
+
+            if (total > 0) {
+              const pct = Math.min(95, Math.floor((loaded / total) * 100));
+              const remainingBytes = total - loaded;
+              const etaSec = Math.ceil(remainingBytes / (speedBytes || 1));
+              dlEtaText.textContent = `${etaSec}s`;
+              updateProgress(pct, `🚀 Phase 3: Transferring Data (${(loaded / (1024 * 1024)).toFixed(1)} MB)`, 3);
+            } else {
+              updateProgress(75, `🚀 Transferring Data (${(loaded / (1024 * 1024)).toFixed(1)} MB)`, 3);
+            }
+
+            lastTime = now;
+            lastLoaded = loaded;
+          }
+
+          dlLoadedBytes.textContent = (loaded / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Phase 4: Download Complete & Saved
+        updateProgress(100, '✅ Phase 4: Download Complete! Saved to Disk', 4);
+
+        const blob = new Blob(chunks, { type: format === 'mp3' ? 'audio/mpeg' : 'video/mp4' });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `${(title || 'YouTube_Media').replace(/[^a-zA-Z0-9_\-]/g, '_')}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
       } catch (e) {
+        console.error('Timeline Download Error:', e);
+        updateProgress(100, '⚠️ Direct Download Triggered...', 4);
         window.location.href = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
       }
+    }
+
+    function updateProgress(pct, statusText, stepNum) {
+      dlProgressFill.style.width = `${pct}%`;
+      dlPercentText.textContent = `${pct}%`;
+      dlStatusText.textContent = statusText;
+
+      [step1, step2, step3, step4].forEach((step, idx) => {
+        if (idx + 1 <= stepNum) {
+          step.classList.add('active');
+        } else {
+          step.classList.remove('active');
+        }
+      });
     }
 
     function formatDuration(sec) {
