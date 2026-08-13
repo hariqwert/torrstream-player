@@ -1,0 +1,31 @@
+                                }
+                            }
+                        }
+                        
+                        if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
+                    }                      } else {
+                            matchedEpgIds.push(ch.id);
+                        }
+
+                        const finalChan = {
+                            id: chId,
+                            name: ch.name.replace(/⭐️/g, '').trim(),
+                            logo: (typeof getSportsLogo === 'function' ? getSportsLogo(ch) : (ch.logo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(ch.name)+'&background=05070a&color=10b981&size=256&bold=true')),
+                            url: ch.url || ch.stream_url
+                        };
+                        window.epgChannels.push(finalChan);
+                        window.epgProgrammesByChannel[chId] = [];
+
+                        if (matchedEpgIds.length > 0) {
+                            for (const p of allProgrammes) {
+                                if (matchedEpgIds.includes(p.channel)) {
+                                    window.epgProgrammesByChannel[chId].push({...p, channel: chId});
+                                }
+                            }
+                        }
+                    }
+
+                    // synthesize fallback for channels without EPG
+                    const nowFallback = new Date();
+                    nowFallback.setHours(0,0,0,0);
+                    const todayStart = nowFallback.getTime();

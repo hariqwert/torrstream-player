@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Video & MP3 Downloader - TorrStream</title>
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="torrent.css">
+  <style>
+    .yt-hero-card {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(17, 24, 39, 0.8) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    .yt-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .yt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .yt-card {
+      background: rgba(18, 22, 34, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(16px);
+    }
+    .yt-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 12px 28px rgba(239, 68, 68, 0.15);
+    }
+    .yt-thumb-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .yt-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .yt-duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .yt-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+    .yt-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .yt-author {
+      font-size: 12px;
+      color: #a1a1aa;
+      margin-bottom: 12px;
+    }
+    .yt-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-yt-mp4 {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #fff;
+      border: none;
+    }
+    .btn-yt-mp3 {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      border: none;
+    }
+    .yt-player-card {
+      background: rgba(18, 22, 34, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .yt-iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      border: none;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <a href="/torrent.html" class="brand" style="text-decoration: none;">
+        <img src="/stalker_pro_infinity.svg" alt="Stalker Pro" style="height: 36px; width: auto; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));" />
+        <span class="badge" style="margin-left: 10px; background: rgba(239,68,68,0.2); color: #ef4444; border-color: rgba(239,68,68,0.4);">YouTube Downloader</span>
+      </a>
+
+      <div class="server-status-container">
+        <a href="/torrent.html" class="btn btn-secondary btn-sm" style="text-decoration: none;">
+          <i data-lucide="video"></i> Torrent Streamer
+        </a>
+        <div class="status-pill online">
+          <span class="status-dot"></span>
+          <span class="status-text">YouTube Engine Online</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Search Hero Card -->
+      <section class="yt-hero-card">
+        <div class="yt-badge"><i data-lucide="youtube"></i> Ultra-Fast YouTube Downloader</div>
+        <h1 class="hero-title" style="font-size: 2rem; margin-bottom: 8px;">Download Any YouTube Video or MP3 Audio</h1>
+        <p class="hero-subtitle" style="margin-bottom: 20px;">Paste YouTube link (watch?v=..., shorts/...) or type video title to stream and download instantly in 1080p MP4 & 320kbps MP3.</p>
+
+        <form id="ytForm" class="magnet-input-group">
+          <div class="input-wrapper">
+            <i data-lucide="search" class="input-icon" style="color: #ef4444;"></i>
+            <input 
+              type="text" 
+              id="ytInput" 
+              placeholder="Paste YouTube link (https://www.youtube.com/watch?v=...) or search term (e.g. Alan Walker Faded)"
+              autocomplete="off"
+              required
+            >
+            <button type="button" class="btn-clear" id="clearInputBtn" title="Clear input">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="action-buttons">
+            <button type="button" class="btn btn-secondary" id="pasteBtn">
+              <i data-lucide="clipboard"></i>
+              <span>Paste</span>
+            </button>
+            <button type="submit" class="btn btn-yt-mp4 btn-glow" id="searchBtn">
+              <i data-lucide="download"></i>
+              <span>Search & Download</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Quick Demo Chips -->
+        <div class="quick-samples" style="margin-top: 16px;">
+          <span class="samples-label"><i data-lucide="sparkles"></i> Try Sample Search:</span>
+          <div class="samples-chips">
+            <button type="button" class="sample-chip yt-chip" data-query="Alan Walker Faded">
+              <i data-lucide="music"></i> Alan Walker - Faded
+            </button>
+            <button type="button" class="sample-chip yt-chip" data-query="Lofi Beats to Study">
+              <i data-lucide="radio"></i> Lofi Beats Live
+            </button>
+            <button type="button" class="sample-chip yt-chip" data-query="4K Nature Relaxation Film">
+              <i data-lucide="film"></i> 4K Nature Relaxation
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Player Area (Appears on Play) -->
+      <div id="ytPlayerContainer" class="yt-player-card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 id="ytPlayerTitle" style="font-size: 16px; font-weight: 700; color: #fff;">Now Playing YouTube Stream</h3>
+          <button class="btn btn-sm btn-outline" id="closePlayerBtn"><i data-lucide="x"></i> Close Player</button>
+        </div>
+        <iframe id="ytIframe" class="yt-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+
+      <!-- Search Results Area -->
+      <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 18px; font-weight: 700; color: #fff;" id="resultsTitle">🔍 YouTube Videos</h3>
+          <span id="resultsCount" style="color: #a1a1aa; font-size: 13px;">Ready</span>
+        </div>
+
+        <div id="ytResultsGrid" class="yt-grid">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #a1a1aa; background: rgba(18,22,34,0.4); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">
+            <i data-lucide="youtube" style="width: 48px; height: 48px; color: #ef4444; margin-bottom: 12px;"></i>
+            <p style="font-size: 15px; font-weight: 600;">Paste a YouTube Link or Search Above</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const ytForm = document.getElementById('ytForm');
+    const ytInput = document.getElementById('ytInput');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const clearInputBtn = document.getElementById('clearInputBtn');
+    const ytResultsGrid = document.getElementById('ytResultsGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    const resultsTitle = document.getElementById('resultsTitle');
+    const ytPlayerContainer = document.getElementById('ytPlayerContainer');
+    const ytIframe = document.getElementById('ytIframe');
+    const ytPlayerTitle = document.getElementById('ytPlayerTitle');
+    const closePlayerBtn = document.getElementById('closePlayerBtn');
+
+    if (window.lucide) window.lucide.createIcons();
+
+    pasteBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          ytInput.value = text.trim();
+          ytInput.focus();
+        }
+      } catch (e) {}
+    });
+
+    clearInputBtn.addEventListener('click', () => {
+      ytInput.value = '';
+      ytInput.focus();
+    });
+
+    closePlayerBtn.addEventListener('click', () => {
+      ytPlayerContainer.classList.add('hidden');
+      ytIframe.src = '';
+    });
+
+    document.querySelectorAll('.yt-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const q = chip.getAttribute('data-query');
+        if (q) {
+          ytInput.value = q;
+          performSearch(q);
+        }
+      });
+    });
+
+    ytForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = ytInput.value.trim();
+      if (q) performSearch(q);
+    });
+
+    async function performSearch(query) {
+      resultsTitle.textContent = `Search Results for "${query}"`;
+      resultsCount.textContent = 'Searching YouTube...';
+      ytResultsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #ef4444;">
+          <div class="spinner" style="margin: 0 auto 12px; border-top-color: #ef4444;"></div>
+          <p style="font-weight: 600;">Fetching YouTube videos & download links...</p>
+        </div>`;
+
+      try {
+        const res = await fetch(`/api/v1/youtube/search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        const results = data.results || [];
+
+        if (results.length === 0) {
+          resultsCount.textContent = '0 results';
+          ytResultsGrid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #ef4444; background: rgba(239,68,68,0.05); border-radius: 16px;">
+              <p style="font-weight: 600;">No videos found. Try pasting direct video link (https://www.youtube.com/watch?v=...)</p>
+            </div>`;
+          return;
+        }
+
+        resultsCount.textContent = `${results.length} videos found`;
+        ytResultsGrid.innerHTML = '';
+
+        results.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'yt-card';
+          const durationStr = v.lengthSeconds ? formatDuration(v.lengthSeconds) : '';
+          
+          card.innerHTML = `
+            <div class="yt-thumb-container">
+              <img class="yt-thumb" src="${v.thumbnail}" alt="${v.title}" loading="lazy" />
+              ${durationStr ? `<span class="yt-duration">${durationStr}</span>` : ''}
+            </div>
+            <div class="yt-body">
+              <div>
+                <div class="yt-title" title="${v.title}">${v.title}</div>
+                <div class="yt-author"><i data-lucide="user" style="width:12px; height:12px; display:inline-block; vertical-align:middle;"></i> ${v.author} ${v.viewCountText ? `• ${v.viewCountText}` : ''}</div>
+              </div>
+              <div class="yt-btn-group">
+                <button class="btn btn-sm btn-yt-mp4 btn-play-yt" data-id="${v.videoId}" data-title="${v.title}">
+                  <i data-lucide="play"></i> Stream Video
+                </button>
+                <button class="btn btn-sm btn-yt-mp4 btn-dl-mp4" data-id="${v.videoId}" data-title="${v.title}">
+                  <i data-lucide="download"></i> Download MP4 Video (1080p)
+                </button>
+                <button class="btn btn-sm btn-yt-mp3 btn-dl-mp3" data-id="${v.videoId}" data-title="${v.title}">
+                  <i data-lucide="music"></i> Download MP3 Audio (320k)
+                </button>
+              </div>
+            </div>
+          `;
+
+          card.querySelector('.btn-play-yt').addEventListener('click', () => {
+            ytPlayerContainer.classList.remove('hidden');
+            ytPlayerTitle.textContent = `🎬 ${v.title}`;
+            ytIframe.src = `https://www.youtube.com/embed/${v.videoId}?autoplay=1`;
+            ytPlayerContainer.scrollIntoView({ behavior: 'smooth' });
+          });
+
+          card.querySelector('.btn-dl-mp4').addEventListener('click', async () => {
+            triggerDownload(v.videoId, 'mp4', v.title);
+          });
+
+          card.querySelector('.btn-dl-mp3').addEventListener('click', async () => {
+            triggerDownload(v.videoId, 'mp3', v.title);
+          });
+
+          ytResultsGrid.appendChild(card);
+        });
+
+        if (window.lucide) window.lucide.createIcons();
+
+      } catch (e) {
+        resultsCount.textContent = 'Error';
+        ytResultsGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #ef4444;">
+            <p>Failed to search YouTube. Check server connection.</p>
+          </div>`;
+      }
+    }
+
+    async function triggerDownload(videoId, format, title) {
+      try {
+        const res = await fetch(`/api/v1/youtube/download?v=${videoId}`);
+        const data = await res.json();
+        const dlUrl = format === 'mp3' ? data.mp3Url : data.mp4Url;
+        if (dlUrl) {
+          const a = document.createElement('a');
+          a.href = dlUrl;
+          a.download = `${title || 'YouTube_Media'}.${format}`;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          alert('Could not resolve direct download stream link for this video.');
+        }
+      } catch (e) {
+        alert('Download error. Please try again.');
+      }
+    }
+
+    function formatDuration(sec) {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = Math.floor(sec % 60);
+      if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stalker Pro - Torrent Player</title>
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="torrent.css">
+  <!-- Plyr Libraries -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <style>
+  .plyr { width: 100%; height: 100%; border-radius: 12px; overflow: hidden; --plyr-color-main: #6366f1; }
+  .plyr__video-wrapper { height: 100%; }
+    .video-iframe { width: 100%; height: 100%; border: none; border-radius: 12px; overflow: hidden; background: #000; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <a href="/hero.html" class="brand" style="text-decoration: none;">
+        <img src="/stalker_pro_infinity.svg" alt="Stalker Pro" style="height: 36px; width: auto; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));" />
+        <span class="badge" style="margin-left: 10px;">TorrServer Engine</span>
+      </a>
+
+      <div class="server-status-container">
+        <!-- Movie/Series Search Trigger Button -->
+        <button class="btn btn-primary btn-sm" id="openSearchBtn">
+          <i data-lucide="search"></i>
+          <span>Search Movies & Series</span>
+        </button>
+        <a href="/youtube.html" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; text-decoration: none;">
+          <i data-lucide="youtube"></i>
+          <span>YouTube Downloader</span>
+        </a>
+
+        <div class="buffer-preset-badge" id="bufferPresetBadge" title="Current Engine Buffer Cache">
+          <i data-lucide="gauge"></i> <span id="bufferPresetText">32MB Standard</span>
+        </div>
+
+        <div class="status-pill" id="serverStatusPill">
+          <span class="status-dot"></span>
+          <span class="status-text" id="serverStatusText">Checking Server...</span>
+        </div>
+        <button class="btn btn-icon btn-glass" id="refreshServerBtn" title="Check Connection">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Magnet Input Hero Card -->
+      <section class="magnet-hero-card">
+        <div class="card-glow"></div>
+        <h2 class="hero-title">Paste Magnet Link or Search Movies & TV Shows</h2>
+        <p class="hero-subtitle">Stream movies, TV episodes, and magnet torrents instantly.</p>
+
+        <form id="magnetForm" class="magnet-input-group">
+          <div class="input-wrapper">
+            <i data-lucide="link" class="input-icon"></i>
+            <input 
+              type="text" 
+              id="magnetInput" 
+              placeholder="Paste magnet link (magnet:?xt=urn:btih:...) or title (e.g. Breaking Bad S01E01)"
+              autocomplete="off"
+              required
+            >
+            <button type="button" class="btn-clear" id="clearInputBtn" title="Clear input">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="action-buttons">
+            <button type="button" class="btn btn-secondary" id="pasteBtn">
+              <i data-lucide="clipboard"></i>
+              <span>Paste</span>
+            </button>
+            <button type="submit" class="btn btn-primary btn-glow" id="playBtn">
+              <i data-lucide="play-circle"></i>
+              <span>Instant Play</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Quick Sample Magnets -->
+        <div class="quick-samples">
+          <span class="samples-label"><i data-lucide="sparkles"></i> Try a Demo Movie:</span>
+          <div class="samples-chips">
+            <button type="button" class="sample-chip" data-magnet="magnet:?xt=urn:btih:08da422c34d1edd7b9943842838947672808c104&dn=Sintel&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337">
+              <i data-lucide="film"></i> Sintel (4K Open Movie)
+            </button>
+            <button type="button" class="sample-chip" data-magnet="magnet:?xt=urn:btih:dd8255edd8494674f77311531772b76b6a482e16&dn=Big+Buck+Bunny&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969">
+              <i data-lucide="video"></i> Big Buck Bunny
+            </button>
+            <button type="button" class="sample-chip" data-magnet="magnet:?xt=urn:btih:209c8206b299b3787146059d64024345cfb2496a&dn=Tears+of+Steel&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969">
+              <i data-lucide="clapperboard"></i> Tears of Steel
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Player & Dashboard Layout Grid -->
+      <div class="content-grid">
+        <!-- Player Container -->
+        <section class="player-card">
+          <div class="player-wrapper" id="playerWrapper">
+            <!-- Overlay Stats Bar -->
+            <div class="stream-stats-overlay" id="statsOverlay">
+              <div class="stat-badge"><i data-lucide="download"></i> <span id="statSpeed">0 KB/s</span></div>
+              <div class="stat-badge"><i data-lucide="users"></i> <span id="statPeers">0 Peers</span></div>
+              <div class="stat-badge"><i data-lucide="hard-drive"></i> <span id="statBuffer">Buffer 0%</span></div>
+            </div>
+
+            <!-- Video HTML5 Element -->
+            <video id="videoPlayer" class="video-iframe" controls autoplay playsinline preload="auto"></video>
+
+            <!-- Empty Placeholder state when no video is playing -->
+            <div class="player-placeholder" id="playerPlaceholder">
+              <div class="placeholder-icon">
+                <i data-lucide="play"></i>
+              </div>
+              <h3>No Torrent Playing</h3>
+              <p>Paste a magnet link above or search for a movie/series episode to launch instant streaming.</p>
+            </div>
+
+            <!-- Loading Buffer Overlay -->
+            <div class="loading-overlay hidden" id="loadingOverlay">
+              <div class="spinner"></div>
+              <div class="loading-text">
+                <h4 id="loadingTitle">Buffering Torrent...</h4>
+                <p id="loadingSubtitle">Connecting to BitTorrent peers via TorrServer...</p>
+                <p id="loadingStats" style="font-size: 0.85rem; color: #a1a1aa; margin-top: 6px; font-weight: bold;"></p>
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="bufferProgressFill" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Details & Actions Bar -->
+          <div class="player-meta-bar" id="playerMetaBar">
+            <div class="video-info">
+              <h3 id="currentTitle" class="video-title">Ready for Stream</h3>
+              <div class="meta-tags">
+                <span class="meta-tag" id="currentHash">Hash: -</span>
+                <span class="meta-tag" id="currentSize">Size: -</span>
+                <span class="meta-tag" id="ffmpegStatusTag" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.3);">
+                  <i data-lucide="cpu" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:2px;"></i> Engine: <strong id="currentEngineLabel">FFmpeg (Live Remux)</strong>
+                </span>
+              </div>
+            </div>
+            <div class="player-actions">
+              <button class="btn btn-primary btn-sm" id="subtitlesBtn" title="Fetch & Manage Subtitles">
+                <i data-lucide="subtitles"></i> Subtitles
+              </button>
+              <button class="btn btn-secondary btn-sm" id="audioTracksBtn" title="Select Audio Stream / Language">
+                <i data-lucide="volume-2"></i> Audio Tracks
+              </button>
+              <button class="btn btn-primary btn-sm" id="downloadVideoBtn" title="Download Video File to Disk" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                <i data-lucide="download"></i> Download Video
+              </button>
+              <button class="btn btn-outline btn-sm" id="ffmpegEngineBtn" title="Toggle Stream Engine (Direct, FFmpeg Remux, FFmpeg Transcode)">
+                <i data-lucide="film"></i> FFmpeg Engine
+              </button>
+              <button class="btn btn-secondary btn-sm" id="copyStreamUrlBtn" title="Copy active HTTP stream link">
+                <i data-lucide="copy"></i> Copy Stream URL
+              </button>
+              <button class="btn btn-outline btn-sm" id="toggleFilesBtn" title="Show torrent files">
+                <i data-lucide="folder-tree"></i> Torrent Files
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Torrent File Tree & Active Torrents Panel -->
+        <aside class="side-panel">
+          <!-- Buffer Optimizer Card -->
+          <div class="panel-card buffer-config-card">
+            <div class="panel-header">
+              <h3><i data-lucide="sliders"></i> Buffer & Speed Optimizer</h3>
+              <span class="preset-status-tag" id="presetTag">Instant Stream</span>
+            </div>
+            <p class="panel-desc">Fix heavy buffering by increasing RAM cache & max peer connections.</p>
+            
+            <div class="buffer-mode-selector">
+              <button class="buffer-mode-btn" data-cache="16777216" data-peers="30" data-label="16MB">
+                <span class="mode-name">Standard</span>
+                <span class="mode-desc">64MB RAM</span>
+              </button>
+              <button class="buffer-mode-btn active" data-cache="33554432" data-peers="60" data-label="32MB">
+                <span class="mode-name">⚡ 200MB Instant (Default)</span>
+                <span class="mode-desc">Zero-Wait Stream</span>
+              </button>
+              <button class="buffer-mode-btn" data-cache="67108864" data-peers="100" data-label="64MB">
+                <span class="mode-name">🚀 500MB Ultra</span>
+                <span class="mode-desc">Heavy 4K Stream</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Files List Card -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3><i data-lucide="files"></i> Torrent Files</h3>
+              <span class="files-count" id="filesCountBadge">0 files</span>
+            </div>
+            <div class="files-list-container" id="filesListContainer">
+              <div class="panel-empty-state">
+                <i data-lucide="file-video"></i>
+                <p>Add a magnet link to inspect torrent file contents</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active TorrServer Session Panel -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3><i data-lucide="activity"></i> Active TorrServer Tasks</h3>
+              <button class="btn btn-text btn-sm" id="refreshTorrentsBtn">
+                <i data-lucide="rotate-cw"></i>
+              </button>
+            </div>
+            <div class="active-torrents-list" id="activeTorrentsList">
+              <div class="panel-empty-state">
+                <p>No active torrents in TorrServer memory</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Movie & TV Series Search Modal Overlay -->
+    <div class="search-modal-backdrop hidden" id="searchModal">
+      <div class="search-modal-container">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="tv"></i>
+            <h2>Search Movies & TV Series</h2>
+          </div>
+          <button class="btn-close-modal" id="closeSearchBtn">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <form id="modalSearchForm" class="modal-search-form">
+          <div class="search-type-toggle">
+            <label class="type-radio"><input type="radio" name="mediaType" value="movie" checked> <span>🎬 Movie</span></label>
+            <label class="type-radio"><input type="radio" name="mediaType" value="series"> <span>📺 TV Series / Episode</span></label>
+          </div>
+
+          <div class="modal-input-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="modalSearchInput" placeholder="Search by title (e.g. Breaking Bad, Avatar) or TMDB ID (1396)..." autocomplete="off">
+            <button type="submit" class="btn btn-primary">Search</button>
+          </div>
+
+          <!-- Episode Selection Row for TV Series -->
+          <div class="episode-select-row hidden" id="episodeSelectRow">
+            <div class="ep-field">
+              <label>Season:</label>
+              <input type="number" id="seasonInput" value="1" min="1" max="99">
+            </div>
+            <div class="ep-field">
+              <label>Episode:</label>
+              <input type="number" id="episodeInput" value="1" min="1" max="99">
+            </div>
+          </div>
+        </form>
+
+        <div class="search-results-area" id="searchResultsArea">
+          <div class="search-initial-state">
+            <i data-lucide="clapperboard"></i>
+            <p>Search by title, TMDB ID (e.g., 19995), or IMDb ID for movie & episode torrents.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtitle Fetcher Modal -->
+    <div class="search-modal-backdrop hidden" id="subtitleModal">
+      <div class="search-modal-container" style="max-width: 600px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="subtitles"></i>
+            <h2>Subtitle Fetcher & Manager</h2>
+          </div>
+          <button class="btn-close-modal" id="closeSubtitleBtn">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body space-y-4" style="padding: 20px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="subSearchQuery" placeholder="Search title or IMDb ID (e.g. tt0903747)..." class="modal-input-wrapper" style="flex:1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+            <select id="subLangSelect" style="padding: 10px; border-radius: 8px; background: #18181b; color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+              <option value="all">All Languages</option>
+              <option value="English" selected>English</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Malayalam">Malayalam</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Japanese">Japanese</option>
+            </select>
+            <button class="btn btn-primary" id="btnFetchSubs">Fetch</button>
+          </div>
+
+          <div id="subResultsList" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 15px;">
+            <p style="color: #a1a1aa; font-size: 13px;">Click Fetch to auto-search subtitles online for the active video.</p>
+          </div>
+
+          <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+
+          <div>
+            <h4 style="color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Upload Custom Subtitle File (.srt / .vtt)</h4>
+            <input type="file" id="subFileInput" accept=".srt,.vtt" style="color: #a1a1aa; font-size: 12px;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Track Selector Modal -->
+    <div class="search-modal-backdrop hidden" id="audioTrackModal">
+      <div class="search-modal-container" style="max-width: 500px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i data-lucide="volume-2"></i>
+            <h2>Audio Track Switcher</h2>
+          </div>
+          <button class="btn-close-modal" id="closeAudioBtn">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="modal-body" style="padding: 20px;">
+          <p style="color: #a1a1aa; font-size: 13px; margin-bottom: 15px;">Select an audio stream from the multi-audio / dual-audio video torrent:</p>
+          <div id="audioTracksList" style="display: flex; flex-direction: column; gap: 10px;">
+            <p style="color: #71717a; font-size: 12px;">Loading available audio streams...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>Stalker Pro • Integrated with <a href="https://github.com/yourok/torrserver" target="_blank" rel="noopener">yourok/torrserver</a> engine</p>
+    </footer>
+  </div>
+
+  <script src="torrent.js?v=3"></script>
+</body>
+</html>

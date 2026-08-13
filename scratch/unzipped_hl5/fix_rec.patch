@@ -1,0 +1,50 @@
+--- consumet.html
++++ consumet.html
+@@ -2625,7 +2625,41 @@
+         }
+ 
+         async function fetchRecommendations(mediaId, type) {
+-            // (Skipped implementation, target just below this)
++            const container = document.getElementById('playerRecommendationsContainer');
++            const grid = document.getElementById('playerRecommendationsGrid');
++            grid.innerHTML = '<div class="text-xs font-bold text-zinc-500 uppercase">Loading...</div>';
++            container.classList.remove('hidden');
++            
++            try {
++                const data = await fetchTMDB(`${type}/${mediaId}/recommendations`);
++                if (data && data.results && data.results.length > 0) {
++                    grid.innerHTML = '';
++                    data.results.slice(0, 15).forEach(item => {
++                        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&h=450&fit=crop';
++                        const title = item.title || item.name;
++                        const rating = item.vote_average ? item.vote_average.toFixed(1) : 'NR';
++                        const year = (item.release_date || item.first_air_date || '').split('-')[0] || '';
++                        
++                        const card = document.createElement('div');
++                        card.className = "w-32 shrink-0 group cursor-pointer space-y-2 hover:scale-105 transition-transform duration-300";
++                        card.onclick = () => {
++                            switchTab('home'); // or we could just stay on player if we want, but usually it opens details
++                            openDetails(item.id, type);
++                        };
++                        card.innerHTML = `
++                            <div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-white/10 group-hover:border-red-500/50 transition-colors">
++                                <img src="${poster}" alt="${title}" class="w-full h-full object-cover">
++                                <div class="absolute top-2 right-2 bg-black/80 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded flex items-center gap-1 border border-white/10 shadow-xl">
++                                    <i data-lucide="star" class="w-2.5 h-2.5 fill-red-500 text-red-500"></i> ${rating}
++                                </div>
++                            </div>
++                            <h4 class="text-[10px] font-black text-white uppercase tracking-wider truncate leading-tight group-hover:text-red-400">${title}</h4>
++                            <p class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest truncate">${year}</p>
++                        `;
++                        grid.appendChild(card);
++                    });
++                    lucide.createIcons();
++                } else {
++                    container.classList.add('hidden');
++                }
++            } catch(e) {
++                container.classList.add('hidden');
++            }
+         }
+         
+         function playNextEpisode() {

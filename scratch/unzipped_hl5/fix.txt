@@ -1,0 +1,111 @@
+                        if (loadIcon) loadIcon.classList.remove('animate-spin');
+                        if (loadBtn) {
+                            loadBtn.disabled = false;
+                            loadBtn.classList.remove('opacity-75');
+                        }
+                        return;
+                    }
+
+                    let allChannels = [];
+                    let allProgrammes = [];
+                    
+                    try {
+                        const response = await fetch(`/api/epg-json?urls=${encodeURIComponent(url)}`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch JSON EPG: ${response.statusText}`);
+                        }
+                        const data = await response.json();
+                        
+                        allChannels = data.channels || [];
+                        const rawProgrammes = data.programmes || [];
+                        
+                        // Parse dates on client to save server CPU
+                        for (let i = 0; i < rawProgrammes.length; i++) {
+                            const p = rawProgrammes[i];
+                            allProgrammes.push({
+                                channel: p.channel,
+                         let baseChannels = window.allSportsChannels && window.allSportsChannels.length > 0 ? window.allSportsChannels : allChannels;
+
+                    const groupedProgrammes = {};
+                    for (const p of allProgrammes) {
+                        if (!groupedProgrammes[p.channel]) groupedProgrammes[p.channel] = [];
+                        groupedProgrammes[p.channel].push(p);
+                    }
+
+                    for (let i = 0; i < baseChannels.length; i++) {
+                        const ch = baseChannels[i];
+                        const cleanName = normalizeName(ch.name.replace(/⭐️/g, '').trim());
+                        const chId = ch.id || ("mapped_" + i);
+
+                        let matchedEpgIds = [];
+                        if (baseChannels === window.allSportsChannels) {
+                            let matchedEpgChan = allChannels.find(c => {
+                                const cName = normalizeName(c.name);
+                                if (!cName || !cleanName) return false;
+                                if (cName === cleanName) return true;
+                                if (cName.length > 4 && cleanName.includes(cName)) return true;
+                                if (cleanName.length > 4 && cName.includes(cleanName)) return true;
+                                return false;
+                            });
+                            
+                            if (matchedEpgChan) {
+                                matchedEpgIds.push(matchedEpgChan.id);
+                            }
+                        } else {
+                            matchedEpgIds.push(ch.id);
+                        }
+
+                        const finalChan = {
+                            id: chId,
+                            name: ch.name.replace(/⭐️/g, '').trim(),
+                            logo: (typeof getSportsLogo === 'function' ? getSportsLogo(ch) : (ch.logo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(ch.name)+'&background=05070a&color=10b981&size=256&bold=true')),
+                            url: ch.url || ch.stream_url
+                        };
+
+                        window.epgChannels.push(finalChan);
+                        window.epgProgrammesByChannel[chId] = [];
+
+                        if (matchedEpgIds.length > 0) {
+                            for (const mId of matchedEpgIds) {
+                                if (groupedProgrammes[mId]) {
+                                    window.epgProgrammesByChannel[chId].push(...groupedProgrammes[mId].map(p => ({...p, channel: chId})));
+                                }
+                            }
+                        }
+                        
+                        if (i % 50 === 0) await new Promise(r => setTimeout(r, 0));
+                    }                      } else {
+                            matchedEpgIds.push(ch.id);
+                        }
+
+                        const finalChan = {
+                            id: chId,
+                            name: ch.name.replace(/⭐️/g, '').trim(),
+                            logo: (typeof getSportsLogo === 'function' ? getSportsLogo(ch) : (ch.logo || 'https://ui-avatars.com/api/?name='+encodeURIComponent(ch.name)+'&background=05070a&color=10b981&size=256&bold=true')),
+                            url: ch.url || ch.stream_url
+                        };
+                        window.epgChannels.push(finalChan);
+                        window.epgProgrammesByChannel[chId] = [];
+
+                        if (matchedEpgIds.length > 0) {
+                            for (const p of allProgrammes) {
+                                if (matchedEpgIds.includes(p.channel)) {
+                                    window.epgProgrammesByChannel[chId].push({...p, channel: chId});
+                                }
+                            }
+                        }
+                    }
+
+                    // synthesize fallback for channels without EPG
+                    const nowFallback = new Date();
+                    nowFallback.setHours(0,0,0,0);
+                    const todayStart = nowFallback.getTime();
+                    const tomorrowStart = todayStart + 86400000;
+                    const nextDayStart = tomorrowStart + 86400000;
+
+                    for (const c of window.epgChannels) {
+                        if (!window.epgProgrammesByChannel[c.id] || window.epgProgrammesByChannel[c.id].length === 0) {
+                            window.epgProgrammesByChannel[c.id] = [
+                                {
+                                    id: c.id + '_dummy_1',
+                                    channel: c.id,

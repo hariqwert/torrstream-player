@@ -1,0 +1,8 @@
+{
+  "name": "Stalker Pro (Entertainment Hub)",
+  "description": "A high-performance IPTV portal emulator and comprehensive entertainment hub featuring a massive 3D landing page for Live TV, Movies, Music, and Books.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
