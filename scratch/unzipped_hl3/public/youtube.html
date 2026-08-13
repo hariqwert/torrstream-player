@@ -476,12 +476,28 @@
                 <div class="yt-title" title="${v.title}">${v.title}</div>
                 <div class="yt-author"><i data-lucide="user" style="width:12px; height:12px; display:inline-block; vertical-align:middle;"></i> ${v.author} ${v.viewCountText ? `• ${v.viewCountText}` : ''}</div>
               </div>
+
+              <!-- Quality Selector Dropdown -->
+              <div style="margin-bottom: 10px;">
+                <label style="font-size: 11px; font-weight: 700; color: #a1a1aa; display: block; margin-bottom: 4px;">
+                  <i data-lucide="sliders" style="width: 12px; height: 12px; display: inline-block;"></i> Select Video Quality:
+                </label>
+                <select class="quality-select" id="quality_${v.videoId}" style="width: 100%; background: rgba(0,0,0,0.6); color: #10b981; border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; outline: none;">
+                  <option value="1080" selected>🌟 1080p Full HD (Default)</option>
+                  <option value="2160">🚀 4K Ultra HD (2160p)</option>
+                  <option value="1440">💎 2K Quad HD (1440p)</option>
+                  <option value="720">⚡ 720p HD</option>
+                  <option value="480">📺 480p Standard Quality</option>
+                  <option value="360">📱 360p Fast Mobile</option>
+                </select>
+              </div>
+
               <div class="yt-btn-group">
                 <button class="btn btn-sm btn-yt-mp4 btn-play-yt" data-id="${v.videoId}" data-title="${v.title}">
                   <i data-lucide="play"></i> Stream Video
                 </button>
                 <button class="btn btn-sm btn-yt-mp4 btn-dl-mp4" data-id="${v.videoId}" data-title="${v.title}">
-                  <i data-lucide="download"></i> Download MP4 Video (1080p)
+                  <i data-lucide="download"></i> Download MP4 Video
                 </button>
                 <button class="btn btn-sm btn-yt-mp3 btn-dl-mp3" data-id="${v.videoId}" data-title="${v.title}">
                   <i data-lucide="music"></i> Download MP3 Audio (320k)
@@ -498,11 +514,13 @@
           });
 
           card.querySelector('.btn-dl-mp4').addEventListener('click', async () => {
-            triggerDownload(v.videoId, 'mp4', v.title);
+            const qSel = card.querySelector('.quality-select');
+            const selectedQ = qSel ? qSel.value : '1080';
+            triggerDownload(v.videoId, 'mp4', v.title, selectedQ);
           });
 
           card.querySelector('.btn-dl-mp3').addEventListener('click', async () => {
-            triggerDownload(v.videoId, 'mp3', v.title);
+            triggerDownload(v.videoId, 'mp3', v.title, '320');
           });
 
           ytResultsGrid.appendChild(card);
@@ -519,22 +537,22 @@
       }
     }
 
-    async function triggerDownload(videoId, format, title) {
+    async function triggerDownload(videoId, format, title, quality = '1080') {
       // Show Download Timeline Card
       dlTimelineCard.classList.remove('hidden');
       dlTimelineCard.scrollIntoView({ behavior: 'smooth' });
 
-      dlVideoTitle.textContent = `📥 ${format.toUpperCase()}: ${title || videoId}`;
-      updateProgress(10, '⚡ Phase 1: Resolving Stream Link...', 1);
+      dlVideoTitle.textContent = `📥 ${quality}${format === 'mp4' ? 'p MP4' : 'k MP3'}: ${title || videoId}`;
+      updateProgress(10, `⚡ Phase 1: Resolving ${quality}p Stream Link...`, 1);
 
       const startTime = Date.now();
       let lastTime = startTime;
       let lastLoaded = 0;
 
       try {
-        updateProgress(35, '📥 Phase 2: Connecting to High-Speed Stream...', 2);
+        updateProgress(35, `📥 Phase 2: Connecting to ${quality}p Stream...`, 2);
 
-        const streamUrl = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}`;
+        const streamUrl = `/api/v1/youtube/stream?v=${encodeURIComponent(videoId)}&type=${encodeURIComponent(format)}&quality=${encodeURIComponent(quality)}`;
         const response = await fetch(streamUrl);
 
         if (!response.ok) {
