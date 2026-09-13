@@ -1,0 +1,25 @@
+{
+  "name": "anime-scraper",
+  "version": "1.0.0",
+  "description": "AnimeStream - Automated Anime HLS Scraper, M3U Playlist Generator & Web Player with MyAnimeList Integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scraper": "node cli.js",
+    "scrape": "node cli.js scrape",
+    "episode": "node cli.js episode",
+    "list": "node cli.js list",
+    "status": "node cli.js status",
+    "export": "node cli.js export",
+    "clean": "node cli.js clean"
+  },
+  "keywords": [
+    "anime",
+    "anime-scraper",
+    "hls-player",
+    "m3u-playlist",
+    "myanimelist"
+  ],
+  "author": "hariqwert",
+  "license": "MIT"
+}
