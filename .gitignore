@@ -19,6 +19,9 @@ push-repo.js
 *.log
 .DS_Store
 Thumbs.db
+anime-scraper/storage/cache/
+anime-scraper/storage/logs/
 
 # Nested repositories
 torrserver/
+

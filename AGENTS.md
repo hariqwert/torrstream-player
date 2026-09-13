@@ -236,3 +236,21 @@ User Search Request ───► /api/v1/search?q=Query&type=series&s=1&e=1
 - Do not modify ports `3000` or `8090` without updating both `app.js` and `start-player.js`.
 - Do not remove the `bin/TorrServer.exe` binary.
 - Do not swallow errors or disable metadata polling timeouts.
+
+---
+
+## 7. AnimeStream Automated Scraper & File System (`anime-scraper/`)
+
+### 📦 Overview
+`anime-scraper/` is an automated scraping engine and HLS media server with integrated MyAnimeList search and playlist generation:
+
+- **Entry Point**: `node anime-scraper/server.js` running on `http://localhost:3050`.
+- **CLI Commands**: `node anime-scraper/cli.js <scrape|list|status|export|clean|episode>`.
+- **Storage Architecture**:
+  - `storage/metadata/<anime-slug>/`: Structured JSON metadata per anime & season.
+  - `storage/playlists/<anime-slug>/`: Standard `.m3u` playlists for VLC / IPTV / MPV.
+  - `storage/catalog.json`: Top-level index of scraped anime & episodes.
+- **MyAnimeList Hub**:
+  - Automatically translates Romaji titles (e.g. *Ore dake Level Up na Ken*) to English (*Solo Leveling*).
+  - 1-Click episode picker with single-episode targeted scraping.
+

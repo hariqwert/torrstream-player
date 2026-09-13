@@ -5,7 +5,9 @@
   "main": "start-player.js",
   "scripts": {
     "start": "node start-player.js",
-    "download-bin": "powershell -ExecutionPolicy Bypass -File download-torrserver.ps1"
+    "download-bin": "powershell -ExecutionPolicy Bypass -File download-torrserver.ps1",
+    "scraper": "node anime-scraper/cli.js",
+    "test-web": "node anime-scraper/server.js"
   },
   "keywords": [
     "torrserver",
