@@ -1665,19 +1665,64 @@ No EPG data has been retrieved yet. Click the <strong>Load Program Guide</strong
 </section>
 
 <!-- 8. EPG VIEW -->
-<section id="view-epg" class="hidden space-y-8 animate-fade-in">
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-black text-white flex items-center gap-3"><i data-lucide="calendar" class="w-8 h-8 text-amber-500"></i> TV Guide</h1>
+<section id="view-epg" class="hidden space-y-6 animate-fade-in">
+    <!-- Header with Network Switcher -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-wider mb-2">
+                <i data-lucide="radio" class="w-3.5 h-3.5 animate-pulse"></i> LIVE ELECTRONIC PROGRAM GUIDE
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
+                <i data-lucide="calendar" class="w-7 h-7 text-amber-500"></i> TV Program Guide
+            </h1>
+            <p class="text-xs text-zinc-400 mt-1">Live schedules, showtimes & instant streaming for Star Sports & Sony Sports</p>
+        </div>
+
+        <!-- Network Selector Tabs -->
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+            <button onclick="filterEpgNetwork('star')" id="epgTab-star" class="epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/20 shrink-0 flex items-center gap-1.5">
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-black"></i> Star Sports
+            </button>
+            <button onclick="filterEpgNetwork('sony')" id="epgTab-sony" class="epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-white/10 text-zinc-300 hover:text-white hover:bg-white/20 shrink-0 flex items-center gap-1.5">
+                <i data-lucide="tv" class="w-3.5 h-3.5"></i> Sony Sports
+            </button>
+            <button onclick="filterEpgNetwork('sports')" id="epgTab-sports" class="epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-white/10 text-zinc-300 hover:text-white hover:bg-white/20 shrink-0 flex items-center gap-1.5">
+                <i data-lucide="trophy" class="w-3.5 h-3.5"></i> All Sports
+            </button>
+            <button onclick="filterEpgNetwork('all')" id="epgTab-all" class="epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-white/10 text-zinc-300 hover:text-white hover:bg-white/20 shrink-0">
+                All Channels
+            </button>
+        </div>
     </div>
+
+    <!-- Search & Summary Bar -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="relative w-full sm:w-96">
+            <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="epgSearchInput" type="text" placeholder="Search show, match, or channel name..." oninput="handleEpgSearch(this.value)" class="w-full bg-zinc-900 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 outline-none focus:border-amber-500 transition-all font-semibold">
+        </div>
+        <div class="text-xs font-bold text-zinc-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="epgChannelCountText">Loading channels...</span>
+        </div>
+    </div>
+
+    <!-- Loading State -->
     <div id="epgLoadingState" class="py-20 text-center flex flex-col items-center justify-center gap-4">
         <div class="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
         <p class="text-zinc-400 font-mono text-sm">Syncing Electronic Program Guide...</p>
     </div>
+
+    <!-- Empty State -->
     <div id="epgEmptyState" class="hidden py-20 text-center text-zinc-500">
-        No EPG data currently available.
+        No EPG data currently available for this network filter.
     </div>
-    <div id="epgGuideContainer" class="hidden bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-        <div class="p-6 text-center text-amber-500 font-bold">TV Guide successfully loaded.</div>
+
+    <!-- Channels Cards Grid -->
+    <div id="epgGuideContainer" class="hidden">
+        <div id="epgCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Dynamic EPG Cards -->
+        </div>
     </div>
 </section>
 
@@ -5845,17 +5890,145 @@ async function loadLiveSportsSchedule(force = false) {
     if (icon) icon.classList.add('animate-spin');
 
     try {
-        const [streamicRes, timEventsRes, jtvEventsRes, addedChannelsRes, adminSportsRes] = await Promise.allSettled([
+        const [streamicRes, timEventsRes, jtvEventsRes, addedChannelsRes, adminSportsRes, highlightsRes, zeeRes, fancodeLiveRes, sonylivLiveRes] = await Promise.allSettled([
             fetch(`/api/streamic/schedule${force ? '?force=1' : ''}`).then(r => r.json()),
             fetch(`/api/sports/live-events${force ? '?refresh=1' : ''}`).then(r => r.json()),
             fetch(`/api/live/events`).then(r => r.json()),
             fetch(`/api/sports/channels`).then(r => r.json()),
-            fetch(`/api/sports`).then(r => r.json())
+            fetch(`/api/sports`).then(r => r.json()),
+            fetch(`/api/sports/highlights${force ? '?refresh=1' : ''}`).then(r => r.json()),
+            fetch(`/api/zee/channels${force ? '?refresh=1' : ''}`).then(r => r.json()),
+            fetch(`/api/fancode/live${force ? '?refresh=1' : ''}`).then(r => r.json()),
+            fetch(`/api/sonyliv/live${force ? '?refresh=1' : ''}`).then(r => r.json())
         ]);
 
+        if (highlightsRes.status === 'fulfilled' && highlightsRes.value?.status === 'success' && Array.isArray(highlightsRes.value.highlights)) {
+            window.sportsHighlights = highlightsRes.value.highlights;
+        }
+        if (zeeRes.status === 'fulfilled' && zeeRes.value?.status === 'success' && Array.isArray(zeeRes.value.channels)) {
+            window.zeeChannels = zeeRes.value.channels;
+        }
+        if (fancodeLiveRes.status === 'fulfilled' && fancodeLiveRes.value?.status === 'success' && Array.isArray(fancodeLiveRes.value.events)) {
+            window.fancodeLiveMatches = fancodeLiveRes.value.events;
+        }
+        if (sonylivLiveRes.status === 'fulfilled' && sonylivLiveRes.value?.status === 'success' && Array.isArray(sonylivLiveRes.value.events)) {
+            window.sonylivLiveMatches = sonylivLiveRes.value.events;
+            window.sonylivUpcomingMatches = sonylivLiveRes.value.upcoming || [];
+        }
+
         let allEvents = [];
+        // High-Priority: Place active FanCode live streams at the very top of allEvents
+        if (window.fancodeLiveMatches && window.fancodeLiveMatches.length) {
+            window.fancodeLiveMatches.forEach(fc => {
+                allEvents.push({
+                    id: `fancode_${fc.matchId || fc.id}`,
+                    title: fc.title,
+                    rawTitle: fc.title,
+                    sportName: fc.sportCategory || 'Cricket',
+                    sportEmoji: '🏏',
+                    category: (fc.sportCategory || 'cricket').toLowerCase(),
+                    league: fc.eventName || 'FanCode Live Stream',
+                    countryCode: 'IN',
+                    startTime: Math.floor(Date.now() / 1000),
+                    endTime: Math.floor(Date.now() / 1000) + 14400,
+                    durationMinutes: 240,
+                    timeIST: 'LIVE NOW',
+                    dateIST: 'Today',
+                    fullIST: 'Today, LIVE NOW',
+                    status: 'LIVE',
+                    isLive: true,
+                    isStartingSoon: false,
+                    isEnded: false,
+                    canWatch: true,
+                    countdown: 'LIVE NOW',
+                    hasEnglish: true,
+                    isFamous: true,
+                    source: 'FANCODE_LIVE',
+                    thumbnail: fc.thumbnail,
+                    userHasChannel: true,
+                    primaryPlayUrl: fc.playUrl,
+                    primaryM3u8Url: fc.streamUrl,
+                    primaryChannelName: 'FanCode 1080p Live',
+                    isFanCode: true,
+                    channels: [{
+                        channelName: 'FanCode 1080p Feed',
+                        language: 'English',
+                        isEnglish: true,
+                        userHasChannel: true,
+                        userChannelUrl: fc.streamUrl,
+                        m3u8Url: fc.streamUrl,
+                        playUrl: fc.playUrl,
+                        streams: [{ quality: '1080p', embedUrl: fc.playUrl }]
+                    }],
+                    myConvertedChannels: [{
+                        channelName: 'FanCode 1080p Stream',
+                        url: fc.streamUrl,
+                        m3u8Url: fc.streamUrl,
+                        playUrl: fc.playUrl,
+                        matchType: 'DIRECT_MATCH',
+                        reason: 'Live FanCode Broadcast'
+                    }]
+                });
+            });
+        }
+
+        // High-Priority: Place active SonyLIV live streams into allEvents
+        if (window.sonylivLiveMatches && window.sonylivLiveMatches.length) {
+            window.sonylivLiveMatches.forEach(sl => {
+                allEvents.push({
+                    id: `sonyliv_${sl.contentId || sl.id}`,
+                    title: sl.title,
+                    rawTitle: sl.title,
+                    sportName: sl.sportName || sl.category || 'Football',
+                    sportEmoji: sl.sportEmoji || '⚽',
+                    category: (sl.category || 'football').toLowerCase(),
+                    league: sl.eventName || 'SonyLIV Live',
+                    countryCode: 'IN',
+                    startTime: Math.floor(Date.now() / 1000),
+                    endTime: Math.floor(Date.now() / 1000) + 10800,
+                    durationMinutes: 180,
+                    timeIST: 'LIVE NOW',
+                    dateIST: 'Today',
+                    fullIST: 'Today, LIVE NOW',
+                    status: 'LIVE',
+                    isLive: true,
+                    isStartingSoon: false,
+                    isEnded: false,
+                    canWatch: Boolean(sl.streamUrl),
+                    countdown: 'LIVE NOW',
+                    hasEnglish: true,
+                    isFamous: true,
+                    source: 'SONYLIV_LIVE',
+                    thumbnail: sl.thumbnail,
+                    userHasChannel: true,
+                    primaryPlayUrl: sl.playUrl,
+                    primaryM3u8Url: sl.streamUrl,
+                    primaryChannelName: sl.broadcastChannel || 'Sony Sports Ten 2',
+                    isSonyLiv: true,
+                    channels: [{
+                        channelName: sl.broadcastChannel || 'SonyLIV Feed',
+                        language: sl.language || 'English',
+                        isEnglish: true,
+                        userHasChannel: true,
+                        userChannelUrl: sl.streamUrl,
+                        m3u8Url: sl.streamUrl,
+                        playUrl: sl.playUrl,
+                        streams: [{ quality: '1080p', embedUrl: sl.playUrl }]
+                    }],
+                    myConvertedChannels: [{
+                        channelName: sl.broadcastChannel || 'SonyLIV Stream',
+                        url: sl.streamUrl,
+                        m3u8Url: sl.streamUrl,
+                        playUrl: sl.playUrl,
+                        matchType: 'DIRECT_MATCH',
+                        reason: 'Live SonyLIV Broadcast'
+                    }]
+                });
+            });
+        }
+
         if (streamicRes.status === 'fulfilled' && streamicRes.value?.status === 'success' && Array.isArray(streamicRes.value.events)) {
-            allEvents = streamicRes.value.events;
+            allEvents = allEvents.concat(streamicRes.value.events);
         }
 
         // Seamlessly merge Live Events from https://timst.cfd/api/streams
@@ -5938,6 +6111,11 @@ async function loadLiveSportsSchedule(force = false) {
                 if (!ev || !ev.stream_url || (!ev.stream_url.startsWith('http://') && !ev.stream_url.startsWith('https://'))) return;
                 // Skip Widevine MPD events without ClearKey credentials (cannot be decoded in browser)
                 if (ev.stream_url.includes('.mpd') && !ev.clearkey && (!ev.key_id || ev.key_id === 'null' || (ev.key_id + '').length < 16)) {
+                    return;
+                }
+                // Skip dummy/placeholder/expired matches (e.g. IND vs WI, AFG vs IND, dummy test feeds)
+                const dummyCheckStr = `${ev.name || ''} ${ev.title || ''} ${ev.stream_url || ''}`;
+                if (/(ind\s*(vs|\/|-)\s*wi|india\s*(vs|\/|-)\s*west\s*indies|ind\s*(vs|\/|-)\s*afg|india\s*(vs|\/|-)\s*afghanistan|cricbuzz\s*-\s*aq|stream\.kliv\.in|ellamoonu)/i.test(dummyCheckStr)) {
                     return;
                 }
                 const evKey = ev.id || `jtv_ev_${idx}`;
@@ -6194,6 +6372,11 @@ async function loadLiveSportsSchedule(force = false) {
         // Automatically exclude ended matches, dummy unplayable fixtures, and events without streams
         window.liveNowEvents = allEvents.filter(e => {
             if (!e || isSportEventEnded(e)) return false;
+            // Purge dummy/expired matches (IND vs WI, AFG vs IND, dummy test feeds)
+            const dummyCheckStr = `${e.title || ''} ${e.rawTitle || ''} ${e.primaryM3u8Url || ''} ${e.primaryPlayUrl || ''}`;
+            if (/(ind\s*(vs|\/|-)\s*wi|india\s*(vs|\/|-)\s*west\s*indies|ind\s*(vs|\/|-)\s*afg|india\s*(vs|\/|-)\s*afghanistan|cricbuzz\s*-\s*aq|stream\.kliv\.in|ellamoonu)/i.test(dummyCheckStr)) {
+                return false;
+            }
             // Check for valid stream URLs
             const hasDirectPlayUrl = !!(e.primaryPlayUrl && e.primaryPlayUrl !== '#' && !e.primaryPlayUrl.includes('undefined'));
             const hasM3u8Url = !!(e.primaryM3u8Url && (e.primaryM3u8Url.startsWith('http') || e.primaryM3u8Url.startsWith('/')));
@@ -6411,6 +6594,25 @@ function getTeamTheme(name) {
 
 // 2. Universal VS Match Thumbnail Builder
 function buildVsMatchThumbnailHtml(e, isHero = false) {
+    // If the event has a genuine official promo thumbnail (e.g. FanCode, SonyLIV, Prime, CricHD), prioritize displaying the rich official poster!
+    const hasRealThumbnail = e.thumbnail && 
+        !e.thumbnail.includes('unsplash.com') && 
+        !e.thumbnail.includes('ui-avatars.com') &&
+        !e.thumbnail.includes('FC_Sports_Default');
+
+    if (hasRealThumbnail) {
+        return `
+            <div class="w-full h-full relative overflow-hidden bg-black flex items-center justify-center">
+                <img loading="lazy" src="${e.thumbnail}" alt="${e.title || ''}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80';">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+                ${e.sportEmoji ? `
+                <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md border border-white/10 text-xs pointer-events-none">
+                    ${e.sportEmoji}
+                </div>` : ''}
+            </div>
+        `;
+    }
+
     const parsed = parseTeamsFromTitle(e.title || '');
     const t1Name = e.homeTeamName || (parsed ? parsed.team1 : '');
     const t2Name = e.awayTeamName || (parsed ? parsed.team2 : '');
@@ -7064,6 +7266,87 @@ function renderLiveNowGrid() {
         const f1Matches = events.filter(e => (e.category || '').toLowerCase().includes('f1') || (e.sportName || '').toLowerCase().includes('f1') || (e.league || '').toLowerCase().includes('formula') || (e.category || '').toLowerCase().includes('motorsport'));
         const combatMatches = events.filter(e => (e.category || '').toLowerCase().includes('combat') || (e.sportName || '').toLowerCase().includes('combat') || (e.league || '').toLowerCase().includes('ufc') || (e.league || '').toLowerCase().includes('wwe'));
         const basketballMatches = events.filter(e => (e.category || '').toLowerCase().includes('basketball') || (e.sportName || '').toLowerCase().includes('nba'));
+        const fancodeMatches = events.filter(e => (e.source || '').toLowerCase().includes('fancode') || (e.rawTitle || e.title || '').toLowerCase().includes('fancode'));
+
+        // Highlights shelf items from /api/sports/highlights
+        const highlightsCards = (window.sportsHighlights || []).map(h => ({
+            id: h.id,
+            title: h.title,
+            rawTitle: h.title,
+            sportName: h.competition || 'Highlights',
+            sportEmoji: h.sport === 'football' ? '⚽' : (h.sport === 'cricket' ? '🏏' : '🏆'),
+            category: h.sport,
+            league: h.competition,
+            countryCode: 'GL',
+            startTime: Math.floor((h.updatedAt || Date.now()) / 1000),
+            endTime: Math.floor((h.updatedAt || Date.now()) / 1000) + 7200,
+            durationMinutes: 120,
+            timeIST: 'HIGHLIGHTS',
+            dateIST: 'Today',
+            fullIST: 'Official Video Highlights',
+            status: 'REPLAY',
+            isLive: false,
+            isStartingSoon: false,
+            isEnded: false,
+            canWatch: true,
+            countdown: 'HIGHLIGHTS',
+            hasEnglish: true,
+            isFamous: true,
+            source: h.source || 'ScoreBat',
+            thumbnail: h.thumbnail || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80',
+            userHasChannel: true,
+            primaryPlayUrl: h.embedUrl ? `/play_consumet.php?url=${encodeURIComponent(h.embedUrl)}&name=${encodeURIComponent(h.title)}&source=consumet.html&type=embed` : '#',
+            primaryChannelName: h.source || 'Video Highlights',
+            channels: [{
+                channelName: h.title,
+                language: 'English',
+                isEnglish: true,
+                userHasChannel: true,
+                userChannelUrl: h.embedUrl || '',
+                playUrl: h.embedUrl ? `/play_consumet.php?url=${encodeURIComponent(h.embedUrl)}&name=${encodeURIComponent(h.title)}&source=consumet.html&type=embed` : '#'
+            }]
+        }));
+
+        // Zee Channels shelf items from /api/zee/channels
+        const zeeCards = (window.zeeChannels || []).map(z => ({
+            id: z.id,
+            title: z.name,
+            rawTitle: z.name,
+            sportName: z.genre || 'Entertainment',
+            sportEmoji: '📺',
+            category: z.genre,
+            league: 'Zee Network',
+            countryCode: 'IN',
+            startTime: Math.floor(Date.now() / 1000),
+            endTime: Math.floor(Date.now() / 1000) + 86400,
+            durationMinutes: 1440,
+            timeIST: 'LIVE 24/7',
+            dateIST: 'Today',
+            fullIST: '24/7 Cloudfront Broadcast',
+            status: 'LIVE',
+            isLive: true,
+            isStartingSoon: false,
+            isEnded: false,
+            canWatch: true,
+            countdown: 'LIVE NOW',
+            hasEnglish: false,
+            isFamous: true,
+            source: 'ZEE_CLOUDFRONT',
+            thumbnail: z.logo || 'https://images.unsplash.com/photo-1593784991095-a205069470b6?w=800&auto=format&fit=crop&q=80',
+            userHasChannel: true,
+            primaryPlayUrl: z.streamUrl,
+            primaryChannelName: z.name,
+            isAddedChannel: true,
+            isMdtv: true,
+            channels: [{
+                channelName: z.name,
+                language: 'Hindi',
+                isEnglish: false,
+                userHasChannel: true,
+                userChannelUrl: z.streamUrl,
+                playUrl: z.streamUrl
+            }]
+        }));
 
         let shelvesHtml = '';
 
@@ -7086,6 +7369,101 @@ function renderLiveNowGrid() {
 
         if (liveMatches.length > 0) {
             shelvesHtml += createShelf('Live Now (Matches & Events)', liveMatches, true);
+        }
+        if (highlightsCards.length > 0) {
+            shelvesHtml += createShelf('🏆 Major Sports Highlights & Replays', highlightsCards, false);
+        }
+        if (zeeCards.length > 0) {
+            shelvesHtml += createShelf('📺 Zee Network Live (Cloudfront ClearKey)', zeeCards, true);
+        }
+        const activeFancodeList = (fancodeMatches && fancodeMatches.length > 0) ? fancodeMatches : (window.fancodeLiveMatches || []).map(fc => ({
+            id: `fancode_${fc.matchId || fc.id}`,
+            title: fc.title,
+            rawTitle: fc.title,
+            sportName: fc.sportCategory || 'Cricket',
+            sportEmoji: '🏏',
+            category: 'cricket',
+            league: fc.eventName || 'FanCode Live Stream',
+            countryCode: 'IN',
+            startTime: Math.floor(Date.now() / 1000),
+            endTime: Math.floor(Date.now() / 1000) + 14400,
+            durationMinutes: 240,
+            timeIST: 'LIVE NOW',
+            dateIST: 'Today',
+            fullIST: 'Today, LIVE NOW',
+            status: 'LIVE',
+            isLive: true,
+            isStartingSoon: false,
+            isEnded: false,
+            canWatch: true,
+            countdown: 'LIVE NOW',
+            hasEnglish: true,
+            isFamous: true,
+            source: 'FANCODE_LIVE',
+            thumbnail: fc.thumbnail,
+            userHasChannel: true,
+            primaryPlayUrl: fc.playUrl,
+            primaryM3u8Url: fc.streamUrl,
+            primaryChannelName: 'FanCode 1080p Live',
+            isFanCode: true,
+            channels: [{
+                channelName: 'FanCode 1080p Feed',
+                language: 'English',
+                isEnglish: true,
+                userHasChannel: true,
+                userChannelUrl: fc.streamUrl,
+                playUrl: fc.playUrl
+            }]
+        }));
+
+        if (activeFancodeList.length > 0) {
+            shelvesHtml += createShelf('🏏 FanCode Live Matches (1080p Streams)', activeFancodeList, true);
+        }
+
+        // SonyLIV Shelf (Live & Upcoming Matches)
+        const sonylivMatches = events.filter(e => (e.source || '').toLowerCase().includes('sonyliv') || (e.rawTitle || e.title || '').toLowerCase().includes('sonyliv'));
+        const activeSonylivList = (sonylivMatches && sonylivMatches.length > 0) ? sonylivMatches : (window.sonylivLiveMatches || []).concat(window.sonylivUpcomingMatches || []).map(sl => ({
+            id: `sonyliv_${sl.contentId || sl.id}`,
+            title: sl.title,
+            rawTitle: sl.title,
+            sportName: sl.sportName || sl.category || 'Sports',
+            sportEmoji: sl.sportEmoji || '⚽',
+            category: (sl.category || 'sports').toLowerCase(),
+            league: sl.eventName || 'SonyLIV Sports',
+            countryCode: 'IN',
+            startTime: Math.floor(Date.now() / 1000),
+            endTime: Math.floor(Date.now() / 1000) + 14400,
+            durationMinutes: 180,
+            timeIST: sl.isLive ? 'LIVE NOW' : 'UPCOMING',
+            dateIST: 'Today',
+            fullIST: sl.isLive ? 'Live on ' + sl.broadcastChannel : 'Upcoming on ' + sl.broadcastChannel,
+            status: sl.status,
+            isLive: sl.isLive,
+            isStartingSoon: false,
+            isEnded: false,
+            canWatch: sl.isLive && Boolean(sl.streamUrl),
+            countdown: sl.isLive ? 'LIVE NOW' : 'UPCOMING',
+            hasEnglish: true,
+            isFamous: true,
+            source: 'SONYLIV_LIVE',
+            thumbnail: sl.thumbnail,
+            userHasChannel: true,
+            primaryPlayUrl: sl.playUrl,
+            primaryM3u8Url: sl.streamUrl,
+            primaryChannelName: sl.broadcastChannel || 'Sony Sports',
+            isSonyLiv: true,
+            channels: [{
+                channelName: sl.broadcastChannel || 'SonyLIV Feed',
+                language: sl.language || 'English',
+                isEnglish: true,
+                userHasChannel: true,
+                userChannelUrl: sl.streamUrl,
+                playUrl: sl.playUrl
+            }]
+        }));
+
+        if (activeSonylivList.length > 0) {
+            shelvesHtml += createShelf('📺 SonyLIV Live & Upcoming Matches', activeSonylivList, true);
         }
         if (mdtvChannelsList.length > 0) {
             shelvesHtml += createShelf('Special Channels', mdtvChannelsList, true);
@@ -8206,8 +8584,46 @@ if (liveEventsContainer) liveEventsContainer.style.display = 'none';
 // Multi-Container Showcase Studio Dynamic Rendering
 renderShowcaseContainers(window.sportsContainersList, customChannels);
 
-// Priority Spotlight: IF ADMIN ADDED CHANNEL EVENT MANAGER IS AVAILABLE MAKE THAT AS FIRST SPOTLIGHT
+// Priority Spotlight: Connect FanCode & SonyLIV live matches first so they appear in Spotlight banner
 const prioritySpotlight = [];
+if (Array.isArray(window.fancodeLiveMatches) && window.fancodeLiveMatches.length > 0) {
+    window.fancodeLiveMatches.forEach(fc => {
+        const title = fc.title || fc.eventName || fc.matchName || 'FanCode Live Match';
+        const poster = fc.thumbnail || fc.src || '';
+        const playUrl = fc.playUrl || (fc.streamUrl ? `/play_consumet.php?url=${encodeURIComponent(fc.streamUrl)}&name=${encodeURIComponent(title)}&source=consumet.html&type=hls` : '');
+        if (playUrl && !prioritySpotlight.some(p => p.url === playUrl)) {
+            prioritySpotlight.push({
+                name: title,
+                title: title,
+                url: playUrl,
+                logo: poster,
+                bgUrl: poster,
+                isAdminFeed: false,
+                isEventFeed: true,
+                badge: 'FANCODE LIVE'
+            });
+        }
+    });
+}
+if (Array.isArray(window.sonylivLiveMatches) && window.sonylivLiveMatches.length > 0) {
+    window.sonylivLiveMatches.forEach(sl => {
+        const title = sl.title || sl.eventName || 'SonyLIV Live Match';
+        const poster = sl.thumbnail || '';
+        const playUrl = sl.playUrl || (sl.streamUrl ? `/play_consumet.php?url=${encodeURIComponent(sl.streamUrl)}&name=${encodeURIComponent(title)}&source=consumet.html&type=hls` : '');
+        if (playUrl && !prioritySpotlight.some(p => p.url === playUrl)) {
+            prioritySpotlight.push({
+                name: title,
+                title: title,
+                url: playUrl,
+                logo: poster,
+                bgUrl: poster,
+                isAdminFeed: false,
+                isEventFeed: true,
+                badge: 'SONYLIV LIVE'
+            });
+        }
+    });
+}
 if (customChannels.length > 0) {
     customChannels.forEach(c => {
         prioritySpotlight.push({ ...c, isAdminFeed: true });
@@ -10125,78 +10541,204 @@ async function switchAnimeScheduleDay(day = 'today', specificDate = null) {
     }
 }
 
-// ELECTRONIC PROGRAM GUIDE (EPG) ENGINE
-async function fetchAndParseEpg() {
+// ELECTRONIC PROGRAM GUIDE (EPG) ENGINE — STAR SPORTS & SONY SPORTS
+window.epgActiveNetwork = 'star';
+window.allEpgChannelsList = [];
+
+async function fetchAndParseEpg(force = false) {
     const loadingState = document.getElementById('epgLoadingState');
     const emptyState = document.getElementById('epgEmptyState');
     const guideContainer = document.getElementById('epgGuideContainer');
+    
     if (loadingState) loadingState.classList.remove('hidden');
     if (emptyState) emptyState.classList.add('hidden');
     if (guideContainer) guideContainer.classList.add('hidden');
-    setTimeout(() => {
-        renderDemoEpgData();
+
+    try {
+        if (!window.allEpgChannelsList.length || force) {
+            const res = await fetch('/api/epg/timeline');
+            const data = await res.json();
+            if (data.status === 'success' && Array.isArray(data.channels)) {
+                // Deduplicate channels by trimmed lowercase name
+                const seen = new Set();
+                const deduped = [];
+                data.channels.forEach(ch => {
+                    const cleanName = (ch.name || '').trim().toLowerCase();
+                    if (!seen.has(cleanName)) {
+                        seen.add(cleanName);
+                        deduped.push(ch);
+                    }
+                });
+                window.allEpgChannelsList = deduped;
+            }
+        }
+        renderEpgChannels();
+    } catch (err) {
+        console.error('[EPG] Error loading timeline:', err);
+        if (emptyState) {
+            emptyState.textContent = `EPG Load Error: ${err.message}`;
+            emptyState.classList.remove('hidden');
+        }
+    } finally {
         if (loadingState) loadingState.classList.add('hidden');
-        if (guideContainer) guideContainer.classList.remove('hidden');
-    }, 600);
-}
-function handleEpgProviderChange() {
-    fetchAndParseEpg();
-}
-function renderDemoEpgData() {
-    const demoChannels = [
-        { id: "ch1", name: "HBO HD", logo: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=150", show: "House of the Dragon", cat: "Movies", time: "8:00 PM - 9:00 PM" },
-        { id: "ch2", name: "Sky Sports Main", logo: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=150", show: "Premier League Live", cat: "Sports", time: "8:30 PM - 10:30 PM" },
-        { id: "ch3", name: "Discovery HD", logo: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=150", show: "Planet Earth III", cat: "Documentary", time: "9:00 PM - 10:00 PM" },
-        { id: "ch4", name: "Anime Central", logo: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=150", show: "Demon Slayer S4", cat: "Anime", time: "9:30 PM - 10:00 PM" }
-    ];
-    const sidebar = document.getElementById('epgSidebarChannels');
-    const body = document.getElementById('epgTimelineBody');
-    const badge = document.getElementById('epgChannelsCountBadge');
-    const textCount = document.getElementById('epgChannelCountText');
-    if (badge) badge.textContent = `${demoChannels.length} Live Channels Loaded`;
-    if (textCount) textCount.textContent = demoChannels.length;
-    if (sidebar) {
-        sidebar.innerHTML = demoChannels.map(c => `
-            <div class="h-16 px-4 flex items-center gap-3 border-b border-white/5 bg-zinc-950/80">
-                <div class="w-8 h-8 rounded-lg bg-black border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
-                    <img src="${c.logo}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${c.name}') + '&background=0f172a&color=f59e0b&bold=true';" class="w-full h-full object-cover">
-                </div>
-                <span class="text-xs font-bold text-white truncate">${c.name}</span>
-            </div>
-        `).join('');
     }
-    if (body) {
-        body.innerHTML = demoChannels.map(c => `
-            <div class="h-16 flex items-center px-4 border-b border-white/5 relative">
-                <div onclick="openEpgProgramModal('${c.show}', '${c.name}', '${c.time}', '${c.cat}')" class="bg-amber-500/20 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-2">
-                    <i data-lucide="tv" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span>${c.show} (${c.time})</span>
-                </div>
-            </div>
-        `).join('');
-    }
+}
+
+function filterEpgNetwork(network) {
+    window.epgActiveNetwork = network;
+    const btnIds = ['star', 'sony', 'sports', 'all'];
+    btnIds.forEach(id => {
+        const btn = document.getElementById(`epgTab-${id}`);
+        if (!btn) return;
+        if (id === network) {
+            btn.className = "epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-500 text-black shadow-lg shadow-amber-500/20 shrink-0 flex items-center gap-1.5";
+        } else {
+            btn.className = "epg-net-btn px-4 py-2 rounded-xl text-xs font-black transition-all bg-white/10 text-zinc-300 hover:text-white hover:bg-white/20 shrink-0 flex items-center gap-1.5";
+        }
+    });
+    renderEpgChannels();
+}
+
+function handleEpgSearch(query) {
+    window.epgSearchQuery = (query || '').trim().toLowerCase();
+    renderEpgChannels();
+}
+
+function renderEpgChannels() {
+    const guideContainer = document.getElementById('epgGuideContainer');
+    const emptyState = document.getElementById('epgEmptyState');
     const cardsGrid = document.getElementById('epgCardsGrid');
-    if (cardsGrid) {
-        cardsGrid.innerHTML = demoChannels.map(c => `
-            <div class="bg-zinc-950 border border-white/10 p-5 rounded-3xl space-y-3">
-                <div class="flex items-center gap-3">
-                    <img src="${c.logo}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${c.name}') + '&background=0f172a&color=f59e0b&bold=true';" class="w-10 h-10 rounded-xl object-cover">
-                    <div>
-                        <h4 class="text-sm font-bold text-white">${c.name}</h4>
-                        <span class="text-[10px] text-amber-400 font-bold uppercase">${c.cat}</span>
+    const countBadge = document.getElementById('epgChannelCountText');
+    if (!cardsGrid) return;
+
+    const net = window.epgActiveNetwork || 'star';
+    const q = window.epgSearchQuery || '';
+
+    let filtered = window.allEpgChannelsList || [];
+
+    // 1. Filter by Network
+    if (net === 'star') {
+        filtered = filtered.filter(c => /star sports/i.test(c.name));
+    } else if (net === 'sony') {
+        filtered = filtered.filter(c => /sony/i.test(c.name));
+    } else if (net === 'sports') {
+        filtered = filtered.filter(c => /star|sony|sport|cricket|espn|ten|tnt|dd sports|eurosport/i.test(c.name || c.genre));
+    }
+
+    // 2. Filter by search query
+    if (q) {
+        filtered = filtered.filter(c => 
+            c.name.toLowerCase().includes(q) ||
+            (c.currentProgram?.title || '').toLowerCase().includes(q) ||
+            (c.currentProgram?.category || '').toLowerCase().includes(q) ||
+            (c.genre || '').toLowerCase().includes(q)
+        );
+    }
+
+    if (countBadge) {
+        countBadge.textContent = `${filtered.length} Channels • ${net === 'star' ? 'Star Sports Network' : (net === 'sony' ? 'Sony Sports Network' : (net === 'sports' ? 'Sports Channels' : 'All Channels'))}`;
+    }
+
+    if (filtered.length === 0) {
+        if (guideContainer) guideContainer.classList.add('hidden');
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (guideContainer) guideContainer.classList.remove('hidden');
+
+    const now = Date.now();
+
+    cardsGrid.innerHTML = filtered.map(ch => {
+        const cur = ch.currentProgram || {};
+        const nxt = (ch.programs && ch.programs[1]) ? ch.programs[1] : null;
+        const isStar = /star sports/i.test(ch.name);
+        const isSony = /sony/i.test(ch.name);
+        
+        let netBadge = '';
+        if (isStar) {
+            netBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/30">⭐ STAR SPORTS</span>`;
+        } else if (isSony) {
+            netBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30">📺 SONY SPORTS</span>`;
+        } else {
+            netBadge = `<span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-400/30">🏆 SPORTS</span>`;
+        }
+
+        let progressPct = 45;
+        if (cur.startTime && cur.endTime && cur.endTime > cur.startTime) {
+            progressPct = Math.min(100, Math.max(5, Math.round(((now - cur.startTime) / (cur.endTime - cur.startTime)) * 100)));
+        }
+
+        const curTimeStr = cur.start && cur.end ? `${cur.start} - ${cur.end} IST` : '8:00 PM - 10:00 PM IST';
+        const curTitle = cur.title || 'Live Sports Broadcast';
+        const curCat = cur.category || 'Sports';
+        const nxtTitle = nxt ? nxt.title : 'Sports Highlights & Replay';
+        const nxtTime = nxt ? (nxt.start || 'Next') : 'Later';
+
+        const logoUrl = ch.logo || (typeof getSportsLogo === 'function' ? getSportsLogo({ name: ch.name }) : '');
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(ch.name)}&background=0f172a&color=f59e0b&bold=true`;
+
+        return `
+            <div class="bg-gradient-to-b from-zinc-900/90 via-zinc-950 to-black border border-white/10 hover:border-amber-500/50 rounded-3xl p-5 space-y-4 shadow-xl transition-all hover:scale-[1.01] hover:shadow-2xl hover:shadow-amber-500/10 flex flex-col justify-between">
+                <!-- Channel Top Bar -->
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-11 h-11 rounded-2xl bg-black border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-1 shadow-inner">
+                            <img src="${logoUrl}" onerror="this.onerror=null; this.src='${fallbackAvatar}';" class="w-full h-full object-contain" alt="${ch.name}">
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-black text-white truncate leading-tight">${ch.name.replace(/\[.*?\]/g, '').trim()}</h4>
+                            <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                                ${netBadge}
+                                <span class="text-[10px] text-zinc-400 font-mono">HD</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
-                    <p class="text-xs font-bold text-white">${c.show}</p>
-                    <p class="text-[10px] text-zinc-400 mt-1 font-mono">${c.time}</p>
+
+                <!-- On Air Program -->
+                <div class="bg-black/40 border border-white/5 p-3.5 rounded-2xl space-y-2">
+                    <div class="flex items-center justify-between text-[10px] font-bold">
+                        <span class="text-red-400 flex items-center gap-1 uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> ON AIR NOW
+                        </span>
+                        <span class="text-zinc-400 font-mono">${curTimeStr}</span>
+                    </div>
+                    <p class="text-xs font-black text-white leading-snug truncate" title="${curTitle}">${curTitle}</p>
+                    <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                        <span>${curCat}</span>
+                        <span class="font-mono text-amber-400">${progressPct}%</span>
+                    </div>
+                    <!-- Live Progress Bar -->
+                    <div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-amber-500 to-red-500 rounded-full transition-all" style="width: ${progressPct}%;"></div>
+                    </div>
                 </div>
-                <button onclick="openEpgProgramModal('${c.show}', '${c.name}', '${c.time}', '${c.cat}')" class="w-full py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-bold rounded-xl transition-all">
-                    Program Details
-                </button>
+
+                <!-- Up Next Program -->
+                <div class="px-1 text-[11px] text-zinc-400 flex items-center justify-between gap-2 border-t border-white/5 pt-2">
+                    <div class="truncate flex items-center gap-1.5">
+                        <span class="text-[9px] font-black uppercase text-zinc-500 shrink-0">UP NEXT:</span>
+                        <span class="truncate text-zinc-300 font-medium" title="${nxtTitle}">${nxtTitle}</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-zinc-500 shrink-0">${nxtTime}</span>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-1 flex items-center gap-2">
+                    <a href="${ch.playUrl}" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-black"></i> Watch Channel
+                    </a>
+                    <button onclick="openEpgProgramModal('${curTitle.replace(/'/g, "\\'")}', '${ch.name.replace(/'/g, "\\'")}', '${curTimeStr}', '${curCat}')" class="p-2.5 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white rounded-xl border border-white/10 transition-all" title="Show Details">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
-        `).join('');
-    }
-    triggerLucide();
+        `;
+    }).join('');
+
+    if (typeof triggerLucide === 'function') triggerLucide();
 }
 function toggleEpgView(view) {
     const timeline = document.getElementById('epgTimelineViewContainer');
