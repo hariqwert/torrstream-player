@@ -138,8 +138,8 @@ function fetchHtmlFollowRedirects(startUrl, referer, maxRedirects = 5) {
           agent: httpsAgent,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Referer': referer || 'https://timst.cfd/',
-            'Origin': 'https://timst.cfd',
+            'Referer': referer || 'https://timst.top/',
+            'Origin': 'https://timst.top',
             'Sec-Fetch-Dest': 'iframe',
             'Sec-Fetch-Mode': 'navigate',
             'Sec-Fetch-Site': 'cross-site',
@@ -163,17 +163,17 @@ function fetchHtmlFollowRedirects(startUrl, referer, maxRedirects = 5) {
   });
 }
 
-// Fetch JSON from timst.cfd API
+// Fetch JSON from timst.top API
 function fetchTimJson(path2) {
   return new Promise((resolve) => {
     https.get({
-      hostname: 'timst.cfd',
+      hostname: 'timst.top',
       path: path2,
       agent: httpsAgent,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Referer': 'https://timst.cfd/',
-        'Origin': 'https://timst.cfd',
+        'Referer': 'https://timst.top/',
+        'Origin': 'https://timst.top',
         'Accept': 'application/json,*/*'
       }
     }, (res) => {
@@ -184,13 +184,13 @@ function fetchTimJson(path2) {
   });
 }
 
-// Cache for timst.cfd API data (TTL: 2 minutes)
+// Cache for timst.top API data (TTL: 2 minutes)
 let _timstreamsCache = null;
 let _timstreamsCacheTime = 0;
 async function getTimstreamsData() {
   if (_timstreamsCache && (Date.now() - _timstreamsCacheTime) < 120000) return _timstreamsCache;
   // Handshake
-  fetchHtmlFollowRedirects('https://timst.cfd/', null, 0).catch(() => {});
+  fetchHtmlFollowRedirects('https://timst.top/', null, 0).catch(() => {});
   const data = await fetchTimJson('/api/streams');
   if (data && Array.isArray(data) && data.length > 0) {
     _timstreamsCache = data;
@@ -207,7 +207,7 @@ async function resolveEmbedUrl(embedUrl, forceFresh = false) {
     if (cached && (Date.now() - cached.ts) < STREAM_CACHE_TTL) return cached.m3u8;
   }
   try {
-    const { html } = await fetchHtmlFollowRedirects(embedUrl, 'https://timst.cfd/');
+    const { html } = await fetchHtmlFollowRedirects(embedUrl, 'https://timst.top/');
     const m3u8 = extractM3u8FromHtml(html);
     if (m3u8) {
       _streamCache.set(cacheKey, { m3u8, ts: Date.now() });
@@ -293,8 +293,8 @@ function cdnProxy(targetUrl, clientRes, rewriteBase) {
           agent: httpsAgent,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Referer': 'https://timst.cfd/',
-            'Origin': 'https://timst.cfd',
+            'Referer': 'https://timst.top/',
+            'Origin': 'https://timst.top',
             'Accept': '*/*',
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
