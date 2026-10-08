@@ -20,7 +20,11 @@ const httpsAgent = new https.Agent({
     rejectUnauthorized: false
 });
 
-const ZEE_M3U_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/refs/heads/main/zee.m3u';
+const ZEE_M3U_URLS = [
+    'https://raw.githubusercontent.com/doctor-8trange/quarnex/refs/heads/main/data/zee5.m3u',
+    'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/Zee5.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/zee.m3u'
+];
 
 let cachedZeeChannels: ZeeChannel[] = [];
 let lastSyncTime = 0;
@@ -35,19 +39,17 @@ export async function syncZeeChannels(forceRefresh = false): Promise<ZeeChannel[
         return cachedZeeChannels;
     }
 
-    try {
-        const res = await axios.get(ZEE_M3U_URL, {
-            httpsAgent,
-            timeout: 10000,
-            headers: { 'User-Agent': 'Mozilla/5.0' }
-        });
+    for (const url of ZEE_M3U_URLS) {
+        try {
+            const res = await axios.get(url, {
+                httpsAgent,
+                timeout: 10000,
+                headers: { 'User-Agent': 'Mozilla/5.0' }
+            });
 
-        if (!res.data || typeof res.data !== 'string') {
-            return cachedZeeChannels;
-        }
-
-        const lines = res.data.split(/\r?\n/);
-        const channels: ZeeChannel[] = [];
+            if (res.data && typeof res.data === 'string' && res.data.includes('#EXTM3U')) {
+                const lines = res.data.split(/\r?\n/);
+                const channels: ZeeChannel[] = [];
 
         let currentName = '';
         let currentLogo = '';
@@ -116,17 +118,19 @@ export async function syncZeeChannels(forceRefresh = false): Promise<ZeeChannel[
             }
         }
 
-        if (channels.length > 0) {
-            cachedZeeChannels = channels;
-            lastSyncTime = now;
-            console.log(`[ZeeService] Synced ${channels.length} Zee Network channels from Cloudfront origin.`);
+                if (channels.length > 0) {
+                    cachedZeeChannels = channels;
+                    lastSyncTime = now;
+                    console.log(`[ZeeService] Synced ${channels.length} Zee Network channels from ${url}`);
+                    return cachedZeeChannels;
+                }
+            }
+        } catch (err: any) {
+            console.warn(`[ZeeService] Failed to sync Zee channels from ${url}:`, err.message);
         }
-
-        return cachedZeeChannels;
-    } catch (err: any) {
-        console.warn('[ZeeService] Failed to sync Zee channels:', err.message);
-        return cachedZeeChannels;
     }
+
+    return cachedZeeChannels;
 }
 
 /**

@@ -3,55 +3,50 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-// Comprehensive Multi-Engine Live Sports & OTT Catalog
-// Incorporates all tested GitHub feeds AND all external web portals/APIs discovered:
-// (MatchDekho, Sportlink/Sayan, AllInOneReborn, PremiumPlugX, TimStreams, MDTV, Doctor Strange, DrmLive, Monirul)
+// Master Multi-Engine Live Sources Configuration
+// Each network/event features a Primary best source + redundant Fallback sources
 const SOURCE_CONFIG = {
-  // 1. JioTV Network
   jio: {
-    name: 'JioTV Network (Star Sports, Sony Ten, DD, Eurosport)',
+    name: 'JioTV Network',
     type: 'both',
     m3u: {
       primary: 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/jio_tv.m3u',
       backups: [
-        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/jtv.m3u',
         'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/jio_hotstar.m3u',
+        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/jtv.m3u',
         'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/refs/heads/main/Combined.m3u'
       ]
     },
     json: {
-      primary: 'https://jjtvxweb.pages.dev/jstr4web.json', // 1,176 Channels ClearKey DB
+      primary: 'https://jjtvxweb.pages.dev/jstr4web.json',
       backups: [
         'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/jtv.json'
       ]
     }
   },
 
-  // 2. Sony & SonyLiv Network
   sony: {
     name: 'Sony & SonyLiv Network',
     type: 'both',
     m3u: {
-      primary: 'https://premiumplugx.com/Sliv/sony_playlist.php?m3u', // PremiumPlugX Direct CDN
+      primary: 'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.m3u',
       backups: [
-        'https://sportlink-playlist.pages.dev/sony3.m3u', // Sayan / Sportlink
-        'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.m3u',
         'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.m3u',
         'https://raw.githubusercontent.com/sm-monirulislam/SonyLiv_Event_Playlist/main/sonyLiv.m3u',
-        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/sony.m3u'
+        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/sony.m3u',
+        'https://sportlink-playlist.pages.dev/sony3.m3u'
       ]
     },
     json: {
-      primary: 'https://allinonereborn2.online/sony/sliv3.json', // AllInOne 22ch directory
+      primary: 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json',
       backups: [
-        'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json',
         'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.json',
+        'https://allinonereborn2.online/sony/sliv3.json',
         'https://raw.githubusercontent.com/sm-monirulislam/SonyLiv_Event_Playlist/main/sonyLiv_data.json'
       ]
     }
   },
 
-  // 3. FanCode Sports Network
   fancode: {
     name: 'FanCode Sports Network',
     type: 'both',
@@ -64,44 +59,15 @@ const SOURCE_CONFIG = {
       ]
     },
     json: {
-      primary: 'https://allinonereborn2.online/fctest/json/fancode_latest.json', // AllInOne 1080p FanCode Hub
+      primary: 'https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json',
       backups: [
-        'https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json',
         'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.json',
+        'https://allinonereborn2.online/fctest/json/fancode_latest.json',
         'https://raw.githubusercontent.com/kajju027/Fancode-Events-Json/refs/heads/main/fancode.json'
       ]
     }
   },
 
-  // 4. MatchDekho Worldwide Live Sports
-  matchdekho: {
-    name: 'MatchDekho & Sportzfy Engine',
-    type: 'both',
-    m3u: {
-      primary: 'https://matchdekho.pages.dev/sports.m3u',
-      backups: [
-        'https://matchdekho.pages.dev/playlist.m3u'
-      ]
-    },
-    json: {
-      primary: 'https://matchdekho.in/api/world-sports.json', // Live 22+ match events API
-      backups: []
-    }
-  },
-
-  // 5. TimStreams / Epiembeds Sports
-  timstreams: {
-    name: 'TimStreams Live Sports & Channels',
-    type: 'json',
-    json: {
-      primary: 'https://timst.top/api/streams', // Live sports events
-      backups: [
-        'https://timst.top/api/channels' // Live TV channels
-      ]
-    }
-  },
-
-  // 6. ICC Cricket Tournaments
   icc: {
     name: 'ICC Cricket Tournaments',
     type: 'both',
@@ -120,7 +86,6 @@ const SOURCE_CONFIG = {
     }
   },
 
-  // 7. FIFA & Football Events
   fifa: {
     name: 'FIFA & Football Events',
     type: 'both',
@@ -138,7 +103,6 @@ const SOURCE_CONFIG = {
     }
   },
 
-  // 8. Willow Cricket Network
   willow: {
     name: 'Willow Cricket Network',
     type: 'both',
@@ -158,7 +122,6 @@ const SOURCE_CONFIG = {
     }
   },
 
-  // 9. Zee & Zee5 Network
   zee5: {
     name: 'Zee & Zee5 Network',
     type: 'both',
@@ -171,14 +134,13 @@ const SOURCE_CONFIG = {
       ]
     },
     json: {
-      primary: 'https://allinonereborn2.online/zee5/channels199.json', // 30 ClearKey channels
+      primary: 'https://raw.githubusercontent.com/doctor-8trange/quarnex/refs/heads/main/data/zee5.json',
       backups: [
-        'https://raw.githubusercontent.com/doctor-8trange/quarnex/refs/heads/main/data/zee5.json'
+        'https://allinonereborn2.online/zee5/channels199.json'
       ]
     }
   },
 
-  // 10. Prime Video Sports
   prime: {
     name: 'Prime Video Sports Network',
     type: 'both',
@@ -290,7 +252,7 @@ async function syncTarget(targetKey) {
 }
 
 async function run() {
-  const targetArg = process.argv[2]; // e.g. "matchdekho", "timstreams", "all"
+  const targetArg = process.argv[2]; // e.g. "icc", "fifa", or "all"
   if (targetArg && targetArg !== 'all') {
     await syncTarget(targetArg);
   } else {
@@ -298,7 +260,7 @@ async function run() {
       await syncTarget(key);
     }
   }
-  console.log('\n[SYNC COMPLETE] All configured live web & git sources verified and written to /data');
+  console.log('\n[SYNC COMPLETE] All configured live sources verified and written to /data');
 }
 
 run();

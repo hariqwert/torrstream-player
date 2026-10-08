@@ -72,9 +72,9 @@ export interface CategorySummary {
 const JTV_PRIMARY_CATALOG_URL = 'https://jjtvxweb.pages.dev/jstr4web.json';
 const JTV_BACKUP_CATALOG_URL = 'https://jjtvxweb.pages.dev/jstr4web.json';
 const JTV_CATALOG_URL = JTV_PRIMARY_CATALOG_URL;
-const LIVE_EVENTS_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/main/LiveEvent.m3u';
+const LIVE_EVENTS_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u';
 const SPORTLIVE18_LIVE_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u';
-const CRIC_LIVE_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/main/CricLive.m3u';
+const CRIC_LIVE_URL = 'https://matchdekho.in/api/world-sports.json';
 const WILDCARD_COOKIE_URL = 'https://allinonereborn2.online/jstrweb2/cookies.json';
 const SPORTLIVE18_COOKIE_URL = 'https://raw.githubusercontent.com/sportlive18/playlist/main/cookie.json';
 const SONYLIV_FEED_URL = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sony.m3u';
@@ -88,18 +88,18 @@ const CRICHD_LIVE_EVENTS_JSON = 'https://raw.githubusercontent.com/srhady/crichd
 const SPORT_M3U_URL = 'https://raw.githubusercontent.com/sportlive18/playlist/main/Sport.m3u';
 const ICC_LIVE_URL = 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u';
 const FIFA_LIVE_URL = 'https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/fifa_live.m3u';
-const TNT_SPORTS_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/main/Tnt.m3u';
-const WAVES_M3U_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/main/waves.m3u';
+const TNT_SPORTS_URL = 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/Tnt.m3u';
+const WAVES_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/SM%20All%20TV.m3u';
 const SONYLIV_EVENTS_JSON = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sonyliv.json';
 const SONYLIV_EVENTS_M3U = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sonyliv.m3u';
 const DOCTOR_8TRANGE_SONY_M3U = 'https://raw.githubusercontent.com/doctor-8trange/zyphora/main/data/sony.m3u';
-const WILLOW_EVENTS_JSON = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/main/willow.json';
+const WILLOW_EVENTS_JSON = 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.json';
 const WILLOW_EVENTS_M3U = 'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/willow.m3u';
 const AXSPORTS_M3U = 'https://raw.githubusercontent.com/srhady/axsports/refs/heads/main/playlist.m3u';
 const MOVIE_SPOTLIGHT_JSON = 'https://raw.githubusercontent.com/sportlive18/MOVIE-API-AUTO-UPDATE/main/movie.json';
 const IPL_HIGHLIGHTS_FANCODE_JSON = 'https://raw.githubusercontent.com/sportlive18/playlist/main/fancode2.json';
 const IPL_HIGHLIGHTS_FANCODE3_JSON = 'https://raw.githubusercontent.com/sportlive18/playlist/main/fancode3.json';
-const STAR2_SPORTS_JSON = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/refs/heads/main/star2.json';
+const STAR2_SPORTS_JSON = 'https://jjtvxweb.pages.dev/jstr4web.json';
 
 function isTokenExpired(token: string): boolean {
     if (!token) return true;
