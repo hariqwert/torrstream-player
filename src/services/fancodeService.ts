@@ -23,13 +23,16 @@ export interface FanCodeEvent {
 const FANCODE_M3U_URLS = [
     'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.m3u',
     'https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.m3u',
+    'https://raw.githubusercontent.com/sm-monirulislam/Fancode_Auto_Update_Playlist/main/fancode_bd.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/fancode.m3u',
     'https://raw.githubusercontent.com/doctor-8trange/zyphx8/main/fancode.m3u'
 ];
 const FANCODE_JSON_URLS = [
+    'https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.json',
+    'https://raw.githubusercontent.com/kajju027/Fancode-Events-Json/refs/heads/main/fancode.json',
     'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.json',
     'https://allinonereborn2.online/fctest/json/fancode_latest.json',
-    'https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json',
-    'https://raw.githubusercontent.com/doctor-8trange/zyphx8/main/fancode.json'
+    'https://raw.githubusercontent.com/sm-monirulislam/Fancode_Auto_Update_Playlist/main/fancode_data.json'
 ];
 
 // In-memory cache for live FanCode events
@@ -132,7 +135,16 @@ export async function fetchFanCodeEvents(forceRefresh = false): Promise<{ live: 
             const cleanTitle = (m.title || m.match_name || 'FanCode Match').replace(/\[.*?\]|\(.*?\)/g, '').trim();
             const streamData = streamMap.get(matchKey) || streamMap.get(cleanTitle.toLowerCase());
 
-            let streamUrl = streamData?.streamUrl || m.video_url || m.pub_url || m.dai_url || '';
+            let streamUrl = streamData?.streamUrl ||
+                m.streams?.primary ||
+                m.streams?.fancode_cdn ||
+                m.streams?.fancode_bd_cdn ||
+                m.STREAMING_CDN?.Primary_Playback_URL ||
+                m.STREAMING_CDN?.fancode_cdn ||
+                m.video_url ||
+                m.pub_url ||
+                m.dai_url ||
+                '';
             if (!streamUrl && m.akamai_m3u8_hex) {
                 try {
                     const decoded = Buffer.from(m.akamai_m3u8_hex, 'hex').toString('utf8');
@@ -149,12 +161,12 @@ export async function fetchFanCodeEvents(forceRefresh = false): Promise<{ live: 
                     matchId: m.match_id,
                     title: m.title || m.match_name || 'Live Sports',
                     eventName: m.event_name || 'FanCode Live',
-                    sportCategory: m.event_category || 'Cricket',
+                    sportCategory: m.event_category || m.category || 'Cricket',
                     team1: m.team_1,
                     team2: m.team_2,
                     status: isLive ? 'LIVE' : (m.status || 'UPCOMING'),
                     startTime: m.startTime,
-                    thumbnail: m.src || streamData?.logo || 'https://www.fancode.com/skillup-uploads/cms-media/web-1.png',
+                    thumbnail: m.src || m.image || streamData?.logo || 'https://www.fancode.com/skillup-uploads/cms-media/web-1.png',
                     streamUrl: directStream,
                     playUrl: directStream ? `/play_consumet.php?channel_id=fancode-${matchIdStr}&name=${encodeURIComponent(m.title || m.match_name)}&url=${encodeURIComponent(directStream)}&logo=${encodeURIComponent(m.src || '')}&source=fancode&type=hls` : undefined,
                     isLive,

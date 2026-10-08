@@ -140,9 +140,12 @@ export class SportsScraperService {
             return list;
         };
 
-        // 1. Try scraping from live schedule JSON aggregators (DLHD, TimStreams, SportSurge feeds)
+        // 1. Try scraping from live schedule JSON aggregators (Monirul Sports, MatchDekho, TimStreams, DLHD)
         try {
             const scheduleUrls = [
+                'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.json',
+                'https://matchdekho.in/api/world-sports.json',
+                'https://timst.top/api/streams',
                 'https://hamis.romponalis.st/schedule.json',
                 'https://dlhd.st/schedule/schedule-generated.json'
             ];
@@ -154,26 +157,26 @@ export class SportsScraperService {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                             'Referer': 'https://dlhd.st/'
                         },
-                        timeout: 3500
+                        timeout: 5000
                     });
 
                     if (resp.data) {
                         const rawData = resp.data;
-                        // Parse schedule structure
-                        const categories = Array.isArray(rawData) ? rawData : (rawData.events || rawData.schedule || Object.values(rawData));
+                        // Parse schedule structure (supports Monirul matches array, TimStreams, DLHD)
+                        const categories = rawData.matches ? [{ category: 'Live Sports', matches: rawData.matches }] : (Array.isArray(rawData) ? rawData : (rawData.events || rawData.schedule || Object.values(rawData)));
                         
                         for (const cat of categories) {
                             if (!cat) continue;
-                            const catName = cat.category || cat.sport || 'Sports';
+                            const catName = cat.category || cat.sport || cat.Category || 'Sports';
                             const items = Array.isArray(cat.events || cat.matches || cat) ? (cat.events || cat.matches || cat) : [];
 
                             for (const item of items) {
                                 if (!item || typeof item !== 'object') continue;
-                                const title = item.event || item.title || item.name || `${item.homeTeam || ''} vs ${item.awayTeam || ''}`.trim();
+                                const title = item.event_name || item.event || item.title || item.name || `${item.homeTeam || item.eventInfo?.teamA || ''} vs ${item.awayTeam || item.eventInfo?.teamB || ''}`.trim();
                                 if (!title || title.length < 3) continue;
 
-                                const timeStr = item.time || item.startTime || item.date || 'LIVE NOW';
-                                const isLive = timeStr.toLowerCase().includes('live') || timeStr.toLowerCase().includes('now') || (item.status === 'live');
+                                const timeStr = item.time || item.startTime || item.eventInfo?.startTime || item.date || 'LIVE NOW';
+                                const isLive = String(item.status || '').toUpperCase() === 'LIVE' || timeStr.toLowerCase().includes('live') || timeStr.toLowerCase().includes('now');
                                 
                                 const channelNames: string[] = [];
                                 if (item.channels && Array.isArray(item.channels)) {
@@ -186,6 +189,19 @@ export class SportsScraperService {
                                 }
 
                                 const streamChannels = findChannelStreams(channelNames);
+                                if (Array.isArray(item.streams)) {
+                                    for (const s of item.streams) {
+                                        if (s && s.stream_url) {
+                                            streamChannels.push({
+                                                name: s.channel_name || 'Live Stream',
+                                                url: s.stream_url,
+                                                playUrl: `/play_consumet.php?name=${encodeURIComponent(title)}&url=${encodeURIComponent(s.stream_url)}&source=sports_scraper`,
+                                                quality: '1080P'
+                                            });
+                                        }
+                                    }
+                                }
+
                                 const defaultStream = streamChannels[0] || {
                                     name: channelNames[0] || 'Live Sports Stream',
                                     url: `/play_consumet.php?name=${encodeURIComponent(title)}&source=sports_scraper`,
@@ -195,10 +211,12 @@ export class SportsScraperService {
                                 events.push({
                                     id: `evt-${events.length + 1}-${Math.random().toString(36).substring(2, 6)}`,
                                     title: title,
-                                    sport: catName,
-                                    league: item.league || catName,
-                                    homeTeam: item.homeTeam || (title.includes(' vs ') ? title.split(' vs ')[0].trim() : undefined),
-                                    awayTeam: item.awayTeam || (title.includes(' vs ') ? title.split(' vs ')[1].trim() : undefined),
+                                    sport: item.Category || catName,
+                                    league: item.league || item.eventInfo?.eventName || catName,
+                                    homeTeam: item.homeTeam || item.eventInfo?.teamA || (title.includes(' vs ') ? title.split(' vs ')[0].trim() : (title.includes(' Vs ') ? title.split(' Vs ')[0].trim() : undefined)),
+                                    awayTeam: item.awayTeam || item.eventInfo?.teamB || (title.includes(' vs ') ? title.split(' vs ')[1].trim() : (title.includes(' Vs ') ? title.split(' Vs ')[1].trim() : undefined)),
+                                    homeLogo: item.eventInfo?.teamAFlag,
+                                    awayLogo: item.eventInfo?.teamBFlag,
                                     time: timeStr,
                                     isLive: isLive,
                                     status: isLive ? 'LIVE' : 'UPCOMING',

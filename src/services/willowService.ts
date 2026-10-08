@@ -41,6 +41,11 @@ export interface WillowEvent {
 const WILLOW_JSON_URL = 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.json';
 const WILLOW_BACKUP_JSON_URL = 'https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json';
 const WILLOW_FALLBACK_JSON_URL = 'https://raw.githubusercontent.com/drmlive/willow-live-events/main/willow.json';
+const WILLOW_M3U_URLS = [
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/willow.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u'
+];
 
 let cachedWillowEvents: WillowEvent[] = [];
 let lastFetchTime = 0;

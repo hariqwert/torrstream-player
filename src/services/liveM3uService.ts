@@ -33,7 +33,14 @@ interface LiveM3uCache {
 
 const LIVE_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u';
 const LIVE_M3U_URLS = [
-    'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u'
+    'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u',
+    'https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/fifa_live.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/primesport.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/refs/heads/main/sonyliv.m3u'
 ];
 const CACHE_TTL_MS = 25 * 60 * 1000; // 25 minutes auto-update interval
 

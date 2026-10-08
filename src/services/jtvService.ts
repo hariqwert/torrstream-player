@@ -70,17 +70,23 @@ export interface CategorySummary {
 }
 
 const JTV_PRIMARY_CATALOG_URL = 'https://jjtvxweb.pages.dev/jstr4web.json';
-const JTV_BACKUP_CATALOG_URL = 'https://jjtvxweb.pages.dev/jstr4web.json';
+const JTV_BACKUP_CATALOG_URL = 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/jtv.json';
+const JTV_BACKUP_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/jio_tv.m3u';
+const JTV_COMBINED_M3U_URL = 'https://raw.githubusercontent.com/sportlive18/jio-tv-auto-update-playlist/refs/heads/main/Combined.m3u';
 const JTV_CATALOG_URL = JTV_PRIMARY_CATALOG_URL;
+
 const LIVE_EVENTS_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u';
 const SPORTLIVE18_LIVE_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u';
+const MONIRUL_SPORTS_JSON_URL = 'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.json';
 const CRIC_LIVE_URL = 'https://matchdekho.in/api/world-sports.json';
 const WILDCARD_COOKIE_URL = 'https://allinonereborn2.online/jstrweb2/cookies.json';
 const SPORTLIVE18_COOKIE_URL = 'https://raw.githubusercontent.com/sportlive18/playlist/main/cookie.json';
 const SONYLIV_FEED_URL = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sony.m3u';
-const HOTSTAR_FEED_URL = 'https://raw.githubusercontent.com/sanju-github24/m3u8-player/main/feeds/hotstar.m3u';
-const FANCODE_JSON_URL = 'https://raw.githubusercontent.com/sportlive18/Fancode-New-Auto-Update/main/fancode.json';
-const PRIME_VIDEO_JSON_URL = 'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/primesport.json';
+const HOTSTAR_FEED_URL = 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/jio_hotstar.m3u';
+const FANCODE_JSON_URL = 'https://raw.githubusercontent.com/drmlive/fancode-live-events/refs/heads/main/fancode.json';
+const FANCODE_KAJJU_JSON_URL = 'https://raw.githubusercontent.com/kajju027/Fancode-Events-Json/refs/heads/main/fancode.json';
+const PRIME_VIDEO_JSON_URL = 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/primesport.json';
+const PRIME_VIDEO_BACKUP_JSON_URL = 'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/primesport.json';
 const IPL_REPLAYS_URL = 'https://raw.githubusercontent.com/sportlive18/playlist/main/Replay/IPL2026.m3u';
 const ZYPHX8_FANCODE_M3U = 'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.m3u';
 const ZYPHX8_FANCODE_JSON = 'https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.json';
@@ -90,11 +96,13 @@ const ICC_LIVE_URL = 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/r
 const FIFA_LIVE_URL = 'https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/fifa_live.m3u';
 const TNT_SPORTS_URL = 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/Tnt.m3u';
 const WAVES_M3U_URL = 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/SM%20All%20TV.m3u';
-const SONYLIV_EVENTS_JSON = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sonyliv.json';
+const SONYLIV_EVENTS_JSON = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
 const SONYLIV_EVENTS_M3U = 'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sonyliv.m3u';
 const DOCTOR_8TRANGE_SONY_M3U = 'https://raw.githubusercontent.com/doctor-8trange/zyphora/main/data/sony.m3u';
 const WILLOW_EVENTS_JSON = 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.json';
-const WILLOW_EVENTS_M3U = 'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/willow.m3u';
+const WILLOW_BACKUP_JSON = 'https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json';
+const WILLOW_DRMLIVE_JSON = 'https://raw.githubusercontent.com/drmlive/willow-live-events/main/willow.json';
+const WILLOW_EVENTS_M3U = 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u';
 const AXSPORTS_M3U = 'https://raw.githubusercontent.com/srhady/axsports/refs/heads/main/playlist.m3u';
 const MOVIE_SPOTLIGHT_JSON = 'https://raw.githubusercontent.com/sportlive18/MOVIE-API-AUTO-UPDATE/main/movie.json';
 const IPL_HIGHLIGHTS_FANCODE_JSON = 'https://raw.githubusercontent.com/sportlive18/playlist/main/fancode2.json';
@@ -273,65 +281,63 @@ export class JtvService {
                 console.warn('[JtvService] Failed to load local jtv2.json cache:', lErr?.message);
             }
 
-            // Next, attempt to fetch live auto-updating M3U from GitHub
-            try {
-                const res = await axios.get(JTV_PRIMARY_CATALOG_URL, {
-                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-                    httpsAgent: agent,
-                    timeout: 10000
-                });
-                let data = res.data;
-                if (typeof data === 'string' && data.includes('#EXTINF')) {
-                    isM3u = true;
-                    m3uChannels = this.parseJtvM3uContent(data, wildcardCookie);
-                    console.log(`[JtvService] Fetched ${m3uChannels.length} fresh channels from remote primary m3u.`);
-                }
-            } catch (pErr: any) {
-                console.warn(`[JtvService] Primary remote M3U fetch failed (${pErr?.message}), using local catalog.`);
-            }
+            // Next, attempt to fetch live channels with multi-tier fallback:
+            // 1) Primary JSON: jjtvxweb (1,176 ClearKey DASH channels)
+            // 2) Backup JSON: sportlive18 jtv.json
+            // 3) Backup M3U: sm-monirulislam jio_tv.m3u
+            // 4) Combined M3U: sportlive18 Combined.m3u
+            // 5) Local Baseline: assets/jtv2.json
+            let remoteChannels: JtvChannel[] = [];
+            const catalogCandidates = [
+                { url: JTV_PRIMARY_CATALOG_URL, type: 'json_or_m3u', name: 'Primary jjtvxweb JSON' },
+                { url: JTV_BACKUP_CATALOG_URL, type: 'json', name: 'Backup Sportlink JTV JSON' },
+                { url: JTV_BACKUP_M3U_URL, type: 'm3u', name: 'Backup SM-IPTV M3U' },
+                { url: JTV_COMBINED_M3U_URL, type: 'm3u', name: 'Backup Combined M3U' }
+            ];
 
-            if (isM3u && m3uChannels.length > 0) {
-                allChannels.push(...m3uChannels);
-                console.log(`[JtvService] Loaded ${m3uChannels.length} JioTV channels from remote M3U.`);
-            } else if (rawItems.length > 0) {
-                const jtvChannels = rawItems.map((item: any) => {
-                    const id = String(item.id || item.channel_id || '').trim();
-                    const name = (item.name || item.channel_name || 'TV Channel').trim();
-                    const category = item.catogry || item.category || categorizeChannel(name);
-
-                    let rawCookie = item.cookie || '';
-                    if (!rawCookie || isTokenExpired(rawCookie)) {
-                        if (wildcardCookie) {
-                            rawCookie = wildcardCookie;
+            for (const cand of catalogCandidates) {
+                try {
+                    const res = await axios.get(cand.url, {
+                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                        httpsAgent: agent,
+                        timeout: 10000
+                    });
+                    const data = res.data;
+                    if (Array.isArray(data) && data.length > 0) {
+                        remoteChannels = JtvService.parseJtvJsonContent(data, wildcardCookie);
+                        if (remoteChannels.length > 0) {
+                            console.log(`[JtvService] Successfully loaded ${remoteChannels.length} JioTV channels from ${cand.name}.`);
+                            break;
+                        }
+                    } else if (typeof data === 'string') {
+                        if (data.includes('#EXTINF')) {
+                            remoteChannels = JtvService.parseJtvM3uContent(data, wildcardCookie);
+                            if (remoteChannels.length > 0) {
+                                console.log(`[JtvService] Successfully loaded ${remoteChannels.length} JioTV channels from ${cand.name}.`);
+                                break;
+                            }
+                        } else if (data.trim().startsWith('[')) {
+                            try {
+                                const parsed = JSON.parse(data);
+                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                    remoteChannels = JtvService.parseJtvJsonContent(parsed, wildcardCookie);
+                                    if (remoteChannels.length > 0) {
+                                        console.log(`[JtvService] Successfully loaded ${remoteChannels.length} JioTV channels from ${cand.name}.`);
+                                        break;
+                                    }
+                                }
+                            } catch (_) {}
                         }
                     }
+                } catch (cErr: any) {
+                    console.warn(`[JtvService] ${cand.name} fetch failed (${cErr?.message || cErr}), trying next candidate...`);
+                }
+            }
 
-                    const token = rawCookie.startsWith('__hdnea__=') ? rawCookie : (rawCookie ? `__hdnea__=${rawCookie}` : '');
-                    const streamUrl = item.stream_url || item.channel_url || '';
-                    const fullStreamUrl = streamUrl ? (streamUrl + (streamUrl.includes('?') ? '&' : '?') + token) : '';
-                    const rawKeyId = String(item.key_id || item.keyId || '').trim();
-                    const rawKey = String(item.key || '').trim();
-                    const keyId = (rawKeyId !== 'null' && rawKeyId !== 'undefined') ? rawKeyId : '';
-                    const key = (rawKey !== 'null' && rawKey !== 'undefined') ? rawKey : '';
-                    const manifestUrl = id ? `/api/mdtv/manifest/${id}.mpd` : '';
-
-                    return {
-                        id,
-                        name,
-                        category,
-                        genre: category,
-                        stream_url: streamUrl,
-                        cookie: rawCookie,
-                        token,
-                        full_stream_url: fullStreamUrl,
-                        manifest_url: manifestUrl,
-                        key_id: keyId,
-                        key,
-                        clearkey: (keyId && key) ? `${keyId}:${key}` : '',
-                        logo: item.logo || item.channel_logo || '',
-                        source: 'jtv' as const
-                    };
-                });
+            if (remoteChannels.length > 0) {
+                allChannels.push(...remoteChannels);
+            } else if (rawItems.length > 0) {
+                const jtvChannels = JtvService.parseJtvJsonContent(rawItems, wildcardCookie);
                 allChannels.push(...jtvChannels);
                 console.log(`[JtvService] Loaded ${jtvChannels.length} JioTV channels from local baseline catalog.`);
             }
@@ -339,35 +345,38 @@ export class JtvService {
             console.warn('[JtvService] Failed to load JioTV channels:', e?.message || e);
         }
 
-        // 1b. Fetch Star Sports & Sony Sports Dedicated Feed (star2.json) with high-priority channel tokens
+        // 1b. Fetch Star Sports & Sony Sports Dedicated Feed (star2.json / jstr4web) with high-priority channel tokens
         try {
             const star2Res = await axios.get(STAR2_SPORTS_JSON, {
                 headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
                 httpsAgent: agent,
                 timeout: 8000
             });
-            if (Array.isArray(star2Res.data) && star2Res.data.length > 0) {
+            const star2Data = Array.isArray(star2Res.data) ? star2Res.data : (typeof star2Res.data === 'string' && star2Res.data.trim().startsWith('[') ? JSON.parse(star2Res.data) : null);
+            if (Array.isArray(star2Data) && star2Data.length > 0) {
                 let updatedCount = 0;
                 let addedCount = 0;
-                for (const item of star2Res.data) {
-                    const id = String(item.id || '').trim();
-                    const name = (item.name || '').trim();
+                for (const item of star2Data) {
+                    const id = String(item.id || item.channel_id || '').trim();
+                    const name = (item.name || item.channel_name || '').trim();
                     if (!id && !name) continue;
                     const rawCookie = item.cookie || '';
                     const token = rawCookie.startsWith('__hdnea__=') ? rawCookie : (rawCookie ? `__hdnea__=${rawCookie}` : '');
-                    const streamUrl = item.stream_url || '';
+                    const streamUrl = (item.url || item.stream_url || item.channel_url || '').trim();
                     const fullStreamUrl = streamUrl ? (streamUrl + (streamUrl.includes('?') ? '&' : '?') + token) : '';
-                    const keyId = item.key_id || '';
-                    const key = item.key || '';
+                    const rawKeyId = String(item.keyId || item.key_id || '').trim();
+                    const rawKey = String(item.key || '').trim();
+                    const keyId = (rawKeyId !== 'null' && rawKeyId !== 'undefined') ? rawKeyId : '';
+                    const key = (rawKey !== 'null' && rawKey !== 'undefined') ? rawKey : '';
                     const manifestUrl = id ? `/api/mdtv/manifest/${id}.mpd` : '';
 
                     const existingIdx = allChannels.findIndex(c => c.id === id || (name && c.name.toLowerCase() === name.toLowerCase()));
                     if (existingIdx !== -1) {
-                        allChannels[existingIdx].cookie = rawCookie;
-                        allChannels[existingIdx].token = token;
-                        allChannels[existingIdx].stream_url = streamUrl || allChannels[existingIdx].stream_url;
-                        allChannels[existingIdx].full_stream_url = fullStreamUrl;
-                        allChannels[existingIdx].manifest_url = manifestUrl;
+                        if (rawCookie) allChannels[existingIdx].cookie = rawCookie;
+                        if (token) allChannels[existingIdx].token = token;
+                        if (streamUrl) allChannels[existingIdx].stream_url = streamUrl;
+                        if (fullStreamUrl) allChannels[existingIdx].full_stream_url = fullStreamUrl;
+                        if (manifestUrl) allChannels[existingIdx].manifest_url = manifestUrl;
                         if (keyId) allChannels[existingIdx].key_id = keyId;
                         if (key) allChannels[existingIdx].key = key;
                         if (keyId && key) allChannels[existingIdx].clearkey = `${keyId}:${key}`;
@@ -377,8 +386,8 @@ export class JtvService {
                         allChannels.push({
                             id,
                             name,
-                            category: 'Sports',
-                            genre: 'Sports',
+                            category: item.category || 'Sports',
+                            genre: item.category || 'Sports',
                             stream_url: streamUrl,
                             cookie: rawCookie,
                             token,
@@ -537,6 +546,56 @@ export class JtvService {
         lastChannelsFetch = now;
         console.log(`[JtvService] Total channels ready: ${cachedChannels.length}`);
         return cachedChannels;
+    }
+
+    /**
+     * Fast-fetch and parse jstr4web.json or jtv.json (contains 1,176 JioTV channels with ClearKey DRM)
+     */
+    public static parseJtvJsonContent(items: any[], wildcardCookie: string = ''): JtvChannel[] {
+        if (!Array.isArray(items)) return [];
+        const channels: JtvChannel[] = [];
+
+        for (const item of items) {
+            if (!item || typeof item !== 'object') continue;
+            const id = String(item.id || item.channel_id || '').trim();
+            const name = (item.name || item.channel_name || 'TV Channel').trim();
+            if (!id && !name) continue;
+
+            const category = item.category || item.catogry || categorizeChannel(name);
+            const streamUrl = (item.url || item.stream_url || item.channel_url || '').trim();
+
+            let rawCookie = item.cookie || '';
+            if (!rawCookie || isTokenExpired(rawCookie)) {
+                if (wildcardCookie) {
+                    rawCookie = wildcardCookie;
+                }
+            }
+            const token = rawCookie.startsWith('__hdnea__=') ? rawCookie : (rawCookie ? `__hdnea__=${rawCookie}` : '');
+            const fullStreamUrl = streamUrl ? (streamUrl + (streamUrl.includes('?') ? '&' : '?') + token) : '';
+            const rawKeyId = String(item.keyId || item.key_id || '').trim();
+            const rawKey = String(item.key || '').trim();
+            const keyId = (rawKeyId !== 'null' && rawKeyId !== 'undefined') ? rawKeyId : '';
+            const key = (rawKey !== 'null' && rawKey !== 'undefined') ? rawKey : '';
+            const manifestUrl = id ? `/api/mdtv/manifest/${id}.mpd` : '';
+
+            channels.push({
+                id,
+                name,
+                category,
+                genre: category,
+                stream_url: streamUrl,
+                cookie: rawCookie,
+                token,
+                full_stream_url: fullStreamUrl,
+                manifest_url: manifestUrl,
+                key_id: keyId,
+                key,
+                clearkey: (keyId && key) ? `${keyId}:${key}` : '',
+                logo: item.logo || item.channel_logo || '',
+                source: 'jtv' as const
+            });
+        }
+        return channels;
     }
 
     /**
@@ -759,7 +818,7 @@ export class JtvService {
         const events: LiveSportsEvent[] = [];
         let eventCounter = 1;
 
-        // 1. Fetch LiveEvent.m3u (217 matches)
+        // 1. Fetch LiveEvent.m3u (Aggregated Sports Data M3U)
         try {
             const m3uMatches = await this.fetchLiveEventM3uOnly(force);
             events.push(...m3uMatches);
@@ -768,16 +827,68 @@ export class JtvService {
             console.warn('[JtvService] Failed to fetch LiveEvent.m3u:', e?.message || e);
         }
 
-        // 2. Fetch FanCode JSON feeds (fancode.json)
+        // 1b. Fetch Monirul Live & Upcoming Sports JSON (Sports_data.json)
         try {
-            const fcRes = await axios.get(FANCODE_JSON_URL, {
+            const mDataRes = await axios.get(MONIRUL_SPORTS_JSON_URL, {
                 headers: { 'User-Agent': 'Mozilla/5.0' },
                 httpsAgent: agent,
                 timeout: 8000
             });
-            if (fcRes.data && Array.isArray(fcRes.data.matches)) {
-                for (const m of fcRes.data.matches) {
-                    let streamUrl = '';
+            if (mDataRes.data && Array.isArray(mDataRes.data.matches)) {
+                for (const m of mDataRes.data.matches) {
+                    if (m.status !== 'LIVE') continue;
+                    const streams = Array.isArray(m.streams) ? m.streams : [];
+                    for (const st of streams) {
+                        const sUrl = (st.stream_url || '').trim();
+                        if (!sUrl) continue;
+                        const evName = m.event_name || 'Live Sports Match';
+                        const chName = st.channel_name || 'Sports Feed';
+                        events.push({
+                            id: `sports-data-${eventCounter++}`,
+                            name: `${evName} (${chName.trim()})`,
+                            title: `${evName} - ${chName.trim()}`,
+                            badge: 'LIVE',
+                            quality: 'HD',
+                            tournament: m.eventInfo?.eventName || m.Category || 'Live Sports',
+                            group: m.Category || 'Sports',
+                            logo: m.eventInfo?.event_logo || m.eventInfo?.teamAFlag || '',
+                            stream_url: sUrl,
+                            manifest_type: sUrl.includes('.mpd') ? 'mpd' : 'hls',
+                            clearkey: '',
+                            key_id: '',
+                            key: '',
+                            referrer: '',
+                            user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                            source: 'live_event'
+                        });
+                    }
+                }
+                console.log(`[JtvService] Loaded active live matches from Monirul Sports_data.json.`);
+            }
+        } catch (e: any) {
+            console.warn('[JtvService] Failed to fetch Sports_data.json:', e?.message || e);
+        }
+
+        // 2. Fetch FanCode JSON feeds (drmlive + kajju027 fallback)
+        try {
+            let fcMatches: any[] = [];
+            for (const fcUrl of [FANCODE_JSON_URL, FANCODE_KAJJU_JSON_URL]) {
+                try {
+                    const fcRes = await axios.get(fcUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0' },
+                        httpsAgent: agent,
+                        timeout: 8000
+                    });
+                    if (fcRes.data && Array.isArray(fcRes.data.matches) && fcRes.data.matches.length > 0) {
+                        fcMatches = fcRes.data.matches;
+                        break;
+                    }
+                } catch (_) {}
+            }
+
+            if (fcMatches.length > 0) {
+                for (const m of fcMatches) {
+                    let streamUrl = m.streams?.primary || m.streams?.fancode_cdn || m.streams?.fancode_bd_cdn || '';
                     if (m.akamai_m3u8_hex) {
                         try {
                             const decoded = Buffer.from(m.akamai_m3u8_hex, 'hex').toString('utf8');
@@ -1417,15 +1528,25 @@ export class JtvService {
             console.warn('[JtvService] Failed to fetch zyphora sony.m3u:', e?.message || e);
         }
 
-        // 14. Fetch sportlive18 Willow Cricket Event Info (willow.m3u & willow.json)
+        // 14. Fetch Willow Cricket Event Info (Doctor Strange ICC + Srhady Willow + DrmLive)
         try {
-            const wRes = await axios.get(WILLOW_EVENTS_JSON, {
-                headers: { 'User-Agent': 'Mozilla/5.0' },
-                httpsAgent: agent,
-                timeout: 8000
-            });
-            if (wRes.data && Array.isArray(wRes.data.Matches)) {
-                for (const wm of wRes.data.Matches) {
+            let willowMatches: any[] = [];
+            for (const wUrl of [WILLOW_EVENTS_JSON, WILLOW_BACKUP_JSON, WILLOW_DRMLIVE_JSON]) {
+                try {
+                    const wRes = await axios.get(wUrl, {
+                        headers: { 'User-Agent': 'Mozilla/5.0' },
+                        httpsAgent: agent,
+                        timeout: 8000
+                    });
+                    const list = wRes.data?.Matches || wRes.data?.matches || (Array.isArray(wRes.data) ? wRes.data : []);
+                    if (Array.isArray(list) && list.length > 0) {
+                        willowMatches = list;
+                        break;
+                    }
+                } catch (_) {}
+            }
+            if (willowMatches.length > 0) {
+                for (const wm of willowMatches) {
                     const targetStream = (wm.stream_url_alpha || (typeof wm.stream_url === 'string' ? wm.stream_url : (wm.stream_url ? Object.values(wm.stream_url)[0] as string : '')) || '').trim();
                     const streamToUse = targetStream || '/api/live/willow.m3u8';
                     events.push({

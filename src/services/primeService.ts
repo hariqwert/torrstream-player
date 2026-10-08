@@ -31,7 +31,10 @@ export interface PrimeEvent {
     countdown?: string;
 }
 
-const PRIME_VIDEO_JSON_URL = 'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/primesport.json';
+const PRIME_VIDEO_JSON_URLS = [
+    'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/primesport.json',
+    'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/primesport.json'
+];
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false,
@@ -87,17 +90,25 @@ export async function fetchPrimeEvents(forceRefresh = false): Promise<PrimeEvent
     }
 
     try {
-        const res = await axios.get(PRIME_VIDEO_JSON_URL, {
-            timeout: 8000,
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-            httpsAgent
-        });
+        let matches: any[] = [];
+    for (const url of PRIME_VIDEO_JSON_URLS) {
+        try {
+            const res = await axios.get(url, {
+                timeout: 8000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                httpsAgent
+            });
+            const list = res.data?.Matches || res.data?.matches || (Array.isArray(res.data) ? res.data : []);
+            if (Array.isArray(list) && list.length > 0) {
+                matches = list;
+                break;
+            }
+        } catch (_) {}
+    }
 
-        if (!res.data || !Array.isArray(res.data.Matches)) {
-            return cachedPrimeEvents;
-        }
-
-        const matches = res.data.Matches;
+    if (matches.length === 0) {
+        return cachedPrimeEvents;
+    }
         const events: PrimeEvent[] = matches.map((m: any, idx: number) => {
             const matchId = String(m.match_id || `prime_${idx + 1}`);
             const isLive = String(m.status || '').toUpperCase() === 'LIVE';

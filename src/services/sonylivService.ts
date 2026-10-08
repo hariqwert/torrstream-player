@@ -22,13 +22,20 @@ export interface SonyLivEvent {
 }
 
 const SONYLIV_M3U_URLS = [
-    'https://raw.githubusercontent.com/doctor-8trange/zyphora/main/data/sony.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.m3u',
     'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.m3u',
-    'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/refs/heads/main/sonyliv.m3u'
+    'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/refs/heads/main/sonyliv.m3u',
+    'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sony.m3u',
+    'https://raw.githubusercontent.com/sm-monirulislam/SonyLiv_Event_Playlist/main/sonyLiv.m3u',
+    'https://sportlink-playlist.pages.dev/sony3.m3u',
+    'https://raw.githubusercontent.com/doctor-8trange/zyphora/main/data/sony.m3u'
 ];
 
 const SONYLIV_JSON_URLS = [
     'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json',
+    'https://raw.githubusercontent.com/sm-monirulislam/SonyLiv_Event_Playlist/main/sonyLiv_data.json',
+    'https://raw.githubusercontent.com/doctor-8trange/zyphora/refs/heads/main/data/sony.json',
+    'https://allinonereborn2.online/sony/sliv3.json',
     'https://raw.githubusercontent.com/sportlive18/Sonyliv-Playlist-Autoupdate/main/sonyliv.json'
 ];
 
@@ -177,8 +184,9 @@ export async function fetchSonyLivEvents(forceRefresh = false): Promise<{ live: 
                 httpsAgent,
                 timeout: 6000
             });
-            if (res.data && Array.isArray(res.data.matches) && res.data.matches.length > 0) {
-                res.data.matches.forEach((m: any, idx: number) => {
+            const matchesList = res.data?.matches || res.data?.Matches || (Array.isArray(res.data) ? res.data : []);
+            if (Array.isArray(matchesList) && matchesList.length > 0) {
+                matchesList.forEach((m: any, idx: number) => {
                     const isLive = m.isLive === true;
                     const cid = m.contentId || idx;
                     const eventId = `sonyliv_${cid}`;
