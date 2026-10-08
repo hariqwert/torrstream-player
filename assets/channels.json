@@ -23,7 +23,12 @@
       "type": "clearkey",
       "key_id": "8619386d035251ad9340fc40879a52c6",
       "key": "9c5fb4a4f95089d9d1a3dc19b0d06e47"
-    }
+    },
+    "backup_streams": [
+      "https://drk6xq0vhn.gpcdn.net/live/ten_1_hd_720/index.m3u8",
+      "https://premiumplugx.com/Sliv/sony_playlist.php?m3u",
+      "https://sportlink-playlist.pages.dev/sony3.m3u"
+    ]
   },
   {
     "channel_id": "mdtv-891",
@@ -36,7 +41,10 @@
       "type": "clearkey",
       "key_id": "9eb13a589c9454e2be1f123b98ebbd09",
       "key": "dd503e53bc323a51d67c349f3be1993b"
-    }
+    },
+    "backup_streams": [
+      "https://drk6xq0vhn.gpcdn.net/live/ten_2_hd_720/index.m3u8"
+    ]
   },
   {
     "channel_id": "mdtv-892",
@@ -101,7 +109,10 @@
       "type": "clearkey",
       "key_id": "42566c7287ce545d91234b03485cce8a",
       "key": "bd251578248e2f8df050eb81b04d056a"
-    }
+    },
+    "backup_streams": [
+      "https://drk6xq0vhn.gpcdn.net/live/ten_5_hd_720/index.m3u8"
+    ]
   },
   {
     "channel_id": "mdtv-1984",
@@ -1001,5 +1012,73 @@
       "key_id": "1f85fea5f617503d9166990f21afc2c2",
       "key": "b2fc26f5b5595606827d4000a9d1b178"
     }
+  },
+  {
+    "channel_id": "fc-shanghai-1080p",
+    "name": "FanCode - ATP Masters Shanghai [1080p | Direct HLS]",
+    "genre": "Sports",
+    "logo": "https://www.fancode.com/skillup-uploads/cms-media/Shanghai_Web-match-card.png",
+    "source": "fancode",
+    "stream_url": "https://allinonereborn2.online/fctest/playlists/match_4248814_ENG/english.m3u8",
+    "backup_streams": [
+      "https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.m3u",
+      "https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.m3u"
+    ]
+  },
+  {
+    "channel_id": "fc-arctic-1080p",
+    "name": "FanCode - BWF Super 500 Arctic Open [1080p | Direct HLS]",
+    "genre": "Sports",
+    "logo": "https://www.fancode.com/skillup-uploads/cms-media/Arctic_Open_Web.png",
+    "source": "fancode",
+    "stream_url": "https://allinonereborn2.online/fctest/playlists/match_4250124_ENG/english.m3u8",
+    "backup_streams": [
+      "https://raw.githubusercontent.com/doctor-8trange/zyphx8/refs/heads/main/data/fancode.m3u"
+    ]
+  },
+  {
+    "channel_id": "willow-tv-1080p",
+    "name": "Willow TV HD [1080p | CloudFront Direct]",
+    "genre": "Sports",
+    "logo": "https://jiotv.catchup.cdn.jio.com/dare_images/images/Willow_HD.png",
+    "source": "willow",
+    "stream_url": "https://d36r8jifhgsk5j.cloudfront.net/Willow_TV1080p.m3u8",
+    "backup_streams": [
+      "https://d36r8jifhgsk5j.cloudfront.net/Willow_TV540p.m3u8",
+      "https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u"
+    ]
+  },
+  {
+    "channel_id": "icc-cricket-live",
+    "name": "ICC Cricket Tournaments Live Feed [HLS]",
+    "genre": "Sports",
+    "logo": "https://resources.pulse.icc-cricket.com/ICC/photo/2023/10/05/logo.png",
+    "source": "icc",
+    "stream_url": "https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u",
+    "backup_streams": [
+      "https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json"
+    ]
+  },
+  {
+    "channel_id": "fifa-plus-live",
+    "name": "FIFA+ Live Events & Football [HLS]",
+    "genre": "Sports",
+    "logo": "https://digitalhub.fifa.com/transform/4b14e6b2-6cbf-4e78-9588-e21820689bfe/FIFA-Plus-Logo",
+    "source": "fifa",
+    "stream_url": "https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/fifa_live.m3u",
+    "backup_streams": [
+      "https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u"
+    ]
+  },
+  {
+    "channel_id": "prime-sports-live",
+    "name": "Prime Video Sports Live [HLS]",
+    "genre": "Sports",
+    "logo": "https://m.media-amazon.com/images/G/01/digital/video/web/logo-min.png",
+    "source": "prime",
+    "stream_url": "https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/primesport.m3u",
+    "backup_streams": [
+      "https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/primesport.m3u"
+    ]
   }
 ]
