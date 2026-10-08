@@ -1,0 +1,1769 @@
+import https from 'https';
+import http from 'http';
+import { URL } from 'url';
+import dns from 'dns';
+import axios from 'axios';
+import { scrapePeakStream } from './peakStreamService';
+import { scrapeAnimeEpisode, resolveMalIdFromTitle, fetchAniSkipTimes } from './animeScraperService';
+import { resolveRareAnimeStream } from './rareAnimesService';
+import { scrapeMegaPlayAnime } from './megaPlayService';
+import { SubtitleService } from './subtitleService';
+import { searchKissKh, getKissKhDrama, resolveKissKhEpisode } from './kisskhService';
+import { searchAsiaflix, resolveAsiaflixEpisodeStream } from './asiaflixService';
+import { scrapeMovies4uCluster } from './movies4uService';
+import { getCineProStreams } from './cineproService';
+import {
+    findSmMovieStream,
+    searchSmMovies,
+    getSmMovieCategories,
+    getSmMoviesByCategory,
+    initSmMovieAutoUpdate
+} from './smMovieHubService';
+
+const TMDB_IPS = ['13.224.245.47', '13.224.245.63', '13.224.245.92', '13.224.245.44'];
+let tmdbIpIdx = 0;
+
+export const tmdbAgent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 50,
+    keepAliveMsecs: 20000,
+    rejectUnauthorized: false,
+    lookup: (hostname: string, options: any, callback: any) => {
+        const cb = typeof options === 'function' ? options : callback;
+        const isAll = options && options.all;
+        if (hostname === 'api.themoviedb.org') {
+            const ip = TMDB_IPS[(tmdbIpIdx++) % TMDB_IPS.length];
+            if (isAll) {
+                return cb(null, [{ address: ip, family: 4 }]);
+            }
+            return cb(null, ip, 4);
+        }
+        dns.lookup(hostname, options, cb);
+    }
+});
+
+export interface BingrServerCluster {
+    id: string;
+    name: string;
+    cc: string;
+    priority: number;
+}
+
+export const BINGR_SERVERS: BingrServerCluster[] = [
+    { id: 'm4u', name: 'Movie 4U (Movies4u / Acek CDN)', cc: 'IN', priority: 1 },
+    { id: 's62', name: 'Bastion (Multi-Audio HLS / Fast Direct)', cc: 'IN', priority: 2 },
+    { id: 'sm_hub', name: 'SM Movie Hub Pro (Direct VOD/MKV/Dual Audio)', cc: 'BD', priority: 3 },
+    { id: 'cinepro', name: 'CinePro Core (OMSS Multi-Provider 4K/1080p)', cc: 'US', priority: 4 },
+    { id: 's40', name: 'Aphelion (DarkMatter / 1080p Direct HLS)', cc: 'GL', priority: 5 },
+    { id: 'hianime', name: 'HiAnime (MegaPlay Anime Scraper)', cc: 'JP', priority: 5 },
+    { id: 'asiaflix', name: 'Asiaflix (Vidmoly Multi-Bitrate HLS)', cc: 'KR', priority: 6 },
+    { id: 'kisskh', name: 'KissKH (Asian Drama & Anime)', cc: 'JP', priority: 7 },
+    { id: 'animesalt', name: 'AnimeSalt (Special Anime Scraper)', cc: 'JP', priority: 8 },
+    { id: 's3', name: 'Edmunds (High Reliability Proxy / 1080p)', cc: 'US', priority: 9 },
+    { id: 's31', name: 'Orion (Worker CDN Direct)', cc: 'US', priority: 10 },
+    { id: 's30', name: 'Nova (Direct Fast HLS)', cc: 'US', priority: 11 },
+    { id: 's63', name: 'Hallyu (Asian & International HLS)', cc: 'KR', priority: 12 },
+    { id: 's60', name: 'Vertex (Direct CDN)', cc: 'US', priority: 13 },
+    { id: 's70', name: 'Polaris (Multi-Language Dubs / HLS)', cc: 'US', priority: 14 },
+    { id: 's61', name: 'Corvus (Multi-Source Hub / 1080p)', cc: 'US', priority: 15 }
+];
+
+// In-memory stream and details cache for sub-millisecond instant re-resolution
+const STREAM_CACHE = new Map<string, { timestamp: number; result: BingrScrapeResult }>();
+const DETAILS_CACHE = new Map<string, { timestamp: number; data: BingrMediaDetails }>();
+const CACHE_TTL_STREAM = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_DETAILS = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Deep check to detect if a manifest is actually just storyboard thumbnail scrub tiles (.vtt / spritesheet)
+ * Note: Genuine DarkMatter/Fetchbox video streams name their MPEG-TS chunks .jpg/.png or playlist tiles.m3u8,
+ * which are real 1080p video streams with 0x47 sync bytes and must NEVER be rejected here.
+ */
+export async function isStoryboardStream(url: string): Promise<boolean> {
+    if (!url) return false;
+    const lower = url.toLowerCase();
+    // Only reject pure sprite/vtt thumbnail tracks (e.g. spritesheet.jpg or scrubber.vtt)
+    if (lower.includes('thumbnails.vtt') || lower.includes('spritesheet') || lower.includes('sprite.vtt')) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Fast stream probe to verify upstream does not return HTTP 404/502/error or expired 403 sub-playlists
+ */
+export async function verifyStreamReachable(url: string, timeoutMs: number = 2500): Promise<boolean> {
+    if (!url) return false;
+    let target = url;
+    if (url.startsWith('/api/') || url.startsWith('/')) {
+        try {
+            const parsed = new URL(url, 'http://localhost:3000');
+            const inner = parsed.searchParams.get('url') || parsed.searchParams.get('u');
+            if (inner && inner.startsWith('http')) {
+                target = inner;
+            } else {
+                return true;
+            }
+        } catch {
+            return true;
+        }
+    }
+    if (!target.startsWith('http')) return false;
+
+    const lowerUrl = target.toLowerCase();
+
+    // Fast-path bypass for ultra-stable CDN edge endpoints (never reject newly scraped CDN tokens)
+    if (
+        lowerUrl.includes('fetchbox.lol') ||
+        lowerUrl.includes('rousav.tech') ||
+        lowerUrl.includes('hscow.com') ||
+        lowerUrl.includes('filmu.in') ||
+        lowerUrl.includes('dramiyos') ||
+        lowerUrl.includes('workers.dev') ||
+        lowerUrl.includes('vidhide') ||
+        lowerUrl.includes('m4uplay') ||
+        lowerUrl.includes('bxcnm.com') ||
+        lowerUrl.includes('knocw.com') ||
+        lowerUrl.includes('nxocw.com') ||
+        lowerUrl.includes('flocw.com') ||
+        lowerUrl.includes('kmocx.com') ||
+        lowerUrl.includes('kwbly.com') ||
+        lowerUrl.includes('kocxm.com') ||
+        lowerUrl.includes('tlnob.com') ||
+        lowerUrl.includes('hmocx.com') ||
+        lowerUrl.includes('mocwm.com') ||
+        lowerUrl.includes('bwcly.com') ||
+        lowerUrl.includes('fwcxn.com') ||
+        lowerUrl.includes('klnwm.com') ||
+        lowerUrl.includes('kxonn.com') ||
+        lowerUrl.includes('flnmb.com') ||
+        lowerUrl.includes('hcozn.com') ||
+        lowerUrl.includes('hcnmd.com') ||
+        lowerUrl.includes('fxoxn.com') ||
+        lowerUrl.includes('fhxod.com') ||
+        lowerUrl.includes('as-cdn') ||
+        lowerUrl.includes('animesalt') ||
+        lowerUrl.includes('hoxcv.com') ||
+        lowerUrl.includes('fragrancecdn') ||
+        lowerUrl.includes('cdnvideo') ||
+        lowerUrl.includes('vdrk.site') ||
+        lowerUrl.includes('b-cdn.net') ||
+        lowerUrl.includes('fibwatch') ||
+        lowerUrl.includes('fertgh')
+    ) {
+        return true;
+    }
+
+    return new Promise((resolve) => {
+        try {
+            const u = new URL(target);
+            const isHttps = u.protocol === 'https:';
+            const client = isHttps ? https : http;
+
+            let referer = `${u.protocol}//${u.hostname}/`;
+            let origin = `${u.protocol}//${u.hostname}`;
+
+            if (lowerUrl.includes('m4uplay')) {
+                referer = 'https://m4uplay.quest/';
+                origin = 'https://m4uplay.quest';
+            } else if (lowerUrl.includes('dramiyos') || lowerUrl.includes('acek-cdn') || lowerUrl.includes('vidhide') || lowerUrl.includes('callistanise')) {
+                referer = 'https://callistanise.com/';
+                origin = 'https://callistanise.com';
+            } else if (lowerUrl.includes('vidrock') || lowerUrl.includes('plasticprophecy') || lowerUrl.includes('radiosilhouette')) {
+                referer = 'https://vidrock.ru/';
+                origin = 'https://vidrock.ru';
+            } else if (lowerUrl.includes('kxonn') || lowerUrl.includes('flnmb') || lowerUrl.includes('hmocx') || lowerUrl.includes('hcozn')) {
+                referer = 'https://bingr.one/';
+                origin = 'https://bingr.one';
+            }
+
+            const req = client.request({
+                hostname: u.hostname,
+                port: u.port || (isHttps ? 443 : 80),
+                path: u.pathname + u.search,
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+                    'Referer': referer,
+                    'Origin': origin,
+                    'Range': 'bytes=0-1024',
+                    'Accept': '*/*'
+                },
+                timeout: timeoutMs
+            }, (res: any) => {
+                const code = res.statusCode || 0;
+                res.destroy();
+                resolve(code >= 200 && code < 400);
+            });
+            req.on('error', () => resolve(false));
+            req.on('timeout', () => {
+                req.destroy();
+                resolve(false);
+            });
+            req.end();
+        } catch {
+            resolve(false);
+        }
+    });
+}
+
+export interface BingrCastMember {
+    id?: number;
+    name: string;
+    character: string;
+    photo?: string;
+}
+
+export interface BingrMediaDetails {
+    id: number;
+    type: 'movie' | 'tv';
+    title: string;
+    year?: string;
+    poster?: string;
+    backdrop?: string;
+    backdrop_original?: string;
+    rating?: number;
+    overview?: string;
+    runtime?: number;
+    genres?: Array<{ id: number; name: string } | string>;
+    certification?: string;
+    director?: string;
+    directors?: string[];
+    cast?: BingrCastMember[];
+    seasons?: Array<{ season: number; episodes: number }>;
+    release_date?: string;
+    status?: string;
+    trailer?: string;
+}
+
+export interface BingrEpisode {
+    episode: number;
+    title: string;
+    overview?: string;
+    still?: string;
+    air_date?: string;
+    rating?: number;
+}
+
+export interface BingrStreamSource {
+    url: string;
+    quality: string;
+    type: string;
+    label?: string;
+    name?: string;
+    language?: string;
+}
+
+export interface BingrScrapeResult {
+    success: boolean;
+    type: 'movie' | 'tv';
+    tmdbId: number;
+    title?: string;
+    year?: string;
+    season?: number;
+    episode?: number;
+    serverId?: string;
+    serverName?: string;
+    scraperName?: string;
+    primaryM3u8?: string;
+    quality?: string;
+    sources: BingrStreamSource[];
+    subtitles?: Array<{ lang: string; url: string; label?: string }>;
+    attempts?: Array<{ serverId: string; serverName: string; status: string; latencyMs: number; error?: string }>;
+    fallbackEmbeds?: string[];
+    fallbackNote?: string;
+    error?: string;
+    expectedDurationMinutes?: number;
+    streamDurationMinutes?: number;
+    streamDurationSec?: number;
+    duration?: number;
+    audioTracks?: Array<{ index: number; streamIndex: number; codec: string; language: string; label: string }>;
+}
+
+const BINGR_API_BASE = 'https://api.bingr.one/api';
+
+/**
+ * Universal HTTPS request with Bingr anti-bot and Origin/Referer bypass headers
+ */
+export function bingrRequest<T = any>(pathname: string, options: {
+    method?: string;
+    body?: any;
+    referer?: string;
+    origin?: string;
+    timeout?: number;
+} = {}): Promise<{ status: number; data: T }> {
+    return new Promise((resolve, reject) => {
+        const fullUrl = pathname.startsWith('http') ? pathname : `${BINGR_API_BASE}${pathname}`;
+        const u = new URL(fullUrl);
+        const postData = options.body ? JSON.stringify(options.body) : null;
+        
+        const defaultOrigin = options.referer ? new URL(options.referer).origin : 'https://bingr.one';
+        const req = https.request({
+            hostname: u.hostname,
+            port: 443,
+            path: u.pathname + u.search,
+            method: options.method || 'GET',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Referer': options.referer || 'https://bingr.one/',
+                'Origin': options.origin || defaultOrigin,
+                'Accept': 'application/json, text/plain, */*',
+                ...(postData ? {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(postData)
+                } : {})
+            },
+            timeout: options.timeout || 12000
+        }, (res) => {
+            let body = '';
+            res.on('data', chunk => body += chunk);
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(body);
+                    resolve({ status: res.statusCode || 200, data: json });
+                } catch {
+                    resolve({ status: res.statusCode || 200, data: body as any });
+                }
+            });
+        });
+
+        req.on('error', reject);
+        req.on('timeout', () => {
+            req.destroy();
+            reject(new Error(`Request timed out to ${u.pathname}`));
+        });
+
+        if (postData) req.write(postData);
+        req.end();
+    });
+}
+
+export const ROTATING_TMDB_KEYS = [
+    "9d83476d2e27f56748167514c69cd2b4",
+    "15d2ea6d0dc1d476efbca3eba2b9bbfb",
+    "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+];
+let rotatingTmdbKeyIdx = 0;
+
+export function getRotatingTmdbKey(): string {
+    const key = process.env.TMDB_API_KEY || ROTATING_TMDB_KEYS[rotatingTmdbKeyIdx % ROTATING_TMDB_KEYS.length];
+    rotatingTmdbKeyIdx++;
+    return key;
+}
+
+/**
+ * Resolve IMDb ID (tt...) to TMDB ID using rotating keys
+ */
+export async function resolveImdbToTmdbId(imdbId: string): Promise<{ tmdbId: number; type: 'movie' | 'tv'; title?: string; year?: string } | null> {
+    if (!imdbId || typeof imdbId !== 'string' || !imdbId.trim().startsWith('tt')) return null;
+    const cleanImdb = imdbId.trim();
+    for (let attempt = 0; attempt < ROTATING_TMDB_KEYS.length; attempt++) {
+        const apiKey = getRotatingTmdbKey();
+        try {
+            const url = `https://api.themoviedb.org/3/find/${cleanImdb}?api_key=${apiKey}&external_source=imdb_id`;
+            const res = await axios.get(url, { timeout: 4000, httpsAgent: tmdbAgent });
+            if (res.data?.movie_results && res.data.movie_results.length > 0) {
+                const mov = res.data.movie_results[0];
+                return {
+                    tmdbId: mov.id,
+                    type: 'movie',
+                    title: mov.title,
+                    year: (mov.release_date || '').slice(0, 4)
+                };
+            }
+            if (res.data?.tv_results && res.data.tv_results.length > 0) {
+                const tv = res.data.tv_results[0];
+                return {
+                    tmdbId: tv.id,
+                    type: 'tv',
+                    title: tv.name || tv.title,
+                    year: (tv.first_air_date || '').slice(0, 4)
+                };
+            }
+        } catch (_) {}
+    }
+    return null;
+}
+
+/**
+ * Search Movies & TV Shows via Bingr / TMDB Gateway
+ */
+export async function searchBingr(query: string): Promise<any> {
+    if (!query || !query.trim()) return { results: [] };
+    const clean = query.trim();
+
+    // Direct numeric TMDB ID check
+    if (/^\d+$/.test(clean)) {
+        try {
+            const movie = await getMovieDetails(clean);
+            if (movie && movie.id) return { results: [movie], isDirectTmdb: true };
+        } catch {}
+        try {
+            const tv = await getTvDetails(clean);
+            if (tv && tv.id) return { results: [tv], isDirectTmdb: true };
+        } catch {}
+    }
+
+    let results: any[] = [];
+    try {
+        const res = await bingrRequest(`/search?q=${encodeURIComponent(clean)}`);
+        const data = res.data || { results: [] };
+        if (Array.isArray(data.results)) {
+            results = data.results;
+        }
+    } catch (_) {}
+
+    // Fallback: If Bingr gateway returned 0 results, query TMDB multi-search directly using working keys
+    if (results.length === 0) {
+        for (let attempt = 0; attempt < ROTATING_TMDB_KEYS.length; attempt++) {
+            const apiKey = getRotatingTmdbKey();
+            try {
+                const tmdbRes = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(clean)}&include_adult=false`, {
+                    timeout: 4000,
+                    httpsAgent: tmdbAgent
+                });
+                if (tmdbRes.data?.results && Array.isArray(tmdbRes.data.results) && tmdbRes.data.results.length > 0) {
+                    for (const r of tmdbRes.data.results) {
+                        if (r.media_type === 'person') continue;
+                        results.push({
+                            id: r.id,
+                            title: r.title || r.name || 'Untitled',
+                            name: r.name || r.title,
+                            type: r.media_type || (r.title ? 'movie' : 'tv'),
+                            year: (r.release_date || r.first_air_date || '').slice(0, 4),
+                            poster: r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : undefined,
+                            backdrop: r.backdrop_path ? `https://image.tmdb.org/t/p/w1280${r.backdrop_path}` : undefined,
+                            overview: r.overview,
+                            rating: r.vote_average,
+                            vote_count: r.vote_count
+                        });
+                    }
+                    break;
+                }
+            } catch (_) {}
+        }
+    }
+
+    // Ensure the legendary 1999 One Piece Anime (TMDB 37854) is always present when searching One Piece
+    if (/one\s*piece/i.test(clean)) {
+        const isLiveActionSpecific = /\b(live action|live-action|netflix|2023)\b/i.test(clean);
+        const hasAnime = results.some((r: any) => r.id === 37854);
+        if (!hasAnime) {
+            try {
+                const animeDetails = await getTvDetails(37854);
+                if (animeDetails && animeDetails.id) {
+                    const animeItem = {
+                        id: 37854,
+                        title: 'One Piece (Anime)',
+                        year: '1999',
+                        type: 'tv',
+                        poster: animeDetails.poster || 'https://image.tmdb.org/t/p/w500/cMD9Ygz11yj5GvEi4O269vDp8um.jpg',
+                        overview: animeDetails.overview || 'Years ago, the fearsome Pirate King Gol D. Roger was executed leaving behind the famed "One Piece" treasure.',
+                        rating: animeDetails.rating || 8.7
+                    };
+                    if (isLiveActionSpecific) {
+                        results.push(animeItem);
+                    } else {
+                        results.unshift(animeItem);
+                    }
+                }
+            } catch {}
+        }
+    }
+
+    return { results };
+}
+
+/**
+ * Get Movie Details and full Cast/Character list
+ */
+export async function getMovieDetails(tmdbId: number | string): Promise<BingrMediaDetails> {
+    const cacheKey = `movie:${tmdbId}`;
+    const cached = DETAILS_CACHE.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_DETAILS)) {
+        return cached.data;
+    }
+    const res = await bingrRequest<BingrMediaDetails>(`/details/movie/${tmdbId}`);
+    if (res.status !== 200 || !res.data) {
+        throw new Error(`Movie not found for TMDB ID: ${tmdbId}`);
+    }
+    DETAILS_CACHE.set(cacheKey, { timestamp: Date.now(), data: res.data });
+    return res.data;
+}
+
+/**
+ * Get TV Series Details and full Cast/Character list
+ */
+export async function getTvDetails(tmdbId: number | string): Promise<BingrMediaDetails> {
+    const cacheKey = `tv:${tmdbId}`;
+    const cached = DETAILS_CACHE.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_DETAILS)) {
+        return cached.data;
+    }
+    const res = await bingrRequest<BingrMediaDetails>(`/details/tv/${tmdbId}`);
+    if (res.status !== 200 || !res.data) {
+        throw new Error(`TV Show not found for TMDB ID: ${tmdbId}`);
+    }
+    DETAILS_CACHE.set(cacheKey, { timestamp: Date.now(), data: res.data });
+    return res.data;
+}
+
+/**
+ * Get Season Episodes
+ */
+export async function getTvEpisodes(tmdbId: number | string, seasonNumber: number | string): Promise<BingrEpisode[]> {
+    const res = await bingrRequest<{ episodes: BingrEpisode[] }>(`/episodes/${tmdbId}/${seasonNumber}`);
+    if (res.status !== 200 || !res.data?.episodes) {
+        throw new Error(`Episodes not found for TMDB ID ${tmdbId} Season ${seasonNumber}`);
+    }
+    return res.data.episodes;
+}
+
+/**
+ * Smart TMDB Matcher: Given an arbitrary title/name from Stalker or M3U, find the best TMDB match
+ */
+export async function findTmdbMatch(
+    rawTitle: string,
+    expectedType: 'movie' | 'tv' = 'movie',
+    yearHint?: string | number
+): Promise<{ id: number; title: string; year?: string; details?: BingrMediaDetails } | null> {
+    if (!rawTitle) return null;
+
+    // Check if rawTitle contains a direct numeric ID
+    if (/^\d+$/.test(rawTitle.trim())) {
+        const numId = parseInt(rawTitle.trim(), 10);
+        try {
+            const details = expectedType === 'tv' ? await getTvDetails(numId) : await getMovieDetails(numId);
+            return { id: details.id, title: details.title, year: details.year, details };
+        } catch {}
+    }
+
+    // 1. Check for explicit bracketed or parenthesized year, e.g. "Fight Club (1999)" or "[2021]"
+    let extractedYear: string | undefined = yearHint ? String(yearHint).trim() : undefined;
+    const parenYearMatch = rawTitle.match(/\((?:19\d{2}|20[0-2]\d)\)|\[(?:19\d{2}|20[0-2]\d)\]/);
+    if (!extractedYear && parenYearMatch) {
+        extractedYear = parenYearMatch[0].replace(/[\[\]\(\)]/g, '');
+    }
+
+    // 2. Known titles where a 4-digit number is intrinsically part of the title, NEVER treat as a release year
+    const isTitleWithNumber = /\b(2001|2010|2012|2049|2077|1917|1984|300|2000|1941|1942|1408)\b/i.test(rawTitle);
+
+    // 3. If year not yet found and not an intrinsic numbered title, check for trailing or standalone release year
+    if (!extractedYear && !isTitleWithNumber) {
+        const trailingYearMatch = rawTitle.match(/\b(19\d{2}|20[0-2]\d)\b/);
+        if (trailingYearMatch) {
+            extractedYear = trailingYearMatch[1];
+        }
+    }
+
+    // 4. Clean up title: remove bracketed text, release tags, qualities, languages, etc.
+    let clean = rawTitle
+        .replace(/\[.*?\]|\(.*?\)/g, '')
+        .replace(/\b(https?:\/\/\S+|www\.\S+)\b/gi, '')
+        // Strip season and episode codes
+        .replace(/\bS\d{1,2}(?:\s*E\d{1,2})?\b/gi, '')
+        .replace(/\b(?:Season|Series|Episode|Ep)\s*\d+\b/gi, '')
+        .replace(/\bE\d{1,3}\b/gi, '')
+        // Strip audio/video formats & resolutions
+        .replace(/\b(4K|UHD|FHD|HD|1080p?|720p?|480p?|2160p?|WEB-?DL|WEBRip|Blu-?Ray|BRRip|BDRip|HDTV|DVDRip|REMUX|PROPER|REPACK|HDR\d*|HEVC|x264|x265|H\.?264|H\.?265|10bit|AV1)\b/gi, '')
+        // Strip audio channels and codecs
+        .replace(/\b(AAC\d*|AC3|DDP\d*(\.\d*)?|Dolby|Atmos|TrueHD|5\.1|7\.1|Dual\s*Audio|Multi\s*Audio)\b/gi, '')
+        // Strip languages & dubs
+        .replace(/\b(Hindi|English|Tamil|Telugu|Kannada|Malayalam|Bengali|Marathi|Punjabi|Gujarati|Dubbed|Org|Subbed|Eng\s*Sub)\b/gi, '')
+        .replace(/[._-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // If we extracted a verified release year AND it is not an intrinsic numbered title, strip it from clean search title
+    if (extractedYear && !isTitleWithNumber) {
+        clean = clean.replace(new RegExp(`\\b${extractedYear}\\b`, 'g'), '').trim();
+    }
+
+    if (!clean) clean = rawTitle.replace(/[._-]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    try {
+        let searchRes = await searchBingr(clean);
+        let results: any[] = searchRes?.results || [];
+
+        // Fallback 1: If 0 results and clean differs from rawTitle, try searching rawTitle without punctuation
+        if (results.length === 0 && clean.toLowerCase() !== rawTitle.toLowerCase()) {
+            const rawSimple = rawTitle.replace(/[\[\]\(\)._-]/g, ' ').replace(/\s+/g, ' ').trim();
+            const fallbackRes = await searchBingr(rawSimple);
+            results = fallbackRes?.results || [];
+        }
+
+        // Fallback 2: If still 0 results and we have an extractedYear, try searching clean without year constraint
+        if (results.length === 0 && extractedYear) {
+            const unconstrainedRes = await searchBingr(clean);
+            results = unconstrainedRes?.results || [];
+        }
+
+        if (results.length === 0) return null;
+
+        // Score results
+        let bestMatch: any = null;
+        let bestScore = -999;
+
+        const isAnimeQuery = /\b(anime|animated|animation|japanese|straw hat|luffy|wano|egghead|marineford)\b/i.test(rawTitle) || /\b(anime|animated|animation|japanese|straw hat|luffy|wano|egghead|marineford)\b/i.test(clean);
+        const isLiveActionQuery = /\b(live action|live-action|netflix|2023)\b/i.test(rawTitle) || /\b(live action|live-action|netflix|2023)\b/i.test(clean);
+
+        // Fast priority check for One Piece: unless live action is explicitly requested or year is 2023, return the legendary 1999 anime
+        if (/one\s*piece/i.test(clean)) {
+            if (!isLiveActionQuery && (!extractedYear || extractedYear !== '2023')) {
+                try {
+                    const animeDetails = await getTvDetails(37854);
+                    if (animeDetails && animeDetails.id) {
+                        return {
+                            id: 37854,
+                            title: 'One Piece (Anime)',
+                            year: '1999',
+                            details: animeDetails
+                        };
+                    }
+                } catch {}
+            }
+        }
+
+        const cleanLower = clean.toLowerCase();
+
+        for (const item of results) {
+            let score = 0;
+            const itemType = item.type || (item.name ? 'tv' : 'movie');
+
+            // Strictly separate Movies and TV Shows
+            if (itemType === expectedType) {
+                score += 50;
+            } else {
+                score -= 150; // Severe penalty for mismatched media type
+            }
+
+            const itemTitle = (item.title || item.name || '').toLowerCase();
+
+            // Exact title matching
+            if (itemTitle === cleanLower) {
+                score += 100;
+            } else if (itemTitle.startsWith(cleanLower) || cleanLower.startsWith(itemTitle)) {
+                score += 60;
+            } else if (itemTitle.includes(cleanLower) || cleanLower.includes(itemTitle)) {
+                score += 40;
+            }
+
+            // Intrinsic number match (e.g. 2049 in "Blade Runner 2049", 2077 in "Cyberpunk 2077")
+            if (isTitleWithNumber) {
+                const numMatch = rawTitle.match(/\b(2001|2010|2012|2049|2077|1917|1984|300|2000)\b/);
+                if (numMatch && itemTitle.includes(numMatch[1])) {
+                    score += 120; // Massive boost for matching the intrinsic title number
+                }
+            }
+
+            // Year scoring
+            const itemYearStr = item.year ? String(item.year).slice(0, 4) : '';
+            if (extractedYear && itemYearStr) {
+                if (itemYearStr === String(extractedYear)) {
+                    score += 60;
+                } else {
+                    const diff = Math.abs(parseInt(itemYearStr, 10) - parseInt(String(extractedYear), 10));
+                    if (diff <= 1) {
+                        score += 30; // 1-year tolerance
+                    } else {
+                        score -= 50; // Penalize wrong release year
+                    }
+                }
+            }
+
+            // Popularity / vote count tie-breaker (boost real blockbusters over zero-vote home videos)
+            const votes = Number(item.vote_count || item.rating || 0);
+            if (votes > 0) {
+                score += Math.min(25, Math.log10(votes + 1) * 8);
+            }
+
+            // One Piece differentiation
+            if (item.id === 37854 || itemTitle.includes('one piece')) {
+                if (item.id === 37854) {
+                    if (isAnimeQuery || (!isLiveActionQuery && (!extractedYear || extractedYear === '1999'))) {
+                        score += 90;
+                    }
+                } else if (item.id === 111110) {
+                    if (isLiveActionQuery || extractedYear === '2023') {
+                        score += 90;
+                    } else {
+                        score -= 60;
+                    }
+                }
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = item;
+            }
+        }
+
+        if (bestMatch && bestMatch.id && bestScore > 0) {
+            return {
+                id: bestMatch.id,
+                title: bestMatch.title || bestMatch.name,
+                year: bestMatch.year,
+                details: bestMatch
+            };
+        }
+    } catch (e) {
+        console.warn(`[BingrMatcher] Failed search for "${clean}":`, e);
+    }
+
+    return null;
+}
+
+/**
+ * Get Subtitles from Direct VTT CDN / Subtitle Engine
+ */
+export async function getSubtitles(type: 'movie' | 'tv', tmdbId: number | string, season?: number | string, episode?: number | string): Promise<Array<{ lang: string; url: string; label?: string; source?: string }>> {
+    const list: Array<{ lang: string; url: string; label?: string; source?: string }> = [];
+    if (!tmdbId) return list;
+
+    try {
+        // 1. Direct vdrk.site CDN probe (instant and reliable for TMDB IDs)
+        const vdrkEn = `https://cache.vdrk.site/v1/vtt/${type}/${tmdbId}/English.vtt`;
+        try {
+            const check = await axios.head(vdrkEn, { timeout: 1200 });
+            if (check.status === 200) {
+                list.push({
+                    lang: 'en',
+                    label: 'English',
+                    url: vdrkEn,
+                    source: 'vdrk'
+                });
+            }
+        } catch {}
+
+        // 2. SubtitleService search fallback with fast timeout
+        if (list.length === 0) {
+            const subs = await SubtitleService.searchSubtitles(tmdbId, undefined, 'en');
+            for (const s of subs) {
+                list.push({
+                    lang: s.language || 'en',
+                    label: s.label || 'English',
+                    url: s.url,
+                    source: 'subtitles'
+                });
+            }
+        }
+    } catch {}
+
+    return list;
+}
+
+
+/**
+ * Universal Stream Scraper with Server Cascade (s4k -> s70 -> s62 -> s40 -> s3 -> s30...)
+ */
+
+
+const TMDB_RUNTIME_CACHE = new Map<string, { runtime: number; timestamp: number }>();
+const TMDB_RUNTIME_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours
+
+/**
+ * Retrieves expected runtime from TMDB with caching and key rotation
+ */
+export async function getExpectedRuntime(type: 'movie' | 'tv', tmdbId: number, season?: number, episode?: number): Promise<number> {
+    const cacheKey = `${type}_${tmdbId}_${season || 0}_${episode || 0}`;
+    const cached = TMDB_RUNTIME_CACHE.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < TMDB_RUNTIME_CACHE_TTL)) {
+        return cached.runtime;
+    }
+
+    let expectedRuntime = 0;
+    for (let attempt = 0; attempt < ROTATING_TMDB_KEYS.length; attempt++) {
+        const apiKey = getRotatingTmdbKey();
+        try {
+            if (type === 'movie') {
+                const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}`, {
+                    timeout: 4000,
+                    httpsAgent: tmdbAgent
+                });
+                expectedRuntime = tmdbRes.data?.runtime || 0;
+            } else {
+                if (season && episode) {
+                    try {
+                        const epRes = await axios.get(`https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}/episode/${episode}?api_key=${apiKey}`, {
+                            timeout: 4000,
+                            httpsAgent: tmdbAgent
+                        });
+                        expectedRuntime = epRes.data?.runtime || 0;
+                    } catch (_) {}
+                }
+                if (!expectedRuntime) {
+                    const showRes = await axios.get(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}`, {
+                        timeout: 4000,
+                        httpsAgent: tmdbAgent
+                    });
+                    if (showRes.data?.episode_run_time && showRes.data.episode_run_time.length > 0) {
+                        expectedRuntime = showRes.data.episode_run_time[0];
+                    } else if (showRes.data?.runtime) {
+                        expectedRuntime = showRes.data.runtime;
+                    }
+                }
+            }
+            if (expectedRuntime > 0) {
+                break;
+            }
+        } catch (_) {
+            // Try next key if available
+        }
+    }
+
+    if (expectedRuntime > 0) {
+        TMDB_RUNTIME_CACHE.set(cacheKey, { runtime: expectedRuntime, timestamp: Date.now() });
+    }
+    return expectedRuntime;
+}
+
+/**
+ * Validates the duration of the M3U8 stream against TMDB expected runtime.
+ * Prevents fake/trailer/short loop videos from polluting search and playback.
+ */
+export async function verifyStreamDuration(
+    url: string,
+    type: 'movie' | 'tv',
+    tmdbId: number,
+    season?: number,
+    episode?: number,
+    isStrict?: boolean
+): Promise<{ isValid: boolean; expected?: number; actual?: number; reason?: string }> {
+    try {
+        if (!url || !url.startsWith('http')) return { isValid: true };
+
+        const expectedRuntime = await getExpectedRuntime(type, tmdbId, season, episode);
+        if (expectedRuntime <= 0) {
+            // If TMDB runtime is unavailable, allow stream
+            return { isValid: true };
+        }
+
+        const actualRuntime = await getM3u8Duration(url);
+        if (actualRuntime === null) {
+            const isSb = await isStoryboardStream(url);
+            if (isSb) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    reason: 'Storyboard/thumbnail sprite manifest rejected'
+                };
+            }
+            // If the URL returned 404 or points to known dead domains, reject it
+            if (url.includes('rousav.tech') || url.includes('/media/')) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    reason: 'Stream manifest returned 404 / unavailable on upstream CDN'
+                };
+            }
+            // When upstream CDN protects master playlist with token or live manifest, don't drop legitimate streams
+            return { isValid: true, expected: expectedRuntime };
+        }
+
+        // Even if user strictly requested this specific server, reject fake preview clips / storyboards
+        if (actualRuntime < 4 && expectedRuntime >= 15) {
+            return {
+                isValid: false,
+                expected: expectedRuntime,
+                actual: actualRuntime,
+                reason: `Preview or storyboard clip rejected: stream is only ${Math.round(actualRuntime)}m, expected feature of ~${expectedRuntime}m`
+            };
+        }
+
+        // If user strictly requested this specific server, allow it
+        if (isStrict) {
+            return { isValid: true, expected: expectedRuntime, actual: actualRuntime };
+        }
+
+        const diff = Math.abs(actualRuntime - expectedRuntime);
+
+        // Feature Film / Movie Scraping (Strict +/- 15 minutes tolerance or 15%)
+        if (type === 'movie') {
+            // Reject fake 1-12 minute trailer clips pretending to be a full feature
+            if (actualRuntime < 12 && expectedRuntime >= 20) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    actual: actualRuntime,
+                    reason: `Trailer or sample clip rejected: stream is only ${Math.round(actualRuntime)}m, expected feature film of ~${expectedRuntime}m`
+                };
+            }
+            // Movie tolerance (from hl5): +/- 35 minutes or 35% (handles theatrical vs director cuts)
+            const tolerance = Math.max(35, Math.round(expectedRuntime * 0.35));
+            if (diff > tolerance) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    actual: actualRuntime,
+                    reason: `Duration mismatch: expected ~${expectedRuntime}m, stream is ${Math.round(actualRuntime)}m (Movie tolerance: +/-${tolerance}m, diff was ${Math.round(diff)}m)`
+                };
+            }
+        } else {
+            // TV episode / Anime / Sitcom
+            if (actualRuntime < 4) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    actual: actualRuntime,
+                    reason: `Teaser clip rejected: stream is only ${Math.round(actualRuntime)}m, expected episode of ~${expectedRuntime}m`
+                };
+            }
+            // Prevent serving a 2-hour full movie when a short episode was requested
+            if (expectedRuntime < 40 && actualRuntime > 115) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    actual: actualRuntime,
+                    reason: `Wrong media: stream is ${Math.round(actualRuntime)}m, expected short episode of ~${expectedRuntime}m`
+                };
+            }
+            // TV tolerance (from hl5): +/- 25 minutes or 50% (handles specials, double episodes, Korean drama pacing)
+            const tolerance = Math.max(25, Math.round(expectedRuntime * 0.50));
+            if (diff > tolerance) {
+                return {
+                    isValid: false,
+                    expected: expectedRuntime,
+                    actual: actualRuntime,
+                    reason: `Duration mismatch: expected ~${expectedRuntime}m, stream is ${Math.round(actualRuntime)}m (TV tolerance: +/-${Math.round(tolerance)}m, diff was ${Math.round(diff)}m)`
+                };
+            }
+        }
+
+        return { isValid: true, expected: expectedRuntime, actual: actualRuntime };
+    } catch (e: any) {
+        return { isValid: true };
+    }
+}
+
+/**
+ * Deep M3U8 duration parser with full anti-bot headers and Master Playlist traversal
+ */
+export async function getM3u8Duration(url: string, depth = 0): Promise<number | null> {
+    if (!url || depth > 3) return null;
+    const lower = url.toLowerCase();
+    if (lower.includes('thumbnails.vtt') || lower.includes('spritesheet') || lower.includes('sprite.vtt')) {
+        return null; // Reject thumbnail sprite tracks
+    }
+
+    try {
+        let fetchUrl = url;
+        if (fetchUrl.startsWith('/')) {
+            fetchUrl = `http://127.0.0.1:3000${fetchUrl}`;
+        }
+
+        let parsedOrigin = 'https://bingr.one';
+        try {
+            const parsed = new URL(fetchUrl);
+            parsedOrigin = parsed.origin;
+        } catch (_) {}
+
+        const headers: Record<string, string> = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Accept': '*/*'
+        };
+        if (fetchUrl.includes('bingr.one') || fetchUrl.includes('api.bingr')) {
+            headers['Referer'] = 'https://bingr.one/';
+            headers['Origin'] = 'https://bingr.one';
+        }
+
+        const res = await axios.get(fetchUrl, {
+            timeout: 6000,
+            headers
+        });
+        const content = res.data;
+        if (typeof content !== 'string') return null;
+
+        // 1. Is it a master playlist? (#EXT-X-STREAM-INF)
+        if (content.includes('#EXT-X-STREAM-INF')) {
+            const lines = content.split(/\r?\n/);
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('#EXT-X-STREAM-INF')) {
+                    // Forward scan for the next non-comment URI line
+                    for (let j = i + 1; j < lines.length; j++) {
+                        const candidate = lines[j].trim();
+                        if (!candidate) continue;
+                        if (candidate.startsWith('#')) continue;
+                        const mediaUrl = candidate.startsWith('http') ? candidate : new URL(candidate, fetchUrl).toString();
+                        const dur = await getM3u8Duration(mediaUrl, depth + 1);
+                        if (dur !== null && dur > 0) return dur;
+                        break;
+                    }
+                }
+            }
+            // Fallback: search for any child .m3u8 path
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('#') && (trimmed.includes('.m3u8') || trimmed.includes('/hls/'))) {
+                    const mediaUrl = trimmed.startsWith('http') ? trimmed : new URL(trimmed, fetchUrl).toString();
+                    const dur = await getM3u8Duration(mediaUrl, depth + 1);
+                    if (dur !== null && dur > 0) return dur;
+                }
+            }
+            return null;
+        }
+
+        // Sum #EXTINF segments
+        const extinfRegex = /#EXTINF:\s*([0-9]+(?:\.[0-9]+)?)/gi;
+        let match: RegExpExecArray | null;
+        let totalSeconds = 0;
+        let segmentCount = 0;
+        while ((match = extinfRegex.exec(content)) !== null) {
+            const sec = parseFloat(match[1]);
+            if (!isNaN(sec) && sec > 0) {
+                totalSeconds += sec;
+                segmentCount++;
+            }
+        }
+
+        // 3. Fallback: Target duration approximation if segments exist but explicit durations are omitted
+        if (totalSeconds <= 0 && segmentCount > 0) {
+            const targetDurMatch = content.match(/#EXT-X-TARGETDURATION:\s*([0-9]+)/i);
+            if (targetDurMatch) {
+                const targetSec = parseFloat(targetDurMatch[1]);
+                if (!isNaN(targetSec) && targetSec > 0) {
+                    totalSeconds = targetSec * segmentCount;
+                }
+            }
+        }
+
+        if (totalSeconds > 0) {
+            return totalSeconds / 60; // Minutes
+        }
+        return null;
+    } catch (err: any) {
+        return null;
+    }
+}
+
+export async function scrapeBingrStream(params: {
+    type?: 'movie' | 'tv';
+    id?: number | string;
+    title?: string;
+    year?: string | number;
+    season?: number;
+    episode?: number;
+    srv?: string;
+    strictSrv?: boolean;
+}): Promise<BingrScrapeResult> {
+    const isTv = params.type === 'tv' || params.season !== undefined || params.episode !== undefined;
+    const type: 'movie' | 'tv' = isTv ? 'tv' : (params.type || 'movie');
+    const strictSrv = !!params.strictSrv;
+    let rawIdStr = params.id ? String(params.id).trim() : '';
+    let tmdbId = Number(rawIdStr) || 0;
+    let mediaTitle = params.title || '';
+    let mediaYear = params.year ? String(params.year) : undefined;
+
+    // Direct IMDb ID resolution (e.g. tt3801314 or tt33379543)
+    if (rawIdStr.startsWith('tt')) {
+        const imdbMatch = await resolveImdbToTmdbId(rawIdStr);
+        if (imdbMatch) {
+            tmdbId = imdbMatch.tmdbId;
+            if (!mediaTitle && imdbMatch.title) mediaTitle = imdbMatch.title;
+            if (!mediaYear && imdbMatch.year) mediaYear = imdbMatch.year;
+        }
+    } else if (!tmdbId && mediaTitle && mediaTitle.trim().startsWith('tt')) {
+        const imdbMatch = await resolveImdbToTmdbId(mediaTitle.trim());
+        if (imdbMatch) {
+            tmdbId = imdbMatch.tmdbId;
+            if (imdbMatch.title) mediaTitle = imdbMatch.title;
+            if (!mediaYear && imdbMatch.year) mediaYear = imdbMatch.year;
+        }
+    }
+
+    // If tmdbId is missing, resolve it via search
+    if (!tmdbId && mediaTitle) {
+        const match = await findTmdbMatch(mediaTitle, type, mediaYear);
+        if (match) {
+            tmdbId = match.id;
+            mediaTitle = match.title;
+            if (!mediaYear && match.year) mediaYear = match.year;
+        }
+    }
+
+    if (!tmdbId) {
+        return {
+            success: false,
+            type,
+            tmdbId: 0,
+            title: mediaTitle,
+            error: 'Could not resolve TMDB ID for title: ' + mediaTitle,
+            sources: []
+        };
+    }
+
+    // Auto-resolve title, year, and duration runtime from TMDB
+    let tmdbRuntimeMinutes: number | undefined;
+    try {
+        const details = type === 'tv' ? await getTvDetails(tmdbId) : await getMovieDetails(tmdbId);
+        if (details) {
+            if (!mediaTitle) mediaTitle = details.title;
+            if (!mediaYear && details.year) mediaYear = details.year;
+            if (details.runtime) tmdbRuntimeMinutes = details.runtime;
+        }
+    } catch {}
+
+    // Check in-memory stream cache for sub-millisecond instant resolution
+    const s = type === 'tv' ? (params.season !== undefined ? Number(params.season) : 1) : 1;
+    const e = type === 'tv' ? (params.episode !== undefined ? Number(params.episode) : 1) : 1;
+    const cacheKey = `${type}:${tmdbId}:${s}:${e}:${params.srv || 'default'}`;
+    const cachedStream = STREAM_CACHE.get(cacheKey);
+    if (cachedStream && cachedStream.result && cachedStream.result.success && (Date.now() - cachedStream.timestamp < CACHE_TTL_STREAM)) {
+        return { ...cachedStream.result };
+    }
+
+    const query: Record<string, any> = {
+        title: mediaTitle || '',
+        year: mediaYear ? String(mediaYear) : undefined
+    };
+
+    if (type === 'tv') {
+        query.season = String(s);
+        query.episode = String(e);
+    }
+
+    let malId: number | null = null;
+    const attempts: Array<{ serverId: string; serverName: string; status: string; latencyMs: number; error?: string }> = [];
+
+    // Helper: Resolve a single server cluster at maximum speed
+    async function tryServer(serverId: string): Promise<BingrScrapeResult | null> {
+        const serverMeta = BINGR_SERVERS.find(srv => srv.id === serverId) || { id: serverId, name: serverId };
+        const startTime = Date.now();
+
+        try {
+            let scraperName = serverMeta.name;
+            let sources: BingrStreamSource[] = [];
+            let subtitles: Array<{ lang: string; url: string; label?: string }> = [];
+            let probeDurationSec: number | undefined = undefined;
+            let probeAudioTracks: any[] = [];
+
+            if (serverId === 'megaplay' || serverId === 'hianime' || serverId === 'hianime_dub' || serverId === 'megaplay_dub') {
+                const isDubReq = serverId.includes('dub') || (params as any).dub === true || (params as any).type === 'dub';
+                const megaSub = await scrapeMegaPlayAnime({
+                    anilistId: tmdbId,
+                    malId: malId || undefined,
+                    episode: e,
+                    type: 'sub'
+                });
+                const megaDub = await scrapeMegaPlayAnime({
+                    anilistId: tmdbId,
+                    malId: malId || undefined,
+                    episode: e,
+                    type: 'dub'
+                });
+
+                const primaryRes = isDubReq && megaDub.success && megaDub.sources.length > 0 ? megaDub : (megaSub.success ? megaSub : megaDub);
+                if (primaryRes.success && primaryRes.sources.length > 0) {
+                    const activeIsDub = primaryRes === megaDub;
+                    scraperName = `HiAnime (${activeIsDub ? 'English DUB' : 'Japanese SUB'})`;
+                    sources = primaryRes.sources.map(s => ({
+                        ...s,
+                        language: activeIsDub ? 'English Dub' : 'Japanese Sub'
+                    }));
+
+                    // Append alternative dub/sub source if available for 1-click in-player switching
+                    const altRes = activeIsDub ? megaSub : megaDub;
+                    if (altRes.success && altRes.sources.length > 0) {
+                        altRes.sources.forEach(altSrc => {
+                            sources.push({
+                                ...altSrc,
+                                label: activeIsDub ? 'Japanese Sub' : 'English Dub',
+                                language: activeIsDub ? 'Japanese Sub' : 'English Dub'
+                            });
+                        });
+                    }
+                    subtitles = primaryRes.subtitles || [];
+                }
+            } else if (serverId === 'm4u' || serverId === 'movies4u') {
+                const m4uRes = await scrapeMovies4uCluster({
+                    type: type as any,
+                    id: tmdbId,
+                    title: mediaTitle,
+                    year: mediaYear,
+                    season: s,
+                    episode: e
+                });
+                scraperName = m4uRes.scraperName || 'Movie 4U';
+                sources = m4uRes.sources || [];
+                subtitles = m4uRes.subtitles || [];
+            } else if (serverId === 'animesalt' || serverId === 'anime') {
+                const animeRes = await scrapeAnimeEpisode(mediaTitle, s, e);
+                scraperName = 'AnimeSalt (Special Anime Scraper)';
+                sources = (animeRes.sources || []).map(src => ({
+                    url: src.url,
+                    quality: src.quality || '1080p',
+                    type: src.type || 'application/x-mpegurl',
+                    label: src.label,
+                    name: src.name
+                }));
+                subtitles = (animeRes.subtitles || []).map(sub => ({
+                    lang: sub.lang,
+                    url: sub.url,
+                    label: sub.label
+                }));
+            } else if (serverId === 's4k') {
+                const peakRes = await scrapePeakStream({
+                    type: type as any,
+                    id: tmdbId,
+                    title: mediaTitle,
+                    year: mediaYear,
+                    season: s,
+                    episode: e
+                });
+                scraperName = peakRes.scraperName || serverMeta.name;
+                sources = peakRes.sources || [];
+                subtitles = peakRes.subtitles || [];
+            } else if (serverId === 'ranime' || serverId === 'rareanimes') {
+                const rareRes = await resolveRareAnimeStream({
+                    title: mediaTitle,
+                    season: s,
+                    episode: e
+                });
+                scraperName = 'RareAnimes (Hindi Dub / Rare Anime Scraper)';
+                sources = (rareRes.sources || []).map(src => ({
+                    url: src.iframeUrl || src.embedUrl,
+                    quality: '1080p',
+                    type: 'embed',
+                    label: `RareAnimes (Vimeo ${src.vimeoId})`,
+                    name: `RareAnimes ${src.language ? `[${src.language.toUpperCase()}]` : ''}`
+                }));
+            } else if (serverId === 'kisskh') {
+                const kissResults = await searchKissKh(mediaTitle);
+                if (kissResults && kissResults.length > 0) {
+                    const cleanQ = mediaTitle.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const exact = kissResults.find(r => r.title.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanQ) || kissResults[0];
+                    const drama = await getKissKhDrama(String(exact.id));
+                    const targetEp = type === 'tv' ? (s ? e : 1) : 1;
+                    const foundEp = drama?.episodes?.find(epItem => epItem.number === targetEp) || drama?.episodes?.[targetEp - 1] || drama?.episodes?.[0];
+                    if (foundEp) {
+                        const streamData = await resolveKissKhEpisode(String(foundEp.id));
+                        if (streamData && streamData.video) {
+                            scraperName = 'KissKH (Asian Drama & Anime)';
+                            sources = [{
+                                url: streamData.video,
+                                quality: '1080p FHD',
+                                type: 'application/x-mpegurl',
+                                label: 'KissKH Direct HLS',
+                                name: 'KissKH'
+                            }];
+                            subtitles = (streamData.subtitles || []).map((sub: any) => ({
+                                lang: sub.label || sub.land || 'English',
+                                url: sub.src || sub.url,
+                                label: sub.label || 'English'
+                            }));
+                        }
+                    }
+                }
+            } else if (serverId === 'asiaflix') {
+                const afResults = await searchAsiaflix(mediaTitle);
+                if (afResults && afResults.length > 0) {
+                    const target = afResults[0];
+                    const targetEp = type === 'tv' ? (s ? e : 1) : 1;
+                    const streamData = await resolveAsiaflixEpisodeStream(target.slug, targetEp);
+                    if (streamData && streamData.video) {
+                        scraperName = 'Asiaflix (Vidmoly Multi-Bitrate HLS)';
+                        sources = [{
+                            url: streamData.video,
+                            quality: '720p/1080p',
+                            type: 'application/x-mpegurl',
+                            label: 'Vidmoly HLS',
+                            name: 'Asiaflix'
+                        }];
+                    }
+                }
+            } else if (serverId === 's40') {
+                if (type === 'movie') {
+                    // Aphelion/DarkMatter only hosts TV series; feature movies are unavailable or 404
+                    return null;
+                }
+                // Bingr Aphelion TV dedicated endpoint matching Watch-CRSz6z0p.js
+                if (type === 'tv' && s && e) {
+                    try {
+                        const tvRes = await bingrRequest<{
+                            sources?: BingrStreamSource[];
+                            subtitles?: Array<{ lang: string; url: string; label?: string }>;
+                        }>(`/stream/aphelion-tv/${tmdbId}/${s}/${e}`, {
+                            method: 'GET',
+                            referer: `https://bingr.one/watch/tv/${tmdbId}/${s}/${e}`,
+                            timeout: 5000
+                        });
+                        if (tvRes.status === 200 && tvRes.data?.sources && tvRes.data.sources.length > 0) {
+                            scraperName = 'Aphelion';
+                            sources = tvRes.data.sources;
+                            subtitles = tvRes.data.subtitles || [];
+                        }
+                    } catch (_) {}
+                }
+
+                if (!sources || sources.length === 0) {
+                    const payload = {
+                        srv: 's40',
+                        t: type,
+                        id: Number(tmdbId),
+                        query
+                    };
+                    const res = await bingrRequest<{
+                        scraperName?: string;
+                        sources?: BingrStreamSource[];
+                        subtitles?: Array<{ lang: string; url: string; label?: string }>;
+                    }>('/stream', {
+                        method: 'POST',
+                        body: payload,
+                        referer: type === 'tv' ? `https://bingr.one/watch/tv/${tmdbId}/${s}/${e}` : `https://bingr.one/watch/movie/${tmdbId}`,
+                        timeout: 5000
+                    });
+                    if (res.status === 200 && res.data?.sources && res.data.sources.length > 0) {
+                        scraperName = res.data?.scraperName || 'Aphelion';
+                        sources = res.data.sources;
+                        subtitles = res.data?.subtitles || [];
+                    }
+                }
+            } else if (serverId === 'sm_hub' || serverId === 'smmovies' || serverId === 'moviehub' || serverId === 'fibwatch') {
+                const smRes = await findSmMovieStream({
+                    type: type as any,
+                    title: mediaTitle,
+                    year: mediaYear,
+                    season: s,
+                    episode: e
+                });
+                if (smRes && smRes.success && smRes.sources.length > 0) {
+                    scraperName = smRes.scraperName || 'SM Movie Hub (Direct VOD/MKV)';
+                    if (smRes.duration) probeDurationSec = smRes.duration;
+                    if (smRes.audioTracks && smRes.audioTracks.length > 0) probeAudioTracks = smRes.audioTracks;
+                    sources = smRes.sources.map(src => ({
+                        url: src.url,
+                        quality: src.quality || '1080p',
+                        type: src.type || 'video/x-matroska',
+                        label: src.label,
+                        name: src.name
+                    }));
+                }
+            } else if (serverId === 'cinepro' || serverId === 'cinepro_core') {
+                scraperName = 'CinePro Core (OMSS Multi-Provider)';
+                try {
+                    const cineRes = await getCineProStreams(tmdbId, type, s ? Number(s) : 1, e ? Number(e) : 1);
+                    if (cineRes && cineRes.sources && cineRes.sources.length > 0) {
+                        const directOnly = cineRes.sources.filter(src => src.type !== 'embed');
+                        if (directOnly.length > 0) {
+                            sources = directOnly.map(src => ({
+                                url: src.url,
+                                quality: src.quality || '1080p',
+                                type: 'application/x-mpegurl',
+                                label: src.name,
+                                name: src.name
+                            }));
+                        }
+                    }
+                } catch (_) {}
+            } else {
+                const payload = {
+                    srv: serverId,
+                    t: type,
+                    id: Number(tmdbId),
+                    query
+                };
+                const referer = type === 'tv'
+                    ? `https://bingr.one/watch/tv/${tmdbId}/${s}/${e}`
+                    : `https://bingr.one/watch/movie/${tmdbId}`;
+
+                // Faster timeouts for upstream clusters to avoid stalling client playback
+                const timeoutMs = (serverId === 's61' || serverId === 's70') ? 3500 : 5000;
+
+                let res: { status: number; data: any } | null = null;
+                try {
+                    res = await bingrRequest<{
+                        scraperName?: string;
+                        sources?: BingrStreamSource[];
+                        subtitles?: Array<{ lang: string; url: string; label?: string }>;
+                    }>('/stream', {
+                        method: 'POST',
+                        body: payload,
+                        referer,
+                        timeout: timeoutMs
+                    });
+                } catch (bErr) {}
+
+                if (res && res.status === 200 && res.data?.sources && res.data.sources.length > 0) {
+                    scraperName = res.data?.scraperName || serverMeta.name;
+                    sources = res.data.sources;
+                    subtitles = res.data?.subtitles || [];
+                } else {
+                    throw new Error(`Upstream returned status ${res?.status || 500}`);
+                }
+            }
+
+            const latencyMs = Date.now() - startTime;
+
+            if (sources && sources.length > 0) {
+                // Auto-unwrap Cloudflare Worker and wormhole proxy wrappers to direct stream URLs to prevent Cloudflare 522 and 429 quota errors
+                for (const s of sources) {
+                    if (s.url && (s.url.includes('workers.dev') || s.url.includes('wormhole.filmu.in') || s.url.includes('/proxy/m3u8?url=')) && s.url.includes('url=')) {
+                        try {
+                            const wUrl = new URL(s.url);
+                            const innerUrl = wUrl.searchParams.get('url');
+                            const ref = wUrl.searchParams.get('referer') || 'https://nextgencloudfabric.com/';
+                            if (innerUrl) {
+                                s.url = `/stream_proxy.php?url=${encodeURIComponent(innerUrl)}&referer=${encodeURIComponent(ref)}`;
+                            }
+                        } catch {}
+                    }
+                }
+
+                // Always prioritize highest resolution quality: 4K / 2160p > 1080p > 720p > 480p
+                sources.sort((a, b) => {
+                    const qScore = (q: string = '') => {
+                        const l = q.toLowerCase();
+                        if (l.includes('4k') || l.includes('2160')) return 4000;
+                        if (l.includes('1080') || l.includes('fhd')) return 1080;
+                        if (l.includes('720') || l.includes('hd')) return 720;
+                        if (l.includes('480')) return 480;
+                        return 500;
+                    };
+                    return qScore(b.quality) - qScore(a.quality);
+                });
+
+                const candidateUrl = sources[0].url;
+                let durCheck: { isValid: boolean; expected?: number; actual?: number; reason?: string } = { isValid: true };
+
+                if (sources[0].type !== 'embed') {
+                    // Ultra-fast reachability check
+                    const isReachable = await verifyStreamReachable(candidateUrl, 2500);
+                    if (!isReachable) {
+                        attempts.push({
+                            serverId,
+                            serverName: serverMeta.name,
+                            status: '404_unreachable',
+                            latencyMs,
+                            error: `Upstream returned HTTP 404/dead link for ${candidateUrl}`
+                        });
+                        return null;
+                    }
+
+                    // Storyboard Scrubbing Thumbnail Detection (rejects thumbnail sprites / tiles.m3u8)
+                    const isStoryboard = await isStoryboardStream(candidateUrl);
+                    if (isStoryboard) {
+                        attempts.push({
+                            serverId,
+                            serverName: serverMeta.name,
+                            status: 'storyboard_rejected',
+                            latencyMs,
+                            error: `Storyboard thumbnail scrub playlist rejected (no genuine video stream): ${candidateUrl}`
+                        });
+                        return null;
+                    }
+                    
+                    // Strict Duration Verification (fast race to avoid blocking playback)
+                    durCheck = await Promise.race([
+                        verifyStreamDuration(candidateUrl, type, Number(tmdbId), s ? Number(s) : undefined, e ? Number(e) : undefined, strictSrv),
+                        new Promise<{ isValid: boolean }>((resolve) => setTimeout(() => resolve({ isValid: true }), 3000))
+                    ]);
+                    if (!durCheck.isValid) {
+                        attempts.push({
+                            serverId,
+                            serverName: serverMeta.name,
+                            status: 'duration_mismatch',
+                            latencyMs,
+                            error: durCheck.reason
+                        });
+                        return null; // Skip this stream because duration doesn't match
+                    }
+                }
+
+                if (subtitles.length <= 1) {
+                    try {
+                        const vdrkSubs = await getSubtitles(type, tmdbId, s, e);
+                        if (vdrkSubs && vdrkSubs.length > subtitles.length) {
+                            subtitles = vdrkSubs;
+                        }
+                    } catch {}
+                }
+
+                const result: BingrScrapeResult = {
+                    success: true,
+                    type,
+                    tmdbId: Number(tmdbId),
+                    title: mediaTitle,
+                    year: mediaYear,
+                    ...(type === 'tv' ? { season: s, episode: e } : {}),
+                    serverId,
+                    serverName: serverMeta.name,
+                    scraperName: scraperName,
+                    primaryM3u8: candidateUrl,
+                    quality: sources[0].quality || '1080p',
+                    sources: sources,
+                    subtitles: subtitles,
+                    audioTracks: probeAudioTracks,
+                    expectedDurationMinutes: durCheck.expected || tmdbRuntimeMinutes,
+                    streamDurationMinutes: durCheck.actual || (probeDurationSec ? Math.round(probeDurationSec / 60) : tmdbRuntimeMinutes),
+                    streamDurationSec: probeDurationSec || (durCheck.actual ? Math.round(durCheck.actual * 60) : (tmdbRuntimeMinutes ? tmdbRuntimeMinutes * 60 : (durCheck.expected ? Math.round(durCheck.expected * 60) : undefined))),
+                    duration: probeDurationSec ? Math.round(probeDurationSec / 60) : (durCheck.actual || tmdbRuntimeMinutes || durCheck.expected)
+                };
+
+                attempts.push({
+                    serverId,
+                    serverName: serverMeta.name,
+                    status: 'success',
+                    latencyMs
+                });
+                return result;
+            } else {
+                attempts.push({
+                    serverId,
+                    serverName: serverMeta.name,
+                    status: 'empty_sources',
+                    latencyMs
+                });
+                return null;
+            }
+        } catch (err: any) {
+            attempts.push({
+                serverId,
+                serverName: serverMeta.name,
+                status: 'error',
+                latencyMs: Date.now() - startTime,
+                error: err?.message || 'Network error'
+            });
+            return null;
+        }
+    }
+
+    // LIGHT-SPEED 3: Prioritized Concurrency Cascade
+    let successResult: BingrScrapeResult | null = null;
+
+    if (params.srv && params.strictSrv) {
+        // Direct requested server priority ONLY when strict is explicitly requested
+        const directId = (params.srv === 'movies4u') ? 'm4u' : (params.srv === 'anime' ? 'animesalt' : params.srv);
+        successResult = await tryServer(directId);
+        if (successResult) return successResult;
+
+        // Auto-heal fallback: If s40 was requested for a movie (where upstream DarkMatter only provides 2m preview clips),
+        // or if the requested server is temporarily down, seamlessly cascade to Bastion (s62) / Movie 4U (m4u)
+        const fallbackCandidates = (type === 'movie') 
+            ? ['m4u', 's62', 'sm_hub', 's3', 's31', 's30'] 
+            : ['s40', 'm4u', 's62', 'sm_hub', 's3', 's31'];
+            
+        for (const fbId of fallbackCandidates) {
+            if (fbId === directId) continue;
+            successResult = await tryServer(fbId);
+            if (successResult) {
+                return {
+                    ...successResult,
+                    fallbackNote: `${BINGR_SERVERS.find(s => s.id === directId)?.name || directId} is unavailable for this title. Switched to ${successResult.serverName}.`
+                };
+            }
+        }
+
+        return {
+            success: false,
+            type,
+            tmdbId: Number(tmdbId) || 0,
+            title: mediaTitle,
+            serverId: directId,
+            serverName: BINGR_SERVERS.find(s => s.id === directId)?.name || directId,
+            error: `No stream available on ${BINGR_SERVERS.find(s => s.id === directId)?.name || directId}`,
+            sources: [],
+            attempts
+        };
+    }
+
+    let isAnimeConfirmed = false;
+    let hasSkipTimes = false;
+
+    // Check for MAL ID and intro skip timing for series before scraping (with strict 1200ms race timeout to avoid blocking)
+    if (type === 'tv' && mediaTitle) {
+        try {
+            malId = await Promise.race([
+                resolveMalIdFromTitle(mediaTitle),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200))
+            ]);
+            if (malId) {
+                const epNum = params.episode || 1;
+                const skipData = await Promise.race([
+                    fetchAniSkipTimes(malId, epNum),
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 800))
+                ]).catch(() => null);
+                if (skipData && skipData.found && skipData.results && skipData.results.length > 0) {
+                    hasSkipTimes = true;
+                }
+                isAnimeConfirmed = true;
+                console.log(`[BingrScraper] Series "${mediaTitle}" confirmed as Anime (MAL #${malId}, Intro Skip: ${hasSkipTimes ? 'Yes' : 'Pending'}). AnimeSalt set as 1st priority.`);
+            }
+        } catch (e: any) {
+            // Non-blocking lookup fallback
+        }
+    }
+
+    const isAnimeLikely = isAnimeConfirmed || Boolean(
+        mediaTitle && mediaTitle.match(/naruto|titan|dragon ball|one piece|jujutsu|bleach|hero academia|slayer|hunter|clover|alchemist|evangelion|death note|sword art|ghoul|tokyo|chainsaw|frieren|dandadan|solo leveling|kaiju|boruto|inuyasha|haikyu|basket|detective conan|gintama|steins|dr\.?\s*stone|code geass|fairy tail|vinland|berserk|monster|cowboy bebop|mob psycho|rezero|re:zero|overlord|slime|danmachi|fate|konosuba|blue lock|spy x family|baki/i)
+    );
+
+    // Function to eagerly resolve the first server that returns success without waiting for slower/failing ones
+    async function resolveFirstSuccessful(serverIds: string[]): Promise<BingrScrapeResult | null> {
+        if (!serverIds || serverIds.length === 0) return null;
+        return new Promise<BingrScrapeResult | null>((resolve) => {
+            let finished = false;
+            let pending = serverIds.length;
+            for (const srv of serverIds) {
+                tryServer(srv).then(res => {
+                    if (res && res.success && !finished) {
+                        finished = true;
+                        resolve(res);
+                    } else {
+                        pending--;
+                        if (pending === 0 && !finished) resolve(null);
+                    }
+                }).catch(() => {
+                    pending--;
+                    if (pending === 0 && !finished) resolve(null);
+                });
+            }
+        });
+    }
+
+    // PRIORITY CASCADE:
+    // 1st: Movie 4U (m4u)
+    // 2nd: Bastion (s62)
+    // 3rd: SM Movie Hub Pro (sm_hub)
+    // Followed by: Aphelion (s40), Edmunds (s3), Orion (s31), Nova (s30), CinePro Core, etc.
+    // Anime: HiAnime -> AnimeSalt -> KissKH -> Asiaflix
+    if (!successResult) {
+        const preferredServer = params.srv 
+            ? (params.srv === 'anime' ? 'hianime' : (params.srv === 'movies4u' ? 'm4u' : (params.srv === 'smmovies' || params.srv === 'smhub' ? 'sm_hub' : (params.srv === 'bastion' ? 's62' : params.srv))))
+            : (isAnimeLikely ? 'hianime' : 'm4u');
+
+        successResult = await tryServer(preferredServer);
+
+        const cascadeOrder = isAnimeLikely
+            ? ['hianime', 'animesalt', 'kisskh', 'asiaflix', 'm4u', 's62', 'sm_hub', 's40', 's3', 's31', 's30', 's63', 's60', 's70', 's61']
+            : ['m4u', 's62', 'sm_hub', 's40', 's3', 's31', 's30', 'cinepro', 's63', 's60', 's70', 's61', 'asiaflix', 'kisskh', 'hianime', 'animesalt'];
+
+        for (const srvId of cascadeOrder) {
+            if (successResult) break;
+            if (srvId === preferredServer) continue;
+            successResult = await tryServer(srvId);
+        }
+    }
+
+    if (successResult) {
+        STREAM_CACHE.set(cacheKey, { timestamp: Date.now(), result: { ...successResult, attempts } });
+        return { ...successResult, attempts };
+    }
+
+    const season = params.season || 1;
+    const episode = params.episode || 1;
+
+    return {
+        success: false,
+        type,
+        tmdbId: Number(tmdbId),
+        title: mediaTitle,
+        year: mediaYear,
+        ...(type === 'tv' ? { season, episode } : {}),
+        error: 'No working stream found across active scraper clusters',
+        attempts,
+        sources: [],
+        fallbackEmbeds: [
+            type === 'tv' ? `https://embed.filmu.in/tv/${tmdbId}/${season}/${episode}` : `https://embed.filmu.in/movie/${tmdbId}`,
+            type === 'tv' ? `https://www.vidy.st/tv/${tmdbId}/${season}/${episode}` : `https://www.vidy.st/movie/${tmdbId}`,
+            type === 'tv' ? `https://player.cinezo.live/embed/tv/${tmdbId}/${season}/${episode}` : `https://player.cinezo.live/embed/movie/${tmdbId}`,
+            type === 'tv' ? `https://vidbolt.xyz/tv/${tmdbId}/${season}/${episode}` : `https://vidbolt.xyz/movie/${tmdbId}`,
+            type === 'tv' ? `https://embed.vidrift.in/embed/tv/${tmdbId}/${season}/${episode}` : `https://embed.vidrift.in/embed/movie/${tmdbId}`
+        ]
+    };
+}
+
+/**
+ * Generate standard IPTV M3U playlist format from scraped Bingr streams
+ */
+export function buildBingrM3u(options: {
+    title: string;
+    type: 'movie' | 'tv';
+    tmdbId?: number;
+    logo?: string;
+    groupTitle?: string;
+    items: Array<{
+        name: string;
+        url: string;
+        quality?: string;
+        logo?: string;
+        season?: number;
+        episode?: number;
+        tmdbId?: number;
+    }>;
+}): string {
+    const lines: string[] = ['#EXTM3U'];
+    const defaultGroup = options.groupTitle || (options.type === 'movie' ? 'Bingr Movies' : 'Bingr TV Series');
+
+    for (const item of options.items) {
+        const logo = item.logo || options.logo || '';
+        const id = item.tmdbId || options.tmdbId || '';
+        const qualityTag = item.quality ? ` [${item.quality}]` : '';
+        const displayName = `${item.name}${qualityTag}`;
+        
+        let extraTags = `tvg-id="${id}" tvg-name="${displayName}" group-title="${defaultGroup}"`;
+        if (logo) extraTags += ` tvg-logo="${logo}"`;
+        if (item.season && item.episode) {
+            extraTags += ` tvg-season="${item.season}" tvg-episode="${item.episode}"`;
+        }
+
+        lines.push(`#EXTINF:-1 ${extraTags},${displayName}`);
+        
+        // Add Kodi and VLC compatible Referer headers for each M3U stream
+        let itemRef = (item as any).referrer || (item as any).ref;
+        if (!itemRef) {
+            if (item.url.includes('b-cdn.net') || item.url.includes('fibwatch') || item.url.includes('fertgh')) {
+                itemRef = 'https://fibwatch.art/';
+            } else if (item.url.includes('kisskh')) {
+                itemRef = 'https://kisskh.co/';
+            } else if (item.url.includes('m4uplay') || item.url.includes('callistanise') || item.url.includes('acek-cdn')) {
+                itemRef = 'https://m4uplay.quest/';
+            }
+        }
+
+        if (itemRef) {
+            lines.push(`#EXTVLCOPT:http-referrer=${itemRef}`);
+            lines.push(`#EXTHTTP:{"Referer":"${itemRef}"}`);
+        }
+        if ((item as any).userAgent) {
+            lines.push(`#EXTVLCOPT:http-user-agent=${(item as any).userAgent}`);
+        }
+
+        lines.push(item.url);
+    }
+
+    return lines.join('\n');
+}
+
+/**
+ * Scrape a Movie stream by TMDB ID (Node.js SDK pattern)
+ */
+export async function scrapeMovie(tmdbId: number | string, options?: { srv?: string; title?: string; year?: string | number }): Promise<BingrScrapeResult> {
+    return scrapeBingrStream({
+        type: 'movie',
+        id: tmdbId,
+        title: options?.title,
+        year: options?.year,
+        srv: options?.srv
+    });
+}
+
+/**
+ * Scrape a TV Series episode stream by TMDB ID, Season, and Episode (Node.js SDK pattern)
+ */
+export async function scrapeTvEpisode(
+    tmdbId: number | string,
+    season: number | string,
+    episode: number | string,
+    options?: { srv?: string; title?: string; year?: string | number }
+): Promise<BingrScrapeResult> {
+    return scrapeBingrStream({
+        type: 'tv',
+        id: tmdbId,
+        season: Number(season),
+        episode: Number(episode),
+        title: options?.title,
+        year: options?.year,
+        srv: options?.srv
+    });
+}
+

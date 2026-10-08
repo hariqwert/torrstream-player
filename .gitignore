@@ -1,27 +1,17 @@
-# Dependencies
 node_modules/
-
-# Binaries & Large Executables
-bin/*.exe
-bin/TorrServer.exe
-
-# Database & Runtime State
-*.db
-*.json.bak
-settings.json
-config.db
-
-# Temporary Scripts
-setup-git-token.js
-push-repo.js
-
-# Logs & Temporary files
+*.zip
 *.log
-.DS_Store
-Thumbs.db
-anime-scraper/storage/cache/
-anime-scraper/storage/logs/
-
-# Nested repositories
-torrserver/
-
+*.tmp
+.system_generated/
+bin/TorrServer.exe
+bin/TorrServer
+.env
+.env.*
+!.env.example
+scratch/
+cache_stalker/
+torr_db/
+tasks/
+doctor_strange/
+storage/*.m3u
+*.mp4
