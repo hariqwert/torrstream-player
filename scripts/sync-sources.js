@@ -3,11 +3,12 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-// Configuration of all channels/networks with Primary and Multiple Backup sources
+// Master Multi-Engine Live Sources Configuration
+// Each network/event features a Primary best source + redundant Fallback sources
 const SOURCE_CONFIG = {
   jio: {
     name: 'JioTV Network',
-    type: 'both', // provides both m3u and json
+    type: 'both',
     m3u: {
       primary: 'https://raw.githubusercontent.com/sm-monirulislam/SM-IPTV/main/jio_tv.m3u',
       backups: [
@@ -67,22 +68,56 @@ const SOURCE_CONFIG = {
     }
   },
 
-  willow: {
-    name: 'Willow Cricket & ICC Network',
+  icc: {
+    name: 'ICC Cricket Tournaments',
     type: 'both',
     m3u: {
       primary: 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u',
       backups: [
-        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u',
-        'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/willow.m3u'
+        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u'
       ]
     },
     json: {
       primary: 'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.json',
       backups: [
-        'https://raw.githubusercontent.com/drmlive/willow-live-events/main/willow.json',
         'https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json',
-        'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.json'
+        'https://raw.githubusercontent.com/drmlive/willow-live-events/main/willow.json'
+      ]
+    }
+  },
+
+  fifa: {
+    name: 'FIFA & Football Events',
+    type: 'both',
+    m3u: {
+      primary: 'https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/fifa_live.m3u',
+      backups: [
+        'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.m3u'
+      ]
+    },
+    json: {
+      primary: 'https://raw.githubusercontent.com/srhady/fifaplus/refs/heads/main/match_data.json',
+      backups: [
+        'https://raw.githubusercontent.com/sm-monirulislam/Upcoming-and-Live-Sports-Data/main/Sports_data.json'
+      ]
+    }
+  },
+
+  willow: {
+    name: 'Willow Cricket Network',
+    type: 'both',
+    m3u: {
+      primary: 'https://raw.githubusercontent.com/sportlive18/Sportlink-wtf/main/willow.m3u',
+      backups: [
+        'https://raw.githubusercontent.com/sportlive18/Willow-Cricbuzz-Prime-Video-Sport-Live-Event-Auto-Updated-Playlist/main/willow.m3u',
+        'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.m3u'
+      ]
+    },
+    json: {
+      primary: 'https://raw.githubusercontent.com/drmlive/willow-live-events/main/willow.json',
+      backups: [
+        'https://raw.githubusercontent.com/srhady/willow-event/refs/heads/main/live_sports.json',
+        'https://raw.githubusercontent.com/doctor-8trange/nexphi0/refs/heads/main/data/icc.json'
       ]
     }
   },
@@ -217,7 +252,7 @@ async function syncTarget(targetKey) {
 }
 
 async function run() {
-  const targetArg = process.argv[2]; // e.g. "jio", "sony", or "all"
+  const targetArg = process.argv[2]; // e.g. "icc", "fifa", or "all"
   if (targetArg && targetArg !== 'all') {
     await syncTarget(targetArg);
   } else {
